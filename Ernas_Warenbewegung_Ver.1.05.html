@@ -1,0 +1,4838 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bestandserfassung Ver 1.05</title>
+
+  <style>
+ /* =========================
+   Grundlayout
+========================= */
+body {
+  font-family: system-ui, sans-serif;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px;
+}
+@media (max-width: 768px) {
+  body { padding: 8px; }
+}
+
+/* =========================
+   Tabellen
+========================= */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  margin: 24px auto;
+}
+.table-wrapper table {
+  width: 100%;
+  min-width: 600px;
+  max-width: 1200px;
+  border-collapse: collapse;
+}
+th, td {
+  border: 1px solid #ddd;
+  padding: 6px;
+  text-align: left;
+}
+#list tbody tr:hover {
+  background-color: #f5f5f5;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  transition: all 0.2s ease;
+}
+@media (max-width: 600px) {
+  th, td { padding: 10px; font-size: 14px; }
+}
+
+/* Breite Anpassung am PC */
+@media (min-width: 1350px) {
+  .body { width: 720px; margin: 0 auto; }
+  .table-wrapper {
+    width: 180%;
+    margin: 24px auto;
+    transform: translateX(-240px);
+  }
+}
+
+/* =========================
+   Formulare
+========================= */
+label { display:block; margin-top:12px; font-weight:600; }
+select, input[type="number"], input[type="text"] {
+  width:100%; padding:8px;
+}
+.row { display: flex; gap: 8px; }
+.row > * { flex: 1; }
+@media (max-width: 600px) { .row { flex-direction: column; } }
+
+.error { border:2px solid #d33 !important; background:#ffecec; }
+.hint { color:#666; font-size:0.85em; margin-top:2px; display:block; }
+.hidden { display: none; }
+
+/* =========================
+   Buttons
+========================= */
+.btn {
+  display: inline-block;
+  margin-top:12px;
+  padding: 8px 16px;
+  background-color: #f0f0f0;
+  color: #333;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+.btn:hover { background-color: #e0e0e0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+@media (max-width: 600px) {
+  .btn { width: 100%; font-size: 16px; }
+}
+
+/* =========================
+   Status & Hilfen
+========================= */
+#statusBox {
+  display: none;
+  position: fixed;
+  top: 20px; right: 20px;
+  padding: 10px 16px;
+  border-radius: 4px;
+  background: #e0ffe0;
+  color: #333;
+  font-size: 14px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  z-index: 1000;
+}
+@media (max-width: 600px) {
+  #statusBox {
+    left: 50%; right: auto;
+    transform: translateX(-50%);
+    width: 90%;
+    font-size: 16px;
+  }
+}
+#autocomplete_list li { padding:6px; cursor:pointer; }
+#autocomplete_list li.highlight { background:#def; }
+/* Darkmode Hintergrund + Text */
+body.darkmode #autocomplete_list {
+  background: #222;
+  color: #eee;
+  border: 1px solid #444;
+}
+
+/* Darkmode Hover */
+body.darkmode #autocomplete_list li:hover {
+  background: #333;
+}
+
+/* Darkmode Tastatur-Highlight */
+body.darkmode #autocomplete_list li.highlight {
+  background: #444;   /* dunkles, angenehmes Highlight */
+}
+
+/* Darkmode: Hervorgehobener Text (Match) */
+body.darkmode #autocomplete_list li b {
+  color: #6cf;        /* helles Cyan – sehr gut lesbar */
+}
+
+
+
+
+#favAddBtn {
+  font-size: 20px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: gray;
+}
+#favAddBtn.not-favorited {
+  color: grey;
+}
+
+#favAddBtn.favorited {
+  color: gold;
+}
+
+
+#helpBox {
+  border-radius: 8px;
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+  font-family: sans-serif;
+}
+#helpBox::before {
+  content: "📎";
+  font-size: 24px;
+  margin-right: 8px;
+}
+
+/* =========================
+   Aktionen mit Hover-Effekt
+========================= */
+.action-verbrauch { background-color: #ffe0e0; transition: all 0.2s ease; }
+.action-verbrauch:hover { background-color: #ffcccc; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transform: scale(1.01); }
+
+.action-anfangsbestand { background-color: #e0ffe0; transition: all 0.2s ease; }
+.action-anfangsbestand:hover { background-color: #ccffcc; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transform: scale(1.01); }
+
+.action-endbestand { background-color: #e0f0ff; transition: all 0.2s ease; }
+.action-endbestand:hover { background-color: #cce5ff; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transform: scale(1.01); }
+
+.action-lagerwechsel { background-color: #f0f0f0; transition: all 0.2s ease; }
+.action-lagerwechsel:hover { background-color: #e0e0e0; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transform: scale(1.01); }
+
+.action-lieferung { background-color: #fffbe0; transition: all 0.2s ease; }
+.action-lieferung:hover { background-color: #fff2b3; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transform: scale(1.01); }
+
+/* =========================
+   Print / PDF
+========================= */
+#printTitle {
+  display: none;
+}
+#printArea {
+  display: none;
+}
+
+@media print {
+  /* Alle body-Kinder ausblenden – sowohl direkte als auch tiefer verschachtelte */
+  body * { visibility: hidden !important; }
+
+  /* Nur printArea und seine Kinder sichtbar machen */
+  #printArea,
+  #printArea * {
+    visibility: visible !important;
+  }
+
+  /* Body-Margin/Padding zurücksetzen */
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: none !important;
+    background: #fff !important;
+  }
+
+  /* printArea: volle Seite, absolut positioniert damit kein Leerraum durch andere Elemente entsteht */
+  #printArea {
+    display: block !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    font-family: system-ui, sans-serif;
+    color: #000 !important;
+    background: #fff !important;
+    padding: 0;
+    margin: 0;
+  }
+
+  /* Keine Extra-Leerseiten durch fixed/absolute Elemente */
+  #statusBox,
+  .modal,
+  .options-overlay,
+  .options-modal,
+  #helpBox,
+  #cameraWrapper {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  @page {
+    size: A4 portrait;
+    margin: 12mm 15mm;
+  }
+
+  /* Kopfbereich */
+  #printArea .print-header {
+    border-bottom: 2px solid #000;
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+  }
+  #printArea .print-header h1 {
+    font-size: 16pt;
+    margin: 0 0 4px 0;
+  }
+  #printArea .print-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px 20px;
+    font-size: 8.5pt;
+  }
+  #printArea .print-meta-grid span b {
+    display: inline-block;
+    min-width: 110px;
+  }
+
+  /* Tabelle */
+  #printArea .print-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 7pt;
+    margin-top: 10px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    page-break-inside: auto;
+    border-top: 1px solid #000;
+    border-left: 1px solid #000;
+  }
+  #printArea .print-table th {
+    background: #e8e8e8 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    border-right: 1px solid #000 !important;
+    border-bottom: 1px solid #000 !important;
+    padding: 3px 4px;
+    text-align: left;
+    font-size: 6.5pt;
+    white-space: nowrap;
+  }
+  #printArea .print-table td {
+    border-right: 1px solid #000 !important;
+    border-bottom: 1px solid #000 !important;
+    padding: 3px 4px;
+    font-size: 6.5pt;
+    vertical-align: top;
+    word-break: break-word;
+  }
+  /* Spalten-Breiten für 5 Spalten: Produkt | Kisten | Fl. | Ges. | Kommentar */
+  #printArea .print-table th:nth-child(1),
+  #printArea .print-table td:nth-child(1) { width: 40%; } /* Produkt */
+  #printArea .print-table th:nth-child(2),
+  #printArea .print-table td:nth-child(2) { width: 10%; } /* Kisten */
+  #printArea .print-table th:nth-child(3),
+  #printArea .print-table td:nth-child(3) { width: 10%; } /* Fl. */
+  #printArea .print-table th:nth-child(4),
+  #printArea .print-table td:nth-child(4) { width: 10%; } /* Ges. */
+  #printArea .print-table th:nth-child(5),
+  #printArea .print-table td:nth-child(5) { width: 30%; } /* Kommentar */
+
+  #printArea .print-table thead { display: table-header-group; }
+  #printArea .print-table tbody tr { page-break-inside: avoid; }
+
+  /* Unterschriften */
+  #printArea .print-signatures {
+    margin-top: 20mm;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 30mm;
+    page-break-inside: avoid;
+  }
+  #printArea .sig-block {
+    border-top: 1px solid #000;
+    padding-top: 4px;
+    font-size: 8pt;
+  }
+  #printArea .sig-line {
+    border-bottom: 1px solid #888;
+    height: 18mm;
+    margin-bottom: 4px;
+  }
+}
+
+/* =========================
+   Kamera
+========================= */
+#camera {
+  width: 100%;
+  max-width: 600px;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+#cameraWrapper {
+  background: #f9f9f9;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  text-align: center;
+  margin-top: 1em;
+  display: none;
+}
+
+/* =========================
+   Tabs
+========================= */
+.tabs { display: flex; gap: 8px; margin-bottom: 1em; }
+.tab {
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  background: #f9f9f9;
+  cursor: pointer;
+  border-radius: 4px 4px 0 0;
+}
+.tab.active {
+  background: #2a7;
+  color: #fff;
+  font-weight: bold;
+}
+
+/* Basis wie normale Tabs */
+.tabOpt {
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  background: #f9f9f9;   /* gleiche Grundfarbe wie Tabs */
+  color: #333;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+/* Hover-Effekt etwas dezenter */
+.tabOpt:hover {
+  background: #e0e0e0;   /* nicht zu hell */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+
+
+
+/* kein .active-State wie bei den Tabs */
+
+
+/* =========================
+   Modal & Eventmodus
+========================= */
+.modal {
+  display: none;
+  position: fixed;
+  top:0; left:0; width:100%; height:100%;
+  background: rgba(0,0,0,0.6);
+  z-index: 9999;
+}
+.modal-content {
+  background: #fff;
+  margin: auto;
+  padding: 20px;
+  width: 95%; height: 95%;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+  display: flex;
+  flex-direction: column;
+}
+
+/* Standard (Hellmodus) */
+#helpBox {
+  display: none;
+  border: 1px solid #ccc;
+  padding: 12px;
+  background: #f9f9f9;
+  color: #222;
+  position: absolute;
+  right: 20px;
+  top: 60px;
+  width: 300px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  border-radius: 6px;
+}
+
+#eventTiles {
+  flex: 1;                 /* nimmt den verfügbaren Platz */
+  overflow-y: auto;        /* Scrollbar wenn zu viele Kacheln */
+  display: grid;
+  grid-template-columns: repeat(auto-fill,minmax(160px,1fr));
+  gap: 20px;
+  padding: 20px;
+}
+
+
+
+.tile {
+  background: #f9f9f9;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+.tile:hover { transform: scale(1.05); }
+.tile.selected {
+  background: #e0f0ff;   /* sanftes Hellblau */
+  border: 2px solid #007bff;
+  color: #333;
+}
+.tile h3 {
+  margin: 10px 0;
+  font-size: 1.2em;
+}
+.tile .icon {
+  font-size: 2.5em;
+  margin-bottom: 10px;
+}
+.count {
+  font-size: 1.4em;
+  font-weight: bold;
+}
+
+.tile-price {
+  font-size: 1.1em;
+  font-weight: bold;
+  color: #2a7;
+  margin: 4px 0 2px 0;
+}
+body.darkmode .tile-price {
+  color: #5d5;
+}
+
+/* Zählersteuerung */
+.controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+}
+.controls .minus {
+  background: #f8d7da;   /* dezentes Rot */
+  color: #721c24;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
+  cursor: pointer;
+  display: none; /* erscheint erst wenn count > 0 */
+}
+
+/* Aktionsleiste unten */
+#eventActions {
+  flex-shrink: 0;          /* bleibt unten sichtbar */
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  padding: 20px;
+  background: #f1f1f1;
+  border-top: 2px solid #ddd;
+}
+#eventActions button {
+  font-size: 1.2em;
+  padding: 15px 40px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+#bookBtn {
+  background: #28a745;   /* Grün für Hauptaktion */
+  color: white;
+}
+#bookBtn:hover {
+  background: #218838;
+  transform: scale(1.05);
+}
+#closeEventBtn {
+  background: #6c757d;   /* Grau für neutral */
+  color: white;
+}
+#closeEventBtn:hover {
+  background: #5a6268;
+  transform: scale(1.05);
+}
+
+/* Feedback im Modal */
+#eventFeedback {
+  display: none;
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 6px;
+  text-align: center;
+  font-weight: bold;
+}
+#eventFeedback.success {
+  background: #d4edda;
+  color: #155724;
+}
+#eventFeedback.error {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+/*Options-Modal*/
+
+.options-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 999;
+}
+
+.options-modal {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 420px;
+  max-height: 85vh;
+  background: #fff;
+  border: 2px solid #444;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  z-index: 1000;
+  border-radius: 8px;
+  display: none;
+  flex-direction: column;
+}
+
+.options-content {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.options-modal .close {
+  float: right;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+
+
+/* =========================
+   Darkmode Overrides
+========================= */
+
+body.darkmode {
+  background: #222;
+  color: #eee;
+}
+
+/* Tabellen */
+body.darkmode .table-wrapper table {
+  background: #222;
+  color: #eee;
+}
+
+
+body.darkmode #list tbody tr:hover {
+  background-color: #444;
+  box-shadow: 0 2px 6px rgba(255,255,255,0.1);
+}
+
+/* Formulare */
+body.darkmode input,
+body.darkmode select,
+body.darkmode textarea {
+  background: #333;
+  color: #eee;
+  border: 1px solid #555;
+}
+
+/* Buttons */
+body.darkmode .btn,
+body.darkmode button {
+  background: #444;
+  color: #eee;
+  border: 1px solid #666;
+}
+body.darkmode .btn:hover {
+  background: #555;
+}
+
+/* Tabs */
+body.darkmode .tab {
+  background: #333;
+  border: 1px solid #555;
+  color: #eee;
+}
+body.darkmode .tab.active {
+  background: #2a7; /* grün bleibt */
+  color: #fff;
+}
+
+/* Darkmode-Variante */
+body.darkmode .tabOpt {
+  background: #333;       /* dunkler Grundton */
+  border: 1px solid #555;
+  color: #eee;
+}
+
+body.darkmode .tabOpt:hover {
+  background: #444;       /* leicht heller, aber nicht brutal hell */
+  box-shadow: 0 2px 4px rgba(255,255,255,0.1);
+}
+
+/* Modals */
+body.darkmode .modal-content,
+body.darkmode .options-overlay {
+  background: rgba(0,0,0,0.7);
+}
+
+body.darkmode .options-modal {
+  background: #333;
+  color: #eee;
+  border: 2px solid #666;
+}
+
+/* Aktionsleiste unten im Darkmode */
+body.darkmode #eventActions {
+  background: #222;        /* dunkler Hintergrund */
+  border-top: 2px solid #444;
+}
+
+body.darkmode #eventActions button {
+  background: #444;        /* neutrale Buttons */
+  color: #eee;
+}
+
+body.darkmode #bookBtn {
+  background: #2a7;   /* sattes Grün */
+  color: #fff;
+}
+body.darkmode #bookBtn:hover {
+  background: #267;   /* etwas dunkler, aber nicht grell */
+}
+
+body.darkmode #closeEventBtn {
+  background: #555;        /* dunkles Grau */
+  color: #fff;
+}
+body.darkmode #closeEventBtn:hover {
+  background: #666;
+}
+
+
+body.darkmode .options-content {
+  background: #333;
+  color: #eee;
+}
+
+
+
+/* Dunkelmodus */
+.darkmode #helpBox {
+  border: 1px solid #555;
+  background: #2b2b2b;
+  color: #eee;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.6);
+}
+
+
+/* Tiles im Eventmodus */
+body.darkmode .tile {
+  background: #333;
+  color: #eee;
+  box-shadow: 0 4px 10px rgba(255,255,255,0.1);
+}
+body.darkmode .tile.selected {
+  background: #444;
+  border: 2px solid #2a7;
+  color: #eee;
+}
+
+/* Feedbackboxen */
+body.darkmode #eventFeedback.success {
+  background: #355e3b;
+  color: #d4edda;
+}
+body.darkmode #eventFeedback.error {
+  background: #5a2a2a;
+  color: #f8d7da;
+}
+
+/* Statusbox */
+body.darkmode #statusBox {
+  background: #333;
+  color: #eee;
+  border: 1px solid #555;
+}
+
+body.darkmode th {
+  border: 1px solid #555;
+  background: #333;   /* Überschriften dürfen dunkelgrau bleiben */
+  color: #eee;
+}
+
+body.darkmode td {
+  border: 1px solid #555;
+  color: #eee;
+  /* KEIN background hier */
+}
+
+body.darkmode .action-verbrauch { background-color: #662222; color: #f5c6c6; }
+body.darkmode .action-anfangsbestand { background-color: #224422; color: #c6f5c6; }
+body.darkmode .action-endbestand { background-color: #223366; color: #c6d9f5; }
+body.darkmode .action-lagerwechsel { background-color: #333; color: #eee; }
+body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
+
+  
+</style>
+
+
+  <!-- SheetJS für Excel-Export -->
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://unpkg.com/quagga/dist/quagga.min.js"></script>
+  
+</head>
+
+<body>
+
+<!-- TO DO LISTE
+
+	- Die Barcodes der Getränke erfassen ------------------------------------------------------- CHECK
+		- Barcode geht nicht immer 
+	- VK Preise anpassen
+	- Mehrere Kategorien einem Produkt zuordnen?	
+		
+		
+	- 50 bis 100 Bilder pro Produkt für KI Training
+	- weitere Erweiterungen und Listen für Fahrradwerkstatt oder Allgemein Inventur
+	- Jedes Produkt bekommt QR Code mit Daten, man gibt nur noch Menge ein
+	- Server und Webeinbindung
+	- Mehr Testen und Feedback einholen
+	- Vor allem für Strichlistenmodus eine Eventauswertung in der App
+	- Datenschutzkonzept muss erledigt werden
+	- Namen Optional
+	- Ganzen Kopf raus, kein Name, Matr. Nr. und Mailadresse -> Datenschutz sollte dann passen
+	- Excel: Konzept überlegen. Nur noch Verbrauch zählen und 2 mal im Monat Inventur machen.
+	- Ernas-Modus wie im Mecces mit Bildern aus der Favouritenliste oder Vorgefertigten Modulen.
+				Kann dann Bilder antippen und der wählt dann das Getränk aus.
+	- Strichlistenmodus
+		In der Liste sollen die Verbräuche dann auch schon direkt zusammengefasst werden.
+	- POS Modus - Beim Buchen soll die Auswahl dann resettet werden
+	- Bei Lieferung geht der in einen Error rein, wo ich den Zielort nicht mehr ändern kann.
+	- Die Kamera läuft in einen Permission Error und kann nicht gestartet werden
+	- Der PDF Export ist am Druckbereich abgeschnitten, evtl. kleiner skalieren oderhalt an den Druckbereich anpassen?
+		Mir gefällt auch nicht, wie die Tabelle zum schluss abgeschnitten ist und warum noch extra leere Seiten exportiert werden.
+	- Die Anzahl der Flaschen pro Kiste sollte noch ersichtlich sein
+	- Wenn ich vorher und Nachher reinlade, den Verbrauch ausgeben.
+		
+
+ -->
+
+<div id="statusBox" style="display:none; padding:8px; margin:8px 0; border-radius:4px; background:#e0ffe0; color:#333; font-size:14px;"></div>
+
+
+<div id="header" style="display:flex; justify-content:space-between; align-items:center;">
+  <!-- Linker Bereich -->
+  <h1 id="Titel" style="margin:0;">Warenbewegung</h1>
+
+  <!-- Rechter Bereich mit Buttons -->
+  <div style="display:flex; gap:10px;">
+    <button id="optionsBtn" style="font-size:20px; padding:8px 16px;">⚙️ Optionen</button>
+    <button id="helpBtn" style="font-size:20px; padding:8px 16px;">❓ Hilfe</button>
+  </div>
+</div>
+<br>
+
+<div id="modeTabs" class="tabs"> 
+  <button data-mode="ernas" class="tab active">🎓 Ernas</button> 
+  <button data-mode="lieferant" class="tab">🚚 Lieferant</button> 
+  <button data-mode="lagerwechsel" class="tab">🔄 Lagerwechsel</button> 
+  <button data-mode="admin" class="tab">⚙️ Admin</button> 
+  
+</div>
+
+
+<!-- Options-Modal -->
+<div id="optionsOverlay" class="options-overlay"></div>
+<div id="optionsModal" class="options-modal">
+  <div class="options-content">
+    <span id="closeOptions" class="close">&times;</span>
+    <h2>Optionen</h2>
+    <label><input type="checkbox" id="darkModeToggle"> Dark Mode aktivieren</label><br>
+    <h3>Favoriten-Optionen</h3>
+<button class="btn" id="loadStandardFavs">📥 Standardliste laden</button><br>
+<button class="btn" id="resetFavs">🔄 Favoriten zurücksetzen</button><br>
+<h3>Allgemeine-Optionen</h3>
+    <button class="btn" id="clearStorageBtn">🔄 LocalStorage zurücksetzen</button><br>
+    <h3>Export-Optionen</h3>
+    <button class="btn" id="exportExcel" type="button">Als Excel herunterladen</button>
+    <h3>Kamera-Zugriff</h3>
+    <p style="font-size:0.85em; color:#666; margin:4px 0 8px;">Falls der Barcode-Scanner nicht funktioniert, hier explizit den Kamera-Zugriff anfragen:</p>
+    <button class="btn" id="requestCameraBtn" type="button">📷 Kamera-Zugriff anfragen</button>
+    <span id="cameraPermStatus" style="display:block; font-size:0.85em; margin-top:4px;"></span>
+    <!-- hier kannst du beliebig weitere Optionen ergänzen -->
+  </div>
+</div>
+
+
+
+
+<div id="helpBox" class="helpBox">
+  <h3>Programmhilfe</h3>
+  <p>Dieses Tool unterstützt dich beim Erfassen und Exportieren von Getränkedaten.</p>
+
+  <h4>Tastenkombinationen</h4>
+  <ul>
+    <li><b>Enter</b> → Position hinzufügen (im Kisten/Flaschenfeld)</li>
+    <li><b>Ctrl+S</b> → lokal speichern</li>
+    <li><b>Ctrl+E</b> → Excel exportieren</li>
+    <li><b>Ctrl+P</b> → Druckansicht öffnen</li>
+    <li><b>Ctrl+Z</b> → letzte Entfernung rückgängig</li>
+    <li><b>Ctrl+M</b> → Mail schicken</li>
+    <li><b>Ctrl+,</b> → CSV exportieren</li>
+    <li><b>Ctrl+B</b> → Barcode scannen</li>
+  </ul>
+
+  <h4>Favoriten</h4>
+  <p>Produkte mit dem Stern markieren → erscheinen im Favoriten-Dropdown.</p>
+
+  <h4>Import/Export</h4>
+  <ul>
+    <li><b>CSV</b> → Daten als CSV exportieren oder importieren</li>
+    <li><b>Excel</b> → Tabellenblatt herunterladen</li>
+    <li><b>Drucken</b> → Exportiert die Liste als PDF</li>
+  </ul>
+
+  <h4>Tipps zur Nutzung</h4>
+  <ul>
+    <li><b>Kommentare</b> für Sonderfälle eintragen (z. B. beschädigt, Sonderlieferung, Personalverzehr)</li>
+    <li>Externe Adressen erscheinen nur, wenn <b>„Extern“</b> gewählt ist</li>
+    <li>Gibt es das Getränk nicht? Dann wähle die letzte Position in der Getränkeauswahl aus und Folge den Anweisungen! Dann kann ich die Liste entsprechend anpassen.</li>
+    <li>Der <b>Strichlistenmodus</b> lässt dich einzelne Flaschen zählen. In der Auswertung wird alles Summiert.</li>
+    <li>Ein Klick auf den <b>Tabellenkopf</b> sortiert die Liste Auf- oder Absteigend.</li>
+  </ul>
+
+	<h4>Hinweis:</h4> 
+	<p>Bitte exportiere die Daten als CSV und hänge die Datei an die Mail an. Der Mail-Body ist bereits mit den Daten aus dem Formular vorausgefüllt.</p>
+
+  <button id="helpClose">Schließen</button>
+</div>
+
+
+  <div id="context">
+
+    <label class="hidden">Verantwortliche Person</label>
+    <div class="row">
+
+      <div>
+        <label>Name</label>
+        <input id="name" type="text" placeholder="Vor- und Nachname" />
+        <span class="hidden">Bitte vollständigen Namen eintragen</span>
+      </div>
+
+      <div>
+        <label>Matrikelnummer</label>
+        <input id="MatNr" type="text" placeholder="123456" />
+        <span class="hidden">Nur Ziffern, Länge flexibel</span>
+      </div>
+
+    </div>
+    <span class="hint">Die eingegebenen Daten werden nicht auf dem Server gespeichert, sondern nur lokal verarbeitet.</span>
+
+    <label class="hidden">Studmail</label>
+    <input id="studmail" class="hidden" type="text" value="@studmail.htw-aalen.de" readonly />
+    <span class="hidden">Wird automatisch aus der Matrikelnummer erzeugt</span>
+
+    <label>Hochschulgruppierung / Fachschaft</label>
+    <select id="fachschaft">
+      <option>AStA</option>
+      <option>Fachschaft MW</option>
+      <option>Fachschaft W</option>
+      <option>Fachschaft C</option>
+      <option>Fachschaft FEIN</option>
+      <option>Fachschaft OM</option>
+      <option>UStA Aalen e.V.</option>
+      <option>E-Motion Rennteam Aalen e.V.</option>
+      <option>Canvas-Kernteam</option>
+      <option>FINO</option>
+      <option>ZEO</option>
+      <option>IWO Aalen e.V.</option>
+      <option>Extern</option>
+    </select>
+
+    <div id="external_fields" class="hidden" style="margin-top:16px;">
+      <h3>Externe Adresse</h3>
+		<span class="hint">Die eingegebenen Daten werden nicht auf dem Server gespeichert, sondern nur lokal verarbeitet.</span>
+      <label>Straße</label>
+      <input id="ext_street" type="text" />
+      
+
+      <label>Hausnummer</label>
+      <input id="ext_number" type="text" />
+
+      <label>PLZ</label>
+      <input id="ext_zip" type="text" />
+
+      <label>Ort</label>
+      <input id="ext_city" type="text" />
+
+      <label>Kontakt (Telefon oder Mail)</label>
+      <input id="ext_contact" type="text" />
+    </div>
+
+    <label id="von_loc">Von Lagerort</label>
+    <select id="from_location" display="none">
+      <option>Kühlzelle</option>
+      <option>Fahrradwerkstatt</option>
+      <option>Probenraum</option>
+      <option>PopUp-Cafe</option>
+      <option>Anlieferung</option>
+      <option>Zwischenlager</option>
+      <option>Kühlschrank FW</option>
+      <option>Büro</option>
+      <option>Extern</option>
+    </select>
+
+    <label>Aktion</label>
+    <select id="action">
+      <option>Anfangsbestand</option>
+      <option>Endbestand</option>
+      <option>Verbrauch</option>
+      <option>Lagerwechsel</option>
+      <option>Lieferung</option>
+      
+    </select>
+
+    <label id= "zu_loc" display = "none">Zu Lagerort</label>
+    <select id="to_location">
+      <option>Kühlzelle</option>
+      <option>Event / Verbrauch</option>
+      <option>Fahrradwerkstatt</option>
+      <option>Probenraum</option>
+      <option>PopUp-Cafe</option>
+      <option>Lieferant</option>
+      <option>Zwischenlager</option>
+      <option>Kühlschrank FW</option>
+      <option>Büro</option>
+      <option>Extern</option>
+    </select>
+    
+    <div id="purpose_date_row" class="hidden" style="display:none;">
+      <div class="row">
+        <div style="flex:2;">
+          <label id="purpose_label" style="margin-top:12px; font-weight:600;">Zweck / Eventname</label>
+          <input id="purpose" type="text" placeholder="z. B. Weihnachtsfeier, Inventur..." style="width:90%;" />
+        </div>
+        <div style="flex:1;">
+          <label style="margin-top:12px; font-weight:600;">Datum des Events</label>
+          <input id="event_date" type="date" style="width:100%;" />
+        </div>
+      </div>
+    </div>
+    
+
+  </div>
+
+  <div id="entry">
+  
+  <label>Kategorie (filtert alle anderen Produkte weg)</label>
+  	<select id="category">
+	  <option value="">Alle</option>
+	</select>
+
+  	
+
+    <label>Produkt suchen</label>
+    
+	    <input id="product_search" type="text" placeholder="Produktname eingeben..." autocomplete="off" />
+	    
+  		
+
+	    <ul id="autocomplete_list"
+	        style="border:1px solid #ccc; max-height:200px; overflow-y:auto; padding:0; margin:0; list-style:none; display:none;">
+	    </ul>
+	    
+	<button class="btn" id="scanBarcode" type="button">Barcode scannen</button>
+	<button class="btn" id="eventModeBtn">Point-of-Sale-modus starten</button>
+	
+	<span class="hint">Für den Point-of-Sale-modus bitte Favoriten setzen.</span>
+	
+	<div id="cameraWrapper" style="display:none;">
+	  <p style="margin:0 0 8px; font-size:0.9em; color:#555;">
+	    Kamera aktiv – bitte Barcode ins Bild halten
+	  </p>
+	  <video id="camera" autoplay playsinline></video>
+	</div>
+
+
+	
+	
+    <label>Produktliste</label>
+    <div style="display:flex; gap:8px; align-items:center;">
+		<select id="product"></select>
+		
+	<button id="favAddBtn" title="Zu Favoriten hinzufügen">★</button>
+
+  </div>
+  
+  <!-- Favoriten-Dropdown --> 
+  	<label>Favoriten</label>
+	<select id="favorites"></select>
+<!-- <button id="favRemoveBtn">Favorit entfernen</button> -->
+
+
+
+  <div class="row">
+    <div>
+      <label>Kisten <span id="perCaseHint" style="font-weight:normal; color:#666;"></span></label>
+      <input id="qty_boxes" type="number" min="0" step="1" value="0" />
+    </div>
+    <div>
+      <label>Flaschen</label>
+      <input id="qty_bottles" type="number" min="0" step="1" value="0" />
+    </div>
+  </div>
+
+<div id="eventView" style="display:none;">…</div>
+
+
+
+
+
+
+  <label>Kommentar (optional)</label>
+  <input id="note" type="text" placeholder="z. B. beschädigt, Sonderlieferung" />
+
+	<div class="row">
+	  <button class="btn" id="add" type="button">Position hinzufügen</button>
+	  <label style="margin-left:1em;">
+	    <input type="checkbox" id="strichlistenMode" title="Wenn aktiviert: Mehrfachauswahl erlaubt und beim Export summiert. Wenn deaktiviert: Doppelte Produkte müssen bestätigt werden.">
+
+	    Strichlistenmodus
+	  </label>
+	</div>
+
+  <h2 id="printTitle" >Zählliste </h2>
+  
+	
+	  <label for="tableSearch">Suche in erfasster Zähltabelle:</label>
+	  <input type="text" id="tableSearch" placeholder="Produkt, Aktion, Zweck …">
+	
+  <div class="table-wrapper">
+  
+  
+  <table id="list">
+    <thead>
+      <tr>
+        <th>Zeit</th>
+        <th>Produkt</th>
+        <th>Kisten</th>
+        <th>Flaschen</th>
+        <th>Gesamt</th>
+        <th>Aktion</th>
+        <th>Zweck / Event</th>
+        <th>Von</th>
+        <th>Zu</th>
+        <th>Fachschaft</th>
+        <th>Kommentar</th>
+        <th>Kontakt</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  </div>
+
+  <div style="margin-top:16px; display:flex; flex-direction:column; gap:8px;">
+  
+	<button class="btn" id="undoBtn" type="button" style="display:none;">
+	Rückgängig (Undo)
+	</button>
+	
+	<span class="hint">Folgende Excel bitte dem Referat für Beschaffungswesen (ehemals Finanzreferent) zukommen lassen!</span>
+	
+    
+    <div class="row">
+    <button class="btn" id="exportCsvBuchhaltungBtn" type="button">
+      📊 CSV-Export für Buchhaltung
+    </button>
+    </div>
+    
+    <span class="hint">Für dauerhafte Speicherung bitte CSV herunterladen.</span>
+	
+    
+    <div class="row">
+    
+    <button class="btn" id="exportCsvBtn" type="button">
+    CSV exportieren
+    </button>
+    
+    <label for="csvImport" class="btn">CSV importieren</label>
+	<input type="file" id="csvImport" accept=".csv" style="display:none">
+
+    </div>
+
+    
+	
+	<span class="hint">Daten werden nur temporär im Browser gespeichert. Beim Schließen des Tabs wird alles gelöscht.</span>
+	
+	<div class="row">
+	<button class="btn" id="saveLocal" type="button">
+      Speichern (lokal)
+    </button>
+
+    <button class="btn" id="loadLocal" type="button">
+      Laden (lokal)
+    </button>
+    
+    <button class="btn" id="deleteLocalBtn">Daten löschen</button>
+    
+    </div>
+	
+	
+    
+	
+	<button class="btn" id="printBtn" type="button">
+	  Drucken
+	</button>
+  
+
+    <button class="btn" id="submit" type="button">
+      Per Mail senden
+    </button>
+
+    
+    
+    
+
+    
+
+    
+    <button class="btn" id="ReadMe" type="button">
+      README öffnen
+    </button>
+    
+    
+    <details id="adminArea" style="display:none;">
+	  <summary><b>Adminbereich</b></summary>
+	  
+	  <input type="file" id="adminExcelUpload" accept=".xlsx" style="display:none;">
+		<button class="btn" id="adminExcelTrigger">📥 In Auswertung schreiben</button>
+		
+	<div class="row">
+    <button class="btn" id="exportJson" type="button">
+      JSON exportieren
+    </button>
+
+    
+      <label for="importJson" class="btn">JSON importieren</label>
+      <input type="file" id="importJson" accept="application/json"
+             style="display:none;" />
+    </div>
+    
+    <button class="btn" id="VerbrauchCalc" type="button">
+      Verbrauch bestimmen
+    </button>
+    <span class="hint">Für diese Funktion bitte die Anfangs- und Endbestand - CSV bereithalten/ vorab erstellen und runterladen.</span>
+		
+		<hr>
+			<h3>Admin: Getränkeliste verwalten</h3>
+			
+			<h4>Neues Produkt hinzufügen</h4>
+			<label>Produktname</label>
+			<input id="newProdName" type="text">
+			
+			<label>Gebindeeinheit (perCase)</label>
+			<input id="newProdCase" type="number" min="1">
+			
+			<label>Kategorie</label>
+			<select id="newProdCategory"></select>
+			
+			<label>Barcode</label>
+			<input id="newProdBarcode" type="text" placeholder="EAN/UPC">
+			
+			
+			<button id="addProductBtn">Produkt hinzufügen</button>
+			
+			<hr>
+			
+			<h4>Kategorien verwalten</h4>
+			<input id="newCategoryName" type="text" placeholder="Neue Kategorie">
+			<button id="addCategoryBtn">Kategorie hinzufügen</button>
+			
+			<ul id="categoryList"></ul>
+			
+			<hr>
+			
+			<h4>Getränkeliste bearbeiten</h4>
+			<textarea id="productEditor" style="width:100%; height:200px;"></textarea><br>
+			<button id="loadProductsBtn">Liste laden</button>
+			<button id="saveProductsBtn">Liste speichern & sortieren</button>
+			
+			<hr>
+			
+			<h4>Import / Export</h4>
+			<button id="exportProductsBtn">Liste exportieren</button>
+			<input id="importProductsInput" type="file" accept=".json">
+
+			
+	    
+	    
+	    <div id="debugOutput" style="border:1px solid #ccc; padding:10px; margin-top:10px; background:#f9f9f9;">
+	  <h4>Debug-Ausgabe</h4>
+	  <pre id="debugText"></pre>
+	</div>
+	
+	</details>
+	    
+    
+    
+    
+    <div id="eventModal" class="modal">
+  <div class="modal-content">
+    <div id="eventTiles"></div>
+    <div id="eventActions">
+  <button id="bookBtn">Buchen</button>
+  <button id="closeEventBtn">Schließen</button>
+</div>
+<div id="eventFeedback"></div>
+
+  </div>
+</div>
+    
+    
+
+  </div>
+  <!-- 
+  In diesem Part können Getränke hinzugefügt werden.
+  Einfach Getränkenamen eintragen, Gebindeeinheit und zu welcher Kategorie es gehört.
+  Die Kategorien sind im html Teil weiter oben beim Label Kategorien definiert.
+  Beim hinzufügen neuer Positionen " , " nicht vergessen!
+  Ist aber im Admin Bereich in der App viel entspannter.
+   -->
+   
+  <script id="productData" type="application/json">
+{
+"categories": [
+	"Ernas Standardsortiment",
+	"Aktuell auf Lager",
+	"AF_Bier",
+	"Bier", 
+	"Softdrinks", 
+	"Sonstiges", 
+	"Spirituosen",
+	"Saft", 
+	"Wein & Sekt"],
+
+"products":[
+  {
+    "name": "Absolut Vodka (0,7L)",
+    "perCase": 6,
+    "category": "Spirituosen",
+    "vk_price": 28.00,
+    "ek_int": 17.12,
+    "ek_ext": 17.12
+  },
+  {
+    "name": "Absolut Vodka (1L)",
+    "perCase": 6,
+    "category": ["Spirituosen", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "7312040017034",
+    "vk_price": 40.00,
+    "ek_int": 17.59,
+    "ek_ext": 17.59
+  },
+  {
+    "name": "Afri Cola (0,33L)",
+    "perCase": 24,
+    "category": ["Softdrinks", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "41030202",
+    "vk_price": 1.50,
+    "ek_int": 0.61,
+    "ek_ext": 0.61
+  },
+  {
+    "name": "Afri Cola (0,5L) PET",
+    "perCase": 12,
+    "category": "Softdrinks",
+    "vk_price": 1.50,
+    "ek_int": 0.96,
+    "ek_ext": 0.96
+  },
+  {
+    "name": "Afri Cola (1L)",
+    "perCase": 12,
+    "category": ["Softdrinks", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "4103020148014",
+    "vk_price": 6.00,
+    "ek_int": 1.22,
+    "ek_ext": 1.22
+  },
+  {
+    "name": "Afri Cola Zero (0,33L)",
+    "perCase": 24,
+    "category": ["Softdrinks", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "41030226",
+    "vk_price": 1.50,
+    "ek_int": 0.61,
+    "ek_ext": 0.61
+  },
+  {
+    "name": "Ananassaft (1L)",
+    "perCase": 1,
+    "category": ["Saft", "Softdrinks", "Aktuell auf Lager"]
+  },
+  {
+    "name": "Aperol Aperitivo Bitter (1L)",
+    "perCase": 6,
+    "category": ["Spirituosen", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "8002230000333",
+    "vk_price": 40.00,
+    "ek_int": 17.09,
+    "ek_ext": 17.09
+  },
+  {
+    "name": "Apfelsaftschorle (0,5L)",
+    "perCase": 20,
+    "category": "Softdrinks"
+  },
+  {
+    "name": "Augusta Winzerschorle sauer (0,5L)",
+    "perCase": 10,
+    "category": "Wein & Sekt",
+    "vk_price": 2.00,
+    "ek_int": 1.01,
+    "ek_ext": 1.01
+  },
+  {
+    "name": "Augusta Winzerschorle süß (0,5L)",
+    "perCase": 10,
+    "category": "Wein & Sekt",
+    "vk_price": 2.00,
+    "ek_int": 1.01,
+    "ek_ext": 1.01
+  },
+  {
+    "name": "Bayreuther Hell Maisel (0,5L)",
+    "perCase": 20,
+    "category": ["Bier", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "40173894",
+    "vk_price": 1.67,
+    "ek_int": 0.83,
+    "ek_ext": 1.06
+  },
+  {
+    "name": "Berliner Luft (0,7L)",
+    "perCase": 6,
+    "category": "Spirituosen",
+    "ek_int": 8.42,
+    "ek_ext": 8.42
+  },
+  {
+    "name": "Berliner Luft (1L)",
+    "perCase": 6,
+    "category": ["Spirituosen", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "4013228325103",
+    "vk_price": 40.00,
+    "ek_int": 11.17,
+    "ek_ext": 11.17
+  },
+  {
+    "name": "Blue Curacao Liqeur - Bols Amsterdam (0,7L)",
+    "perCase": 1,
+    "category": ["Spirituosen", "Aktuell auf Lager"],
+    "barcode": "8716000965226"
+  },
+  {
+    "name": "Bluna (0,5L) PET",
+    "perCase": 12,
+    "category": "Softdrinks",
+    "vk_price": 1.50,
+    "ek_int": 0.96,
+    "ek_ext": 0.96
+  },
+  {
+    "name": "Bluna Orange (0,33L)",
+    "perCase": 24,
+    "category": ["Softdrinks", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "41030233",
+    "vk_price": 1.50,
+    "ek_int": 0.61,
+    "ek_ext": 0.61
+  },
+  {
+    "name": "Burghardt Glühwein Rot (1L)",
+    "perCase": 6,
+    "category": ["Wein & Sekt", "Aktuell auf Lager"],
+    "barcode": "4004154055202"
+  },
+  {
+    "name": "Coca Cola (1L)",
+    "perCase": 12,
+    "category": ["Softdrinks", "Aktuell auf Lager"]
+  },
+  {
+    "name": "Cranberry Saft (1L)",
+    "perCase": 6,
+    "category": ["Softdrinks", "Saft"],
+    "ek_int": 2.60,
+    "ek_ext": 2.60
+  },
+  {
+    "name": "Dietz Weinschorle Winzerspritz Weiss/sauer (0,5L)",
+    "perCase": 10,
+    "category": ["Wein & Sekt", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": ["4000197285071", "4101660300014"],
+    "vk_price": 2.00,
+    "ek_int": 1.11,
+    "ek_ext": 1.11
+  },
+  {
+    "name": "Dietz Weinschorle Winzerspritz Weiss/süß (0,5L)",
+    "perCase": 10,
+    "category": ["Wein & Sekt", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "4000197286078",
+    "vk_price": 2.00,
+    "ek_int": 1.11,
+    "ek_ext": 1.11
+  },
+  {
+    "name": "Energy (1,5L)",
+    "perCase": 6,
+    "category": "Softdrinks",
+    "vk_price": 10.00,
+    "ek_int": 3.35,
+    "ek_ext": 3.35
+  },
+  {
+    "name": "ESSE - Sonnenradler (0,5L)",
+    "perCase": 20,
+    "category": ["Bier", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "4104250012052",
+    "vk_price": 1.67,
+    "ek_int": 0.86,
+    "ek_ext": 0.86
+  },
+  {
+    "name": "Ficken (0,7L)",
+    "perCase": 6,
+    "category": "Spirituosen",
+    "vk_price": 40.00,
+    "ek_int": 12.01,
+    "ek_ext": 12.01
+  },
+  {
+    "name": "Frangelico (0,7L)",
+    "perCase": 6,
+    "category": "Spirituosen",
+    "vk_price": 30.00,
+    "ek_int": 13.91,
+    "ek_ext": 13.91
+  },
+  {
+    "name": "Früchtepunsch (1 L)",
+    "perCase": 6,
+    "category": ["Wein & Sekt", "Sonstiges", "Aktuell auf Lager"],
+    "barcode": "4004154053208",
+    "vk_price": 24.00,
+    "ek_int": 2.24,
+    "ek_ext": 2.24
+  },
+  {
+    "name": "Fürstengold Sekt halbtr. (0,75L)",
+    "perCase": 6,
+    "category": ["Spirituosen", "Wein & Sekt", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "vk_price": 7.00,
+    "ek_int": 5.38,
+    "ek_ext": 5.38
+  },
+  {
+    "name": "Gletscherwasser (0,7L)",
+    "perCase": 6,
+    "category": "Wein & Sekt",
+    "vk_price": 40.00,
+    "ek_int": 13.97,
+    "ek_ext": 13.97
+  },
+  {
+    "name": "Glühwein Omegasorg (10L)",
+    "perCase": 1,
+    "category": "Wein & Sekt",
+    "vk_price": 45.00,
+    "ek_int": 16.66,
+    "ek_ext": 16.66
+  },
+  {
+    "name": "Glühwein Winzer v.WB rot",
+    "perCase": 6,
+    "category": ["Wein & Sekt", "Aktuell auf Lager"],
+    "barcode": "4045768447016",
+    "vk_price": 45.00,
+    "ek_int": 4.08,
+    "ek_ext": 4.08
+  },
+  {
+    "name": "Glühwein Winzer v.WB weiß",
+    "perCase": 6,
+    "category": ["Wein & Sekt", "Aktuell auf Lager"],
+    "barcode": "4011561021577",
+    "vk_price": 45.00,
+    "ek_int": 4.08,
+    "ek_ext": 4.08
+  },
+  {
+    "name": "Gold Ochsen Keller Radler (0,5L)",
+    "perCase": 20,
+    "category": "Bier",
+    "barcode": "4103030121809",
+    "vk_price": 1.67,
+    "ek_int": 0.91,
+    "ek_ext": 0.91
+  },
+  {
+    "name": "Gordons Dry Gin (0,7L)",
+    "perCase": 6,
+    "category": "Spirituosen",
+    "vk_price": 1.67,
+    "ek_int": 14.37,
+    "ek_ext": 14.37
+  },
+  {
+    "name": "Gordons Dry Gin (1L)",
+    "perCase": 6,
+    "category": "Spirituosen",
+    "vk_price": 40.00,
+    "ek_int": 16.72,
+    "ek_ext": 16.72
+  },
+  {
+    "name": "Havanna 3y (0,7L)",
+    "perCase": 6,
+    "category": "Spirituosen",
+    "ek_int": 12.09,
+    "ek_ext": 12.09
+  },
+  {
+    "name": "Havanna 3y (1L)",
+    "perCase": 6,
+    "category": ["Spirituosen", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "8501110089982",
+    "vk_price": 40.00,
+    "ek_int": 22.08,
+    "ek_ext": 22.08
+  },
+  {
+    "name": "Jägermeister (0,7L)",
+    "perCase": 6,
+    "category": "Spirituosen",
+    "barcode": "4067700011015",
+    "ek_int": 12.48,
+    "ek_ext": 12.48
+  },
+  {
+    "name": "Jägermeister (1L)",
+    "perCase": 6,
+    "category": ["Spirituosen", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "4067700011015",
+    "vk_price": 40.00,
+    "ek_int": 16.89,
+    "ek_ext": 16.89
+  },
+  {
+    "name": "Kinderpunsch (10L)",
+    "perCase": 1,
+    "category": "Wein & Sekt",
+    "vk_price": 40.00,
+    "ek_int": 27.48,
+    "ek_ext": 27.48
+  },
+  {
+    "name": "Lillet Blanc (0,75L)",
+    "perCase": 6,
+    "category": ["Spirituosen", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "3163934314173",
+    "vk_price": 30.00,
+    "ek_int": 14.08,
+    "ek_ext": 14.08
+  },
+  {
+    "name": "Limettensaft (1L)",
+    "perCase": 1,
+    "category": ["Softdrinks", "Saft" , "Aktuell auf Lager"],
+    "barcode": "9008700214742",
+    "vk_price": 40.00,
+    "ek_int": 9.60,
+    "ek_ext": 9.60
+  },
+  {
+    "name": "Maisels Weisse *AF (0,5L)",
+    "perCase": 20,
+    "category": "AF_Bier",
+    "barcode": "40173832",
+    "vk_price": 1.67,
+    "ek_int": 0.88,
+    "ek_ext": 1.11
+  },
+  {
+    "name": "Maisels Weisse Original (0,5L)",
+    "perCase": 20,
+    "category": ["Bier", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "40173351",
+    "vk_price": 1.67,
+    "ek_int": 0.88,
+    "ek_ext": 1.11
+  },
+  {
+    "name": "Mangosaft (1L)",
+    "perCase": 1,
+    "category": ["Saft", "Aktuell auf Lager", "Softdrinks"]
+  },
+  {
+    "name": "Maracujasaft (1L)",
+    "perCase": 1,
+    "category": ["Saft", "Aktuell auf Lager", "Softdrinks"]
+  },
+  {
+    "name": "Mineralwasser medium (0,5L)",
+    "perCase": 20,
+    "category": ["Wasser", "Softdrinks", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": ["4005608001158", "42259916"],
+    "vk_price": 2.00,
+    "ek_int": 0.47,
+    "ek_ext": 0.47
+  },
+  {
+    "name": "Mineralwasser naturell (0,5L)",
+    "perCase": 20,
+    "category": ["Wasser", "Softdrinks", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "4005608001059",
+    "vk_price": 2.00,
+    "ek_int": 0.47,
+    "ek_ext": 0.47
+  },
+  {
+    "name": "Monin Holunderblütensirup (1L)",
+    "perCase": 1,
+    "category": ["Sonstiges", "Aktuell auf Lager"],
+    "barcode": "3052911612589",
+    "ek_int": 10.58,
+    "ek_ext": 10.58
+  },
+  {
+    "name": "Monin Granatapfelsirup (1L)",
+    "perCase": 1,
+    "category": "Sonstiges",
+    "barcode": "3052911612800"
+  },
+  {
+    "name": "Monin Mandelsirup (1L)",
+    "perCase": 1,
+    "category": ["Sonstiges", "Aktuell auf Lager"],
+    "barcode": "3052911612671"
+  },
+  {
+    "name": "Mönchshof Natur-Radler (0,0%) (0,5L)",
+    "perCase": 20,
+    "category": "AF_Bier",
+    "barcode": "4082100006508",
+    "vk_price": 1.67,
+    "ek_int": 0.98,
+    "ek_ext": 0.98
+  },
+  {
+    "name": "Orangenliqeur - Le Favori (0,7L)",
+    "perCase": 1,
+    "category": ["Spirituosen", "Aktuell auf Lager"],
+    "barcode": "3263285151103"
+  },
+  {
+    "name": "Orangensaft (1L)",
+    "perCase": 6,
+    "category": ["Softdrinks", "Saft", "Aktuell auf Lager"],
+    "barcode": "4008486007991",
+    "vk_price": 8.00,
+    "ek_int": 3.07,
+    "ek_ext": 3.07
+  },
+  {
+    "name": "Paulaner Spezi (0,5L)",
+    "perCase": 20,
+    "category": ["Softdrinks", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "4066600603405",
+    "vk_price": 2.00,
+    "ek_int": 0.86,
+    "ek_ext": 0.86
+  },
+  {
+    "name": "Perlwein, Soligo Al Lungo Bianco Vino Frizzante (0,75L)",
+    "perCase": 6,
+    "category": ["Wein & Sekt", "Aktuell auf Lager"],
+    "vk_price": null,
+    "ek_int": 5.08,
+    "ek_ext": 5.08
+  },
+  {
+    "name": "Pfirsich Apéritif - Pêche De Bonheur (0,5L)",
+    "perCase": 1,
+    "category": ["Sonstiges", "Aktuell auf Lager"]
+  },
+  {
+    "name": "Pitú (1L)",
+    "perCase": 6,
+    "category":  ["Spirituosen", "Aktuell auf Lager"],
+    "barcode": "4000269003442",
+    "vk_price": 30.00,
+    "ek_int": 12.60,
+    "ek_ext": 12.60
+  },
+  {
+    "name": "Prosecco Doc Treviso, Soligo Vino Frizzante (0,75L)",
+    "perCase": 6,
+    "category": ["Wein & Sekt", "Aktuell auf Lager"],
+    "vk_price": null,
+    "ek_int": 6.60,
+    "ek_ext": 6.60
+  },
+  {
+    "name": "Rosé, Duo des Plages Cinsault (F) (0,75L)",
+    "perCase": 6,
+    "category": ["Wein & Sekt", "Aktuell auf Lager"],
+    "barcode": "3700619311296",
+    "vk_price": 9.00,
+    "ek_int": 6.60,
+    "ek_ext": 6.60
+  },
+  {
+    "name": "Rot, Pleno Tempranillo Navarra tr. (Es) (0,75L)",
+    "perCase": 6,
+    "category": ["Wein & Sekt", "Aktuell auf Lager"],
+    "vk_price": 9.00,
+    "ek_int": 5.35,
+    "ek_ext": 5.35
+  },
+  {
+    "name": "Rothaus Tannenzäpfle Pils *AF (0,33L)",
+    "perCase": 24,
+    "category": "AF_Bier",
+    "barcode": "41051801",
+    "vk_price": 1.67,
+    "ek_int": 0.88,
+    "ek_ext": 0.88
+  },
+  {
+    "name": "Saurer Joster (0,7L)",
+    "perCase": 6,
+    "category": ["Spirituosen", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "4009887911856",
+    "vk_price": 30.00,
+    "ek_int": 7.61,
+    "ek_ext": 7.61
+  },
+  {
+    "name": "Schorle Joh-Holunder (0,5L)",
+    "perCase": 20,
+    "category": ["Softdrinks", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "4104950356005",
+    "vk_price": 2.00,
+    "ek_int": 0.86,
+    "ek_ext": 0.86
+  },
+  {
+    "name": "Schweppes Bitter Lemon (1L)",
+    "perCase": 6,
+    "category": "Softdrinks",
+    "barcode": "4000140011498",
+    "vk_price": 8.00,
+    "ek_int": 1.85,
+    "ek_ext": 1.85
+  },
+  {
+    "name": "Schweppes Ginger Ale (1L)",
+    "perCase": 6,
+    "category": "Softdrinks",
+    "vk_price": 8.00,
+    "ek_int": 1.85,
+    "ek_ext": 1.85
+  },
+  {
+    "name": "Schweppes Tonic Water (1L)",
+    "perCase": 6,
+    "category": ["Softdrinks", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "4000140011528",
+    "vk_price": 8.00,
+    "ek_int": 1.85,
+    "ek_ext": 1.85
+  },
+  {
+    "name": "Schweppes Wild Berry (1L)",
+    "perCase": 6,
+    "category": ["Softdrinks", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "4000140700583",
+    "vk_price": 8.00,
+    "ek_int": 1.85,
+    "ek_ext": 1.85
+  },
+  {
+    "name": "Sprite (1L)",
+    "perCase": 12,
+    "category": "Softdrinks",
+    "barcode": "5449000017932",
+    "vk_price": 8.00,
+    "ek_int": 1.18,
+    "ek_ext": 1.18
+  },
+  {
+    "name": "Stuttgarter Hofbräu Käpsele Helles (0,33L)",
+    "perCase": 20,
+    "category": ["Bier", "Aktuell auf Lager"],
+    "barcode": "4053400207667"
+  },
+  {
+    "name": "Stuttgarter Hofbräu Pilsener (0,5L)",
+    "perCase": 20,
+    "category": ["Bier", "Aktuell auf Lager"],
+    "barcode": "4100460011106"
+  },
+  {
+    "name": "Tequila Gold (0,7L)",
+    "perCase": 6,
+    "category": ["Spirituosen", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "4062400422505",
+    "vk_price": 30.00,
+    "ek_int": 13.60,
+    "ek_ext": 13.60
+  },
+  {
+    "name": "Tequila Silber (0,7L)",
+    "perCase": 6,
+    "category": ["Spirituosen", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": ["4062400716408", "4062400542104"],
+    "vk_price": 30.00,
+    "ek_int": 13.60,
+    "ek_ext": 13.60
+  },
+  {
+    "name": "Weiß, Duo des Mers Sauvignon tr. (F) (0,75L)",
+    "perCase": 6,
+    "category": ["Wein & Sekt", "Aktuell auf Lager"],
+    "barcode": "3700619309804",
+    "vk_price": 9.00,
+    "ek_int": 6.60,
+    "ek_ext": 6.60
+  },
+  {
+    "name": "White Rum Captain Sparrow (0,7L)",
+    "perCase": 1,
+    "category": ["Spirituosen", "Aktuell auf Lager"]
+  },
+  {
+    "name": "Wodka Achmatov (0,7L)",
+    "perCase": 1,
+    "category": ["Spirituosen", "Aktuell auf Lager"]
+  },
+  {
+    "name": "Monin Weißer Rohrzucker (1L)",
+    "perCase": 1,
+    "category": ["Spirituosen", "Sonstiges" ,"Aktuell auf Lager"]
+  },
+  {
+    "name": "Monin Lavendelsirup (1L)",
+    "perCase": 1,
+    "category": ["Spirituosen", "Sonstiges" ,"Aktuell auf Lager"]
+  },
+  {
+    "name": "Bacardi Carta Negra (0,7L)",
+    "perCase": 1,
+    "category": ["Spirituosen" ,"Aktuell auf Lager"]
+  },
+  {
+    "name": "Monin Cocos (1L)",
+    "perCase": 1,
+    "category": ["Spirituosen", "Sonstiges" ,"Aktuell auf Lager"]
+  },
+  {
+    "name": "Zusatz / nicht gelistet (Bitte dann in Kommentar Getränkbezeichnung, Gebindemenge und Kategorie eintragen!)",
+    "perCase": 1,
+    "category": ["Sonstiges", "Aktuell auf Lager", "Ernas Standardsortiment"]
+  }
+]
+}
+
+</script>
+<!-- Kategorien: Bier, Softdrinks, Wein, Sekt, Spirituosen, Sonstiges -->  
+
+<!-- Druckbereich – wird nur beim Drucken sichtbar -->
+<div id="printArea"></div>
+
+<script>
+
+  /* ============================
+     Grund-Setup
+  ============================ */
+  
+//Standardliste definieren
+	const standardFavorites = [
+	  "Bayreuther Hell Maisel (0,5L)",
+	  "Paulaner Spezi (0,5L)",
+	  "Mineralwasser medium (0,5L)",
+	  "Mineralwasser naturell (0,5L)",
+	  "Afri Cola (0,33L)",
+	  "Afri Cola Zero (0,33L)",
+	  "Dietz Weinschorle Winzerspritz Weiss/sauer (0,5L)",
+	  "Dietz Weinschorle Winzerspritz Weiss/süß (0,5L)",
+	  "ESSE - Sonnenradler (0,5L)",
+	  "Schorle Joh-Holunder (0,5L)",
+	  "Maisels Weisse Original (0,5L)",
+	  "Maisels Weisse *AF (0,5L)",
+	  "Bluna Orange (0,33L)"
+	];
+  
+
+  const params = new URLSearchParams(location.search);
+  const fromLocationSel = document.getElementById('from_location');
+  const actionSel = document.getElementById('action');
+  const toLocationSel = document.getElementById('to_location');
+  
+  const vonLocLabel = document.getElementById("von_loc"); 
+  const zuLocLabel = document.getElementById("zu_loc");
+
+  if (params.get('to_location')) toLocationSel.value = params.get('to_location');
+  if (params.get('action')) actionSel.value = params.get('action');
+  if (params.get('from_location')) fromLocationSel.value = params.get('from_location');
+
+  const tbody = document.querySelector('#list tbody');
+
+  const addBtn = document.getElementById('add');
+  const submitBtn = document.getElementById('submit');
+  const exportExcelBtn = document.getElementById('exportExcel');
+  const saveLocalBtn = document.getElementById('saveLocal');
+  const loadLocalBtn = document.getElementById('loadLocal');
+  const exportJsonBtn = document.getElementById('exportJson');
+  const importJsonInput = document.getElementById('importJson');
+
+  const fachschaftSel = document.getElementById('fachschaft');
+  const extFields = document.getElementById('external_fields');
+
+  const matNrInput = document.getElementById('MatNr');
+  const studmailInput = document.getElementById('studmail');
+
+  const data = JSON.parse(document.getElementById("productData").textContent);
+  const productSearch = document.getElementById('product_search');
+  const categorySelect = document.getElementById('category');
+  const productSelect = document.getElementById('product');
+  const autoList = document.getElementById('autocomplete_list');
+  
+
+  let currentIndex = -1;
+  
+  /* ============================
+  Import der Getränkeliste (offline, ohne fetch)
+============================ */
+
+function normalizeKey(str) {
+	 return str.replace(/\s+/g, "").toLowerCase();
+	}
+	
+	let productList = [];
+	let bottlesPerCase = {};
+	let productCategories = {};
+	
+	function loadProductsIntoApp(products) {
+
+		  // Produktliste
+		  productList = products.map(p => p.name);
+
+		  // perCase Mapping
+		  bottlesPerCase = {};
+		  products.forEach(p => {
+		    bottlesPerCase[normalizeKey(p.name)] = p.perCase;
+		  });
+
+		  // Kategorien
+		  productCategories = {};
+		  products.forEach(p => {
+		    productCategories[p.name] = p.category;
+		  });
+
+		  // Preise
+		  window.productVkPrice = {};
+		  window.productEkInt   = {};
+		  window.productEkExt   = {};
+		  products.forEach(p => {
+		    window.productVkPrice[p.name] = p.vk_price  ?? null;
+		    window.productEkInt[p.name]   = p.ek_int    ?? null;
+		    window.productEkExt[p.name]   = p.ek_ext    ?? null;
+		  });
+
+		  // 1. Kategorie-Filter aktualisieren
+		  updateCategoryFilter(products);
+
+		  // 2. Produkt-Dropdown füllen (erst jetzt!)
+		  productSelect.innerHTML = products
+		    .map(p => `<option>${p.name}</option>`)
+		    .join("");
+
+		  // 3. Jetzt erst filtern
+		  filterProducts();
+
+		  console.log("Produkte & Kategorien initialisiert");
+		}
+
+
+	function updateCategoryFilter(products) {
+		  // Alle Kategorien aus allen Produkten sammeln
+		  const categories = [...new Set(
+		    products.flatMap(p => Array.isArray(p.category) ? p.category : [p.category])
+		  )].sort();
+
+		  // setzt den Standardwert in den Kategorien fest
+		  categorySelect.innerHTML = `<option value="">Alle</option>`;
+
+		  categories.forEach(cat => {
+		    const opt = document.createElement("option");
+		    opt.value = cat;
+		    opt.textContent = cat;
+		    categorySelect.appendChild(opt);
+		    categorySelect.value = "Aktuell auf Lager";
+
+		  });
+		}
+
+
+
+
+	// Favoriten laden
+	function loadFavorites() {
+	  let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+	  favorites.sort((a, b) => a.localeCompare(b));
+
+	  const favSelect = document.getElementById("favorites");
+	  favSelect.innerHTML = "";
+
+	  const placeholder = document.createElement("option");
+	  placeholder.textContent = "Favorit auswählen…";
+	  placeholder.disabled = true;
+	  placeholder.selected = true;
+	  favSelect.appendChild(placeholder);
+
+	  favorites.forEach(prod => {
+	    const opt = document.createElement("option");
+	    opt.value = prod;
+	    opt.textContent = prod;
+	    favSelect.appendChild(opt);
+	  });
+
+	  updateFavButton();
+	}
+
+	// Stern-Button aktualisieren
+	function updateFavButton() {
+	  const favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+	  const currentProduct = productSelect.value;
+	  const favBtn = document.getElementById("favAddBtn");
+
+	  if (favorites.includes(currentProduct)) {
+	    favBtn.classList.add("favorited");   // z.B. gelb
+	    favBtn.classList.remove("not-favorited");
+	  } else {
+	    favBtn.classList.remove("favorited");
+	    favBtn.classList.add("not-favorited"); // z.B. grau
+	  }
+	}
+
+	// Produkte filtern
+	function filterProducts() {
+	  const cat = categorySelect.value;
+	  const currentSelection = productSelect.value; // merken
+	  productSelect.innerHTML = "";
+
+	  let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+
+	  productList.forEach(prod => {
+	    let catOfProd = productCategories[prod] || "Sonstiges";
+	    const matches =
+	      !cat ||
+	      (Array.isArray(catOfProd) ? catOfProd.includes(cat) : catOfProd === cat);
+
+	    if (matches) {
+	      const opt = document.createElement("option");
+	      opt.value = prod;
+	      opt.textContent = favorites.includes(prod) ? "★ " + prod : prod;
+	      productSelect.appendChild(opt);
+	    }
+	  });
+
+	  // Auswahl wiederherstellen, falls möglich
+	  if (currentSelection && [...productSelect.options].some(o => o.value === currentSelection)) {
+	    productSelect.value = currentSelection;
+	  } else if (productSelect.options.length > 0) {
+	    productSelect.value = productSelect.options[0].value;
+	  }
+
+	  updateFavButton();
+	}
+
+	// Kategorie-Filter: bei Änderung Dropdown neu befüllen
+	categorySelect.addEventListener("change", filterProducts);
+
+	// Favoriten-Dropdown Event
+	document.getElementById("favorites").addEventListener("change", (e) => {
+	  const selectedFav = e.target.value;
+	  if (selectedFav && selectedFav !== "Favorit auswählen…") {
+	    productSelect.value = selectedFav;
+	    filterProducts();
+	    productSelect.value = selectedFav; // Wert nach Neuaufbau wieder setzen
+	    updateFavButton();
+	  }
+	});
+
+	// Stern toggelt Favorit
+	document.getElementById("favAddBtn").onclick = () => {
+	  const product = productSelect.value;
+	  let favorites = JSON.parse(localStorage.getItem("favorites") || "[]");
+
+	  if (favorites.includes(product)) {
+	    favorites = favorites.filter(p => p !== product);
+	  } else {
+	    favorites.push(product);
+	  }
+
+	  localStorage.setItem("favorites", JSON.stringify(favorites));
+	  loadFavorites();
+	  filterProducts();
+	  productSelect.value = product; // Auswahl beibehalten
+	  updateFavButton();
+	};
+
+
+
+	productSelect.addEventListener("change", () => {
+		  updateFavButton();
+		  updatePerCaseHint();
+		  handleSpiritousenFocus();
+		});
+
+	function updatePerCaseHint() {
+	  const prod = productSelect.value;
+	  const pc = bottlesPerCase[normalizeKey(prod)];
+	  const hint = document.getElementById("perCaseHint");
+	  if (hint) {
+	    hint.textContent = pc && pc > 1 ? `(${pc} Fl./Kiste)` : "";
+	  }
+	}
+
+	function handleSpiritousenFocus() {
+	  const prod = productSelect.value;
+	  const cat = productCategories[prod];
+	  const catStr = Array.isArray(cat) ? cat[0] : (cat || "");
+	  if (catStr === "Spirituosen") {
+	    document.getElementById("qty_bottles").focus();
+	  } else {
+	    document.getElementById("qty_boxes").focus();
+	  }
+	}
+
+
+
+
+  /* ============================
+     Studmail automatisch erzeugen
+  ============================ */
+
+  matNrInput.addEventListener('input', () => {
+    const mat = matNrInput.value.trim();
+    if (/^[0-9]+$/.test(mat)) {
+      studmailInput.value = `${mat}@studmail.htw-aalen.de`;
+    } else {
+      studmailInput.value = "@studmail.htw-aalen.de";
+    }
+  });
+
+
+  /* ============================
+     Extern-Felder ein/ausblenden
+  ============================ */
+
+  function updateExternalFields() {
+    const fach = fachschaftSel.value.trim();
+    const from = fromLocationSel.value.trim();
+    const to = toLocationSel.value.trim();
+
+    if (fach === "Extern" || from === "Extern" || to === "Extern") {
+      extFields.style.display = "block";
+    } else {
+      extFields.style.display = "none";
+    }
+  }
+
+  fachschaftSel.onchange = updateExternalFields;
+  fromLocationSel.onchange = updateExternalFields;
+  toLocationSel.onchange = updateExternalFields;
+  
+  function updatePurposeField() {
+	  const action = actionSel.value.trim();
+	  const to = toLocationSel.value.trim();
+
+	  const show = (
+	    action === "Verbrauch" ||
+	    action === "Anfangsbestand" ||
+	    action === "Endbestand" ||
+	    to === "Event/ Verbrauch"
+	  );
+
+	  const row   = document.getElementById("purpose_date_row");
+	  const input = document.getElementById("purpose");
+
+	  if (show) {
+	    row.style.display = "block";
+	    row.classList.remove("hidden");
+	  } else {
+	    row.style.display = "none";
+	    row.classList.add("hidden");
+	    input.value = "";
+	    const ed = document.getElementById("event_date");
+	    if (ed) ed.value = "";
+	  }
+	}
+
+
+	// Events
+	actionSel.onchange = updatePurposeField;
+	toLocationSel.onchange = updatePurposeField;
+
+	// Initialisierung
+	document.addEventListener("DOMContentLoaded", updatePurposeField);
+
+	/* ============================
+    Anfangs- und Endbestand sichere Einstellungen
+ ============================ */
+	
+	 const fromLocation = document.getElementById("from_location");
+	 const toLocation = document.getElementById("to_location");
+	 const action = document.getElementById("action");
+	 const title = document.getElementById("Titel");
+	 
+	  
+	 
+	  
+	
+	 action.addEventListener("change", () => {
+	   if (action.value === "Anfangsbestand" || action.value === "Endbestand") {
+	     // Zu Lagerort = Von Lagerort, gesperrt
+	     toLocation.value = fromLocation.value;
+	     toLocation.disabled = true;
+	     title.textContent = "Warenbestand – " + action.value;
+	     
+	   } else if (action.value === "Verbrauch") {
+	     // Zu Lagerort = Event / Verbrauch, aber editierbar
+	     toLocation.disabled = false;
+	     // nur setzen wenn der aktuelle Wert nicht passt
+	     const verbrauchOpts = Array.from(toLocation.options).filter(o=>o.style.display!=="none").map(o=>o.value);
+	     if (!verbrauchOpts.includes(toLocation.value)) toLocation.value = verbrauchOpts[0] || "";
+	     title.textContent = "Warenbestand – " + action.value;
+	     
+	   } else if (action.value === "Lagerwechsel" || action.value === "Lieferung") {
+		     toLocation.disabled = false;
+		     title.textContent = "Warenbestand – " + action.value;
+		     
+	   } else {
+	     // Normalfall: frei wählbar
+	     toLocation.disabled = false;
+	   }
+	   updatePurposeField();
+	 });
+	
+	 // Falls Von Lagerort geändert wird, bei Anfangs/Endbestand nachziehen
+	 fromLocation.addEventListener("change", () => {
+	   if (action.value === "Anfangsbestand" || action.value === "Endbestand") {
+	     toLocation.value = fromLocation.value;
+	   }
+	 });
+
+
+	 // Mit Tabs zur einfacheren Einstellung
+	 
+	 const modeTabs = document.querySelectorAll("#modeTabs .tab");
+	
+	modeTabs.forEach(tab => {
+	  tab.addEventListener("click", () => {
+	    // aktive Klasse setzen
+	    modeTabs.forEach(t => t.classList.remove("active"));
+	    tab.classList.add("active");
+	
+	    const mode = tab.dataset.mode;
+	
+	    if (mode === "ernas") {
+	      filterOptions(fromLocation, ["Kühlzelle"]);
+	      filterOptions(toLocation, ["Event / Verbrauch"]);
+	      filterOptions(action, ["Verbrauch", "Anfangsbestand", "Endbestand"]);
+	      adminArea.style.display = "none";
+	      fromLocation.style.display = "none";
+	      toLocation.style.display = "none";
+	      vonLocLabel.style.display = "none"; 
+	      zuLocLabel.style.display = "none";
+	    } else if (mode === "lieferant") {
+	    	  filterOptions(fromLocation, ["Anlieferung"]);
+		      filterOptions(toLocation, ["Zwischenlager", "Probenraum", "Fahrradwerkstatt", "Kühlzelle"]);
+		      filterOptions(action, ["Lieferung"]);
+		      adminArea.style.display = "none";
+		      fromLocation.style.display = "block";
+		      toLocation.style.display = "block";
+		      vonLocLabel.style.display = "block"; 
+		      zuLocLabel.style.display = "block";
+	      // evtl. kleine Einschränkungen
+	    } else if (mode === "lagerwechsel") {
+	      resetOptions(fromLocation);
+	      filterOptions(fromLocation, ["Kühlzelle", "Fahrradwerkstatt", "Probenraum", "Zwischenlager", "Kühlschrank FW", "Büro", "Extern"]);
+	      resetOptions(toLocation);
+	      filterOptions(toLocation, ["Kühlzelle", "Fahrradwerkstatt", "Probenraum", "Anlieferung", "Zwischenlager", "Kühlschrank FW", "Büro", "Extern"]);
+	      filterOptions(action, ["Lagerwechsel"]);
+	      adminArea.style.display = "none";
+	      fromLocation.style.display = "block";
+	      toLocation.style.display = "block";
+	      vonLocLabel.style.display = "block"; 
+	      zuLocLabel.style.display = "block";
+	      // volle Auswahl
+	    }else if (mode === "admin") {
+		      resetOptions(fromLocation);
+		      resetOptions(toLocation);
+		      resetOptions(action);
+		      adminArea.style.display = "block";
+		      fromLocation.style.display = "block";
+		      toLocation.style.display = "block";
+		      vonLocLabel.style.display = "block"; 
+		      zuLocLabel.style.display = "block";
+		      // volle Auswahl
+		    }
+	 // **immer am Ende prüfen** 
+	 updatePurposeField();
+	  });
+	});
+	
+	 
+	
+	function filterOptions(select, allowed) {
+		  [...select.options].forEach(opt => {
+		    opt.style.display = allowed.includes(opt.text) ? "block" : "none";
+		  });
+
+		  // Falls aktueller Wert nicht mehr erlaubt ist → zurücksetzen
+		  if (!allowed.includes(select.value)) {
+		    select.value = allowed[0] || "";
+		  }
+		}
+
+	
+	function resetOptions(select) {
+	  [...select.options].forEach(opt => opt.style.display = "block");
+	}
+	
+	
+	//Damit beim Start und Klick auch alles gefiltert wird
+	
+	function applyMode(mode) {
+	  // Immer zuerst disabled zurücksetzen
+	  toLocation.disabled = false;
+	  if (mode === "ernas") {
+	    filterOptions(fromLocation, ["Kühlzelle"]);
+	    filterOptions(toLocation, ["Kühlzelle", "Event / Verbrauch"]);
+	    filterOptions(action, ["Verbrauch", "Anfangsbestand", "Endbestand"]);
+	    adminArea.style.display = "none";
+	      fromLocation.style.display = "none";
+	      toLocation.style.display = "none";
+	      vonLocLabel.style.display = "none"; 
+	      zuLocLabel.style.display = "none";
+	      toLocation.value = "Event / Verbrauch";
+	      fromLocation.value = "Kühlzelle";
+	      action.value = "Verbrauch";
+	      title.textContent = "Warenbestand – " + action.value;
+	  } else if (mode === "lieferant") {
+	    filterOptions(fromLocation, ["Anlieferung"]);
+	    filterOptions(toLocation, ["Zwischenlager", "Probenraum", "Fahrradwerkstatt", "Kühlzelle"]);
+	    filterOptions(action, ["Lieferung"]);
+	    adminArea.style.display = "block";
+	      fromLocation.style.display = "block";
+	      toLocation.style.display = "block";
+	      vonLocLabel.style.display = "block"; 
+	      zuLocLabel.style.display = "block";
+	      title.textContent = "Warenbestand – " + action.value;
+	  } else if (mode === "lagerwechsel") {
+	    resetOptions(fromLocation);
+	    filterOptions(fromLocation, ["Kühlzelle", "Fahrradwerkstatt", "Probenraum", "Zwischenlager", "Kühlschrank FW", "Büro", "Extern"]);
+	    filterOptions(toLocation, ["Kühlzelle", "Fahrradwerkstatt", "Probenraum", "Anlieferung", "Zwischenlager", "Kühlschrank FW", "Büro", "Extern"]);
+	    filterOptions(action, ["Lagerwechsel"]);
+	    adminArea.style.display = "block";
+	      fromLocation.style.display = "block";
+	      toLocation.style.display = "block";
+	      vonLocLabel.style.display = "block"; 
+	      zuLocLabel.style.display = "block";
+	      title.textContent = "Warenbestand – " + action.value;
+	  } else if (mode === "admin") {
+	    resetOptions(fromLocation);
+	    resetOptions(toLocation);
+	    resetOptions(action);
+	    adminArea.style.display = "block";
+	      fromLocation.style.display = "block";
+	      toLocation.style.display = "block";
+	      vonLocLabel.style.display = "block"; 
+	      zuLocLabel.style.display = "block";
+	      title.textContent = "Warenbestand – " + action.value;
+	  }
+	}
+	
+	modeTabs.forEach(tab => {
+	  tab.addEventListener("click", () => {
+	    modeTabs.forEach(t => t.classList.remove("active"));
+	    tab.classList.add("active");
+	    applyMode(tab.dataset.mode);
+	  });
+	});
+	
+	// Initialisierung beim Laden
+	document.addEventListener("DOMContentLoaded", () => {
+	  const activeTab = document.querySelector("#modeTabs .tab.active");
+	  if (activeTab) applyMode(activeTab.dataset.mode);
+	});
+
+		 
+	 
+
+
+  /* ============================
+     Produkt-AutoComplete Deluxe
+  ============================ */
+
+  function highlightMatch(text, query) {
+    const idx = text.toLowerCase().indexOf(query.toLowerCase());
+    if (idx === -1) return text;
+    return (
+      text.substring(0, idx) +
+      "<b>" + text.substring(idx, idx + query.length) + "</b>" +
+      text.substring(idx + query.length)
+    );
+  }
+
+  function updateAutocomplete() {
+    const query = productSearch.value.toLowerCase();
+    const options = Array.from(productSelect.options);
+
+    autoList.innerHTML = "";
+    currentIndex = -1;
+
+    if (!query) {
+      autoList.style.display = "none";
+      return;
+    }
+
+    let matches = options.filter(opt =>
+      opt.textContent.toLowerCase().includes(query)
+    );
+
+    // Sortierung: Treffer am Anfang zuerst
+    matches.sort((a, b) => {
+      const aIdx = a.textContent.toLowerCase().indexOf(query);
+      const bIdx = b.textContent.toLowerCase().indexOf(query);
+      return aIdx - bIdx;
+    });
+
+    if (matches.length === 0) {
+    	  const li = document.createElement("li");
+    	  li.textContent = "Zusatz / nicht gelistet (Bitte dann in Kommentar Getränkbezeichnung, Gebindemenge und Kategorie eintragen!)";
+    	  //li.style.fontStyle = "italic";
+
+    	  li.onclick = () => {
+    		  productSearch.value = "Zusatz / nicht gelistet (Bitte dann in Kommentar Getränkbezeichnung, Gebindemenge und Kategorie eintragen!)";
+    	    productSelect.value = "Zusatz / nicht gelistet (Bitte dann in Kommentar Getränkbezeichnung, Gebindemenge und Kategorie eintragen!)";
+    	    
+    	    //autoList.style.display = "none";
+    	  };
+
+    	  autoList.appendChild(li);
+    	  autoList.style.display = "block";
+    	  return;
+    	}
+
+
+    matches.forEach((opt, index) => {
+      const li = document.createElement('li');
+      li.innerHTML = highlightMatch(opt.textContent, query);
+
+      li.onclick = () => {
+    	  productSelect.value = opt.value;
+    	  productSearch.value = opt.textContent;
+    	  autoList.style.display = "none";
+    	  updatePerCaseHint();
+    	  handleSpiritousenFocus();
+    	};
+
+
+      autoList.appendChild(li);
+    });
+
+    autoList.style.display = "block";
+  }
+
+  productSearch.addEventListener('input', updateAutocomplete);
+  productSearch.addEventListener('focus', updateAutocomplete);
+
+  productSearch.addEventListener('keydown', (e) => {
+    const items = autoList.querySelectorAll('li');
+    if (items.length === 0) return;
+
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      currentIndex = (currentIndex + 1) % items.length;
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      currentIndex = (currentIndex - 1 + items.length) % items.length;
+    } else if (e.key === "Enter") {
+      e.preventDefault();
+      if (currentIndex >= 0) items[currentIndex].click();
+      return;
+    } else {
+      return;
+    }
+
+    items.forEach((item, i) => {
+      item.classList.toggle('highlight', i === currentIndex);
+    });
+  });
+
+  productSelect.addEventListener('change', () => {
+    productSearch.value = "";
+    autoList.style.display = "none";
+  });
+
+
+  
+  /*==========================
+	  
+  Mecces-Modus
+  ===========================*/
+
+  
+  const eventModal = document.getElementById("eventModal");
+  const eventTiles = document.getElementById("eventTiles");
+  const bookBtn = document.getElementById("bookBtn");
+  const closeBtn = document.getElementById("closeEventBtn");
+  meccesMode = false;
+  let wasSummed = false;
+
+  let productCounts = {}; // { Produktname: Anzahl }
+
+  document.getElementById("eventModeBtn").onclick = () => {
+	  meccesMode = true;
+    eventModal.style.display = "block";
+    buildEventTiles();
+    filterOptions(toLocation, ["Event / Verbrauch"]);
+    filterOptions(action, ["Verbrauch"]);
+    
+  };
+
+  closeBtn.onclick = () => {
+	  // Prüfen ob noch offene Positionen existieren
+	  const hasOpenPositions = Object.values(productCounts).some(count => count > 0);
+	  meccesMode = false;
+	  
+	  filterOptions(toLocation, ["Kühlzelle", "Event / Verbrauch"]);
+	  filterOptions(action, ["Verbrauch", "Anfangsbestand", "Endbestand"]);
+
+	  if (hasOpenPositions) {
+	    const confirmClose = confirm("Es sind noch nicht gebuchte Positionen vorhanden. Wirklich schließen?");
+	    if (!confirmClose) return; // Abbrechen
+	  }
+
+	  eventModal.style.display = "none";
+	};
+
+
+	function getCategoryIcon(category) {
+		  const cat = Array.isArray(category) ? category[0] : category;
+		  switch(cat) {
+		    case "Bier": return "🍺";
+		    case "Wein & Sekt": return "🍷";
+		    case "Wasser": return "💧";
+		    case "Softdrinks": return "🥤";
+		    default: return "🍹";
+		  }
+		}
+
+
+	function buildEventTiles() {
+	  eventTiles.innerHTML = "";
+	  productCounts = {};
+	  const favSelect = document.getElementById("favorites");
+
+	  for (let i=0; i<favSelect.options.length; i++) {
+	    const drink = favSelect.options[i].text;
+	    if (!drink || drink.toLowerCase().includes("favorit")) continue;
+
+	    productCounts[drink] = 0;
+	    const category = productCategories[drink] || "Sonstiges";
+	    const icon = getCategoryIcon(category);
+
+	    const tile = document.createElement("div");
+	    tile.className = "tile";
+	    const vk = window.productVkPrice?.[drink];
+	    const priceTag = vk != null ? `<div class="tile-price">${vk.toFixed(2)} €</div>` : "";
+	    tile.innerHTML = `
+	      <div class="icon">${icon}</div>
+	      <h3>${drink}</h3>
+	      ${priceTag}
+	      <div class="controls">
+	        <span class="count">0</span>
+	        <button class="minus" style="display:none;">−</button>
+	      </div>`;
+	    eventTiles.appendChild(tile);
+
+	    const countSpan = tile.querySelector(".count");
+	    const minusBtn = tile.querySelector(".minus");
+
+	    tile.onclick = () => {
+	      productCounts[drink]++;
+	      countSpan.textContent = productCounts[drink];
+	      if (productCounts[drink] > 0) {
+	        minusBtn.style.display = "inline-block";
+	      }
+	      tile.classList.add("selected");
+	    };
+
+	    minusBtn.onclick = (e) => {
+	      e.stopPropagation();
+	      if (productCounts[drink] > 0) {
+	        productCounts[drink]--;
+	        countSpan.textContent = productCounts[drink];
+	      }
+	      if (productCounts[drink] === 0) {
+	        minusBtn.style.display = "none";
+	        tile.classList.remove("selected");
+	      }
+	    };
+	  }
+	}
+
+	function showEventFeedback(message, type="success") {
+		  const fb = document.getElementById("eventFeedback");
+		  fb.textContent = message;
+		  fb.className = type; // success oder error
+		  fb.style.display = "block";
+		  setTimeout(() => fb.style.display = "none", 2500); // nach 2,5s ausblenden
+		}
+
+	bookBtn.onclick = () => {
+		  const purpose = document.getElementById('purpose').value.trim();
+		  if (!purpose) {
+		    showEventFeedback("Bitte Zweck/Eventname ausfüllen!", "error");
+		    return;
+		  }
+		  const fachschaft = fachschaftSel.value.trim();
+		  if (!fachschaft) {
+		    showEventFeedback("Bitte Fachschaft auswählen!", "error");
+		    return;
+		  }
+
+		  let bookedSomething = false;
+		  Object.entries(productCounts).forEach(([prod, count]) => {
+		    if (count > 0) {
+		      const perCase = bottlesPerCase[normalizeKey(prod)] || 1;
+
+		      // nur sinnvoll, wenn perCase > 1
+		      let boxes = 0;
+		      let bottles = count;
+		      if (perCase > 1) {
+		        boxes = Math.floor(count / perCase);
+		        bottles = count % perCase;
+		      }
+
+		      const totalBottles = count; // bleibt immer die Gesamtzahl
+		      const timestamp = new Date().toLocaleString("de-DE");
+		      const entry = {
+		        timestamp,
+		        product: prod,
+		        boxes,
+		        bottles,
+		        total: totalBottles,
+		        action: "Verbrauch",
+		        purpose,
+		        from: fromLocationSel.value,
+		        to: "Event / Verbrauch",
+		        fachschaft,
+		        note: "",
+		        contact: ""
+		      };
+		      appendRowFromEntry(entry);
+		      bookedSomething = true;
+		    }
+		  });
+
+		  if (bookedSomething) {
+		    buildEventTiles();
+		    if (wasSummed) {
+		      showEventFeedback("✅ Buchung erfolgreich und zusammengefasst!", "success");
+		    } else {
+		      showEventFeedback("✅ Buchung erfolgreich!", "success");
+		    }
+		    wasSummed = false; // zurücksetzen
+		  } else {
+		    showEventFeedback("Keine Produkte ausgewählt!", "error");
+		  }
+		};
+
+
+			
+			
+
+  /* ============================
+     Tabellenzeile hinzufügen
+  ============================ */
+
+  function appendRowFromEntry(e) {
+	  const strichlistenMode = document.getElementById("strichlistenMode").checked;
+
+	  const hasNote = e.note && e.note.trim() !== "";
+
+	  let existingRow = null;
+
+	  // Nur OHNE Kommentar darf zusammengefasst werden
+	  if (!hasNote) {
+	    existingRow = Array.from(tbody.querySelectorAll("tr")).find(tr =>
+	      tr.cells[1].textContent.trim() === e.product &&
+	      tr.cells[5].textContent.trim() === e.action &&
+	      tr.cells[7].textContent.trim() === e.from &&
+	      tr.cells[8].textContent.trim() === e.to &&
+	      tr.cells[6].textContent.trim() === e.purpose &&
+	      tr.cells[9].textContent.trim() === e.fachschaft &&
+	      tr.cells[10].textContent.trim() === ""          // Kommentarspalte leer
+	    );
+	  }
+
+	  if (existingRow) {
+	    if (!(strichlistenMode || meccesMode)) {
+	      const confirmAdd = confirm("Dieses Produkt ist in diesem Event/Maßnahme bereits erfasst. Soll es wirklich zusammengezählt werden?");
+	      if (!confirmAdd) return;
+	    }
+
+	    // Mengen hochzählen
+	    existingRow.cells[2].textContent = parseInt(existingRow.cells[2].textContent, 10) + e.boxes;
+	    existingRow.cells[3].textContent = parseInt(existingRow.cells[3].textContent, 10) + e.bottles;
+	    existingRow.cells[4].textContent = parseInt(existingRow.cells[4].textContent, 10) + e.total;
+
+	    wasSummed = true;
+
+	    // WICHTIG: KEINE Notizen anhängen – diese Zeile ist explizit „ohne Kommentar“
+	  } else {
+	    // Neue Zeile wie bisher
+	    const tr = document.createElement('tr');
+
+	    [
+	      e.timestamp,
+	      e.product,
+	      e.boxes,
+	      e.bottles,
+	      e.total,
+	      e.action,
+	      e.purpose,
+	      e.from,
+	      e.to,
+	      e.fachschaft,
+	      e.note,
+	      e.contact
+	    ].forEach(text => {
+	      const td = document.createElement('td');
+	      td.textContent = text;
+	      tr.appendChild(td);
+	    });
+
+	    const tdDel = document.createElement('td');
+	    const del = document.createElement('button');
+	    tr.classList.add("action-" + e.action.toLowerCase());
+
+	    del.textContent = 'Entfernen';
+	    del.onclick = () => deleteRowWithUndo(e, tr);
+	    tdDel.appendChild(del);
+	    tr.appendChild(tdDel);
+
+	    tbody.appendChild(tr);
+	  }
+	}
+
+
+
+  /*=====================================
+  Filterlogik für die Tabellenansicht
+  ==================================*/
+  // Suche und alles andere ausblenden
+  
+  const searchInput = document.getElementById("tableSearch");
+
+  searchInput.addEventListener("input", () => {
+    const query = searchInput.value.toLowerCase();
+    const rows = document.querySelectorAll("#list tbody tr");
+
+    rows.forEach(row => {
+      const text = row.innerText.toLowerCase();
+      row.style.display = text.includes(query) ? "" : "none";
+    });
+  });
+
+  //Sortierung der Spalte
+  
+  document.querySelectorAll("#list th").forEach((th, idx) => {
+	  th.style.cursor = "pointer"; // optisch erkennbar
+	  th.title = "Klicken zum Sortieren"; // Hover-Hinweis
+
+	  th.addEventListener("click", () => {
+	    const tbody = document.querySelector("#list tbody");
+	    const rows = Array.from(tbody.querySelectorAll("tr"));
+
+	    const asc = th.classList.toggle("asc"); // Richtung merken
+	    rows.sort((a, b) => {
+	      const aText = a.cells[idx].textContent.trim().toLowerCase();
+	      const bText = b.cells[idx].textContent.trim().toLowerCase();
+	      return asc ? aText.localeCompare(bText) : bText.localeCompare(aText);
+	    });
+
+	    tbody.innerHTML = "";
+	    rows.forEach(r => tbody.appendChild(r));
+	  });
+	});
+
+  
+  
+  /* ============================
+     Position hinzufügen (mit Validierung)
+  ============================ */
+
+  addBtn.onclick = () => {
+  let valid = true;
+  let missingFields = [];
+
+  function markError(el, condition, fieldName) {
+    if (condition) {
+      el.classList.add("error");
+      valid = false;
+      if (fieldName) missingFields.push(fieldName);
+    } else {
+      el.classList.remove("error");
+    }
+  }
+
+  // Pflichtfelder prüfen
+  const name = document.getElementById('name').value.trim();
+  const matNr = matNrInput.value.trim();
+  //markError(document.getElementById('name'), !name, "Name");
+  //markError(matNrInput, !matNr || !/^[0-9]+$/.test(matNr), "Matrikelnummer");
+
+  const product = productSelect.value;
+  let boxes = parseInt(document.getElementById('qty_boxes').value || '0', 10);
+  let bottles = parseInt(document.getElementById('qty_bottles').value || '0', 10);
+  const perCase = bottlesPerCase[normalizeKey(product)] || 1;
+  const totalBottles = boxes * perCase + bottles;
+  
+	// Automatische Umrechnung nur sinnvoll, wenn perCase > 1
+	if (perCase > 1) {
+	  boxes += Math.floor(bottles / perCase); // zusätzliche Kisten
+	  bottles = bottles % perCase;            // Restflaschen
+	}
+
+  
+  
+  markError(document.getElementById('qty_boxes'), totalBottles <= 0, "Menge");
+
+  // Extern-Felder
+  const fachTrim = fachschaftSel.value.trim();
+  const fromTrim = fromLocationSel.value.trim();
+  const toTrim = toLocationSel.value.trim();
+  if (fachTrim === "Extern" || fromTrim === "Extern" || toTrim === "Extern") {
+    const addrStreet = document.getElementById('ext_street').value.trim();
+    const addrNo = document.getElementById('ext_number').value.trim();
+    const addrZip = document.getElementById('ext_zip').value.trim();
+    const addrCity = document.getElementById('ext_city').value.trim();
+    const extContact = document.getElementById('ext_contact').value.trim();
+
+    markError(document.getElementById('ext_street'), !addrStreet, "Straße");
+    markError(document.getElementById('ext_number'), !addrNo, "Hausnummer");
+    markError(document.getElementById('ext_zip'), !addrZip, "PLZ");
+    markError(document.getElementById('ext_city'), !addrCity, "Ort");
+    markError(document.getElementById('ext_contact'), !extContact, "Kontakt");
+  }
+
+  // Eventname/Zweck + Datum als Pflichtfelder wenn sichtbar
+  const purpose = document.getElementById('purpose').value.trim();
+  const eventDate = document.getElementById('event_date').value.trim();
+  const purposeDateVisible = document.getElementById('purpose_date_row').style.display !== 'none';
+  if (purposeDateVisible || actionSel.value === "Verbrauch" || 
+       actionSel.value === "Anfangsbestand" || 
+       actionSel.value === "Endbestand" || 
+       toLocationSel.value === "Verbrauch") {
+    markError(document.getElementById('purpose'), !purpose, "Zweck/Eventname");
+    markError(document.getElementById('event_date'), !eventDate, "Datum des Events");
+  }
+  
+  
+  const strichlistenMode = document.getElementById("strichlistenMode").checked;
+
+	//Prüfen, ob Produkt schon existiert
+	const note = document.getElementById('note').value.trim();
+
+	// Wenn Kommentar vorhanden → niemals als Duplikat behandeln
+	let exists = false;
+
+	if (note === "") {
+  	// Nur Produkte ohne Kommentar werden zusammengefasst
+  	exists = Array.from(document.querySelectorAll("#list tbody tr"))
+    .some(tr => tr.cells[1].textContent.trim() === product &&
+                tr.cells[10].textContent.trim() === ""); // Kommentarspalte leer
+}
+
+	
+	//if (exists && !strichlistenMode) {
+	 //const confirmAdd = confirm("Dieses Produkt ist bereits erfasst. Soll es wirklich nochmal hinzugefügt werden?");
+	 //if (!confirmAdd) return; // Abbrechen
+	//}
+	
+	if (exists && strichlistenMode) {
+	 // Optional: kleinen Hinweis anzeigen
+	 showStatus("Hinweis: Produkt mehrfach hinzugefügt – wird beim Export summiert.", "info");
+	}
+
+	
+
+	
+  
+
+  // Falls Fehler vorhanden → Sammelmeldung
+  if (!valid) {
+    //showStatus("Bitte folgende Felder ausfüllen:\n- " + missingFields.join("\n- "), "error");
+    alert("Bitte folgende Felder ausfüllen:\n- " + missingFields.join("\n- "));
+    return;
+  }
+  
+
+  // Wenn alles passt → Eintrag erzeugen
+  const timestamp = new Date().toLocaleString("de-DE");
+  const fachschaft = fachschaftSel.value;
+  //const note = document.getElementById('note').value.trim();
+  const studmail = studmailInput.value.trim();
+  let contactInfo = `Name: ${name}, Matrikel Nr.: ${matNr}`;
+
+  const entry = {
+    timestamp,
+    product,
+    boxes,
+    bottles,
+    total: totalBottles,
+    action: actionSel.value,
+    purpose,
+    from: fromLocationSel.value,
+    to: toLocationSel.value,
+    fachschaft,
+    note,
+    contact: contactInfo
+  };
+
+  appendRowFromEntry(entry);
+
+  document.getElementById('qty_boxes').value = '0';
+  document.getElementById('qty_bottles').value = '0';
+  document.getElementById('note').value = '';
+  productSearch.value = "";
+  productSearch.focus();
+};
+
+// Enter in Kisten- oder Flaschenfeld = Position hinzufügen
+["qty_boxes", "qty_bottles"].forEach(id => {
+  document.getElementById(id).addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault(); // verhindert, dass ein Formular abgeschickt wird
+      addBtn.click();     // ruft denselben Code wie der Button auf
+    }
+  });
+});
+
+
+
+  /* ============================
+     Tabelle → JSON
+  ============================ */
+
+  function tableToJSON() {
+    const rows = Array.from(tbody.querySelectorAll('tr'));
+    return rows.map(r => {
+      const c = r.querySelectorAll('td');
+      return {
+        timestamp: c[0].textContent,
+        product: c[1].textContent,
+        boxes: Number(c[2].textContent),
+        bottles: Number(c[3].textContent),
+        total: Number(c[4].textContent),
+        action: c[5].textContent,
+        purpose: c[6].textContent,
+        from: c[7].textContent,
+        to: c[8].textContent,
+        fachschaft: c[9].textContent,
+        note: c[10].textContent,
+        contact: c[11].textContent
+      };
+    });
+  }
+
+
+
+/* ============================
+     Mail-Export
+  ============================ */
+
+submitBtn.onclick = () => {
+  const entries = tableToJSON();
+  if (!entries.length) {
+    showStatus("Keine Positionen erfasst.", "error");
+    return;
+  }
+
+  // Werte aus den Formularfeldern holen
+  const name = document.getElementById("name")?.value || "";
+  const matrikel = document.getElementById("MatNr")?.value || "";
+  const studmail = document.getElementById("studmail")?.value || "";
+  const fachschaft = document.getElementById("fachschaft")?.value || "";
+  const purpose = document.getElementById("purpose")?.value || "";
+  const fromLoc = document.getElementById("from_location")?.value || "";
+  const toLoc = document.getElementById("to_location")?.value || "";
+  const action = document.getElementById("action")?.value || "";
+
+  // externe Adresse
+  const street = document.getElementById("ext_street")?.value || "";
+  const number = document.getElementById("ext_number")?.value || "";
+  const zip = document.getElementById("ext_zip")?.value || "";
+  const city = document.getElementById("ext_city")?.value || "";
+  const contact = document.getElementById("ext_contact")?.value || "";
+
+  const subject = encodeURIComponent('Bestandserfassung');
+  const body = encodeURIComponent(
+    "Hallo,\n\n" +
+    `mein Name ist ${name} (Matrikelnummer: ${matrikel}, Mail: ${studmail}).\n` +
+    `Ich habe für die Hochschulgruppierung / Fachschaft ${fachschaft} eine Bestandserfassung durchgeführt.\n` +
+    `Event / Zweck: ${purpose}\n` +
+    `Aktion: ${action}\n` +
+    `Von: ${fromLoc} → Nach: ${toLoc}\n\n` +
+    "Bitte nimm die angehängte Datei (CSV oder JSON) mit den Details in deine Auswertung auf.\n\n" +
+    "Vielen Dank!\n\n" +
+    "----\n" +
+    "Hinweis: Die Datei ist im Anhang dieser Mail.\n\n" +
+    "Mit freundlichen Grüßen\n" +
+    `${name}\n` +
+    (street || number || zip || city ? `${street} ${number}, ${zip} ${city}\n` : "") +
+    (contact ? `Kontakt: ${contact}\n` : "") +
+    (studmail ? `E-Mail: ${studmail}\n` : "")
+  );
+
+  location.href = `mailto:finanzreferent-vs@hs-aalen.de?subject=${subject}&body=${body}`;
+};
+
+
+
+ exportExcelBtn.onclick = () => {
+  const entries = tableToJSON();
+  if (!entries.length) {
+    showStatus("Keine Positionen erfasst.", "error");
+    return;
+  }
+
+  const fachschaft = document.getElementById("fachschaft")?.value || "Fachschaft";
+  const eventName  = document.getElementById("purpose")?.value || "Event";
+  const eventDate  = document.getElementById("event_date")?.value || "";
+  const eventDateFmt = eventDate ? eventDate.replace(/-/g,"") : new Date().toLocaleDateString("de-DE").replace(/\./g,"-");
+  const eventAction= document.getElementById("action")?.value || "Aktion";
+
+  const header = [
+    "timestamp","product","boxes","bottles","total",
+    "action","purpose","from","to","fachschaft","note","contact"
+  ];
+
+  const ws = XLSX.utils.json_to_sheet(entries, { header });
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Warenbewegung");
+
+  const filename = `${eventDateFmt}_${eventName}_${fachschaft}_${eventAction}.xlsx`
+    .replace(/\s+/g,"_");
+
+  XLSX.writeFile(wb, filename);
+};
+
+
+/* ============================
+   Metadaten gesondert speichern
+============================ */
+
+function collectMeta() {
+  return {
+    name: document.getElementById("name")?.value || "",
+    matrikelnummer: document.getElementById("MatNr")?.value || "", // Key = matrikelnummer
+    fachschaft: document.getElementById("fachschaft")?.value || "",
+    from_location: document.getElementById("from_location")?.value || "",
+    action: document.getElementById("action")?.value || "",
+    to_location: document.getElementById("to_location")?.value || "",
+    purpose: document.getElementById("purpose")?.value || "",
+    event_date: document.getElementById("event_date")?.value || "",
+    studmail: document.getElementById("studmail")?.value || "",
+    ext_street: document.getElementById("ext_street")?.value || "",
+    ext_number: document.getElementById("ext_number")?.value || "",
+    ext_zip: document.getElementById("ext_zip")?.value || "",
+    ext_city: document.getElementById("ext_city")?.value || "",
+    ext_contact: document.getElementById("ext_contact")?.value || "",
+    note: document.getElementById("note")?.value || ""
+  };
+}
+
+function applyMeta(meta) {
+  if (!meta) return;
+
+  const idMap = {
+    matrikelnummer: "MatNr", // Mapping von Key → HTML-ID
+    name: "name",
+    fachschaft: "fachschaft",
+    from_location: "from_location",
+    action: "action",
+    to_location: "to_location",
+    purpose: "purpose",
+    event_date: "event_date",
+    studmail: "studmail",
+    ext_street: "ext_street",
+    ext_number: "ext_number",
+    ext_zip: "ext_zip",
+    ext_city: "ext_city",
+    ext_contact: "ext_contact"
+  };
+
+  Object.entries(meta).forEach(([key, val]) => {
+    const el = document.getElementById(idMap[key] || key);
+    if (el) {
+      el.value = val || "";
+      if (val && el.classList.contains("hidden")) {
+        el.classList.remove("hidden");
+      }
+    }
+  });
+
+  const purposeDateRow = document.getElementById("purpose_date_row");
+  if (meta.purpose || meta.event_date) {
+    if (purposeDateRow) { purposeDateRow.style.display = "block"; purposeDateRow.classList.remove("hidden"); }
+  }
+
+  const extContainer = document.getElementById("external_fields");
+  if (extContainer) {
+    const hasExt = meta.ext_street || meta.ext_number || meta.ext_zip || meta.ext_city || meta.ext_contact;
+    if (hasExt) {
+      extContainer.classList.remove("hidden");
+    }
+  }
+}
+
+  
+
+/*==================
+CSV-Export
+================*/
+
+document.getElementById("exportCsvBtn").onclick = () => {
+  const meta = collectMeta();
+  const metaRows = Object.entries(meta).map(([k,v]) => [k,v]);
+  const header = ["Zeitstempel","Produkt","Kisten","Flaschen","Gesamt","Aktion","Zweck","Von","Nach","Fachschaft","Notiz","Kontakt"];
+  const rows = [header];
+
+  document.querySelectorAll("#list tbody tr").forEach(tr => {
+    const cols = Array.from(tr.querySelectorAll("td")).map(td => td.textContent);
+    rows.push(cols);
+  });
+
+  const csvContent =
+    metaRows.map(r => r.map(v => `"${v}"`).join(";")).join("\n") + "\n\n" +
+    rows.map(r => r.map(v => `"${v}"`).join(";")).join("\n");
+
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+
+  const fachschaft = document.getElementById("fachschaft")?.value || "Fachschaft";
+  const eventName  = document.getElementById("purpose")?.value || "Event";
+  const eventDate  = document.getElementById("event_date")?.value || "";
+  const eventDateFmt = eventDate ? eventDate.replace(/-/g,"") : new Date().toLocaleDateString("de-DE").replace(/\./g,"-");
+  const eventAction= document.getElementById("action")?.value || "Aktion";
+
+  const filename = `${eventDateFmt}_${eventName}_${fachschaft}_${eventAction}.csv`
+    .replace(/\s+/g,"_");
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+
+
+
+/*===================
+  CSV Import
+  ===============*/
+  
+ document.getElementById("csvImport").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (event) => {
+    const lines = event.target.result.split("\n").map(r => r.split(";").map(v => v.replace(/"/g,"").trim()));
+    const tbody = document.querySelector("#list tbody");
+    tbody.innerHTML = "";
+
+    // Meta-Infos bis zur Leerzeile
+    let i = 0;
+    const meta = {};
+    for (; i < lines.length; i++) {
+      const row = lines[i];
+      if (row.length === 1 && row[0] === "") break;
+      if (row[0]) meta[row[0].toLowerCase()] = row[1] || "";
+    }
+    applyMeta(meta);
+
+    // Tabelle ab nächster Zeile
+    const rows = lines.slice(i+1);
+    rows.slice(1).forEach(cols => {
+      if (cols.length < 5) return;
+      const entry = {
+        timestamp: cols[0],
+        product: cols[1],
+        boxes: cols[2],
+        bottles: cols[3],
+        total: cols[4],
+        action: cols[5],
+        purpose: cols[6],
+        from: cols[7],
+        to: cols[8],
+        org: cols[9],
+        note: cols[10],
+        contact: cols[11]
+      };
+      appendRowFromEntry(entry);
+    });
+
+    showStatus("CSV-Daten importiert.", "success");
+  };
+  reader.readAsText(file);
+  e.target.value = "";
+});
+
+
+ 
+ /* ============================
+    Verbrauch berechnen (Anfangsbestand CSV - Endbestand CSV)
+ ============================ */
+
+document.getElementById("VerbrauchCalc").onclick = () => {
+
+ function parseBestandCSV(file) {
+   return new Promise((resolve) => {
+     const reader = new FileReader();
+     reader.onload = (ev) => {
+       const lines = ev.target.result.split("\n").map(r =>
+         r.split(";").map(v => v.replace(/"/g, "").trim())
+       );
+       // Meta-Block überspringen (bis zur Leerzeile)
+       let i = 0;
+       for (; i < lines.length; i++) {
+         if (lines[i].length === 1 && lines[i][0] === "") break;
+       }
+       // Datenzeilen (Header überspringen)
+       const rows = lines.slice(i + 2);
+       const totals = {};
+       rows.forEach(cols => {
+         if (cols.length < 5) return;
+         const product = cols[1];
+         const total   = parseInt(cols[4], 10) || 0;
+         const action  = (cols[5] || "").toLowerCase();
+         if (!product) return;
+         // Nur Anfangs- bzw. Endbestand-Zeilen berücksichtigen
+         if (!action.includes("bestand")) return;
+         totals[product] = (totals[product] || 0) + total;
+       });
+       resolve(totals);
+     };
+     reader.readAsText(file);
+   });
+ }
+
+ function pickFile(labelText) {
+   return new Promise((resolve) => {
+     const input = document.createElement("input");
+     input.type = "file";
+     input.accept = ".csv";
+     alert(labelText);
+     input.onchange = () => resolve(input.files[0] || null);
+     input.click();
+   });
+ }
+
+ (async () => {
+   // Schritt 1: Anfangsbestand
+   const fileA = await pickFile("Schritt 1 von 2: Bitte die CSV mit dem ANFANGSBESTAND auswählen.");
+   if (!fileA) return;
+   const anfang = await parseBestandCSV(fileA);
+
+   // Schritt 2: Endbestand
+   const fileE = await pickFile("Schritt 2 von 2: Bitte die CSV mit dem ENDBESTAND auswählen.");
+   if (!fileE) return;
+   const ende = await parseBestandCSV(fileE);
+
+   // Alle Produkte aus beiden CSVs zusammenführen
+   const alleProdukte = new Set([...Object.keys(anfang), ...Object.keys(ende)]);
+
+   let zeilen = 0;
+   const now = new Date().toLocaleString("de-DE");
+
+   alleProdukte.forEach(product => {
+     const a  = anfang[product] || 0;
+     const en = ende[product]   || 0;
+     const diff = a - en;
+     if (diff === 0) return; // kein Verbrauch → weglassen
+
+     const perCase = bottlesPerCase[normalizeKey(product)] || 1;
+     const absDiff = Math.abs(diff);
+     const boxes   = perCase > 1 ? Math.floor(absDiff / perCase) : 0;
+     const bottles = perCase > 1 ? absDiff % perCase             : absDiff;
+     const label   = diff > 0 ? "Verbrauch" : "Zuwachs";
+
+     const entry = {
+       timestamp:  now,
+       product,
+       boxes:      diff > 0 ?  boxes   : -boxes,
+       bottles:    diff > 0 ?  bottles : -bottles,
+       total:      diff > 0 ?  absDiff : -absDiff,
+       action:     label,
+       purpose:    `Differenz: Anfang ${a} → Ende ${en}`,
+       from:       "Berechnung",
+       to:         "Berechnung",
+       fachschaft: "",
+       note:       `Anfang: ${a} Fl. | Ende: ${en} Fl.`,
+       contact:    ""
+     };
+     appendRowFromEntry(entry);
+     zeilen++;
+   });
+
+   if (zeilen === 0) {
+     showStatus("Kein Verbrauch festgestellt – alle Bestände identisch.", "info");
+   } else {
+     showStatus(`Verbrauchsberechnung: ${zeilen} Produkt(e) eingetragen.`, "success");
+   }
+ })();
+};
+
+
+
+
+  /* ============================
+     localStorage Speichern / Laden
+  ============================ */
+
+  const STORAGE_KEY = "warenbewegung_entries_v1";
+
+//Speichern
+saveLocalBtn.onclick = () => {
+ const entries = tableToJSON();
+ const meta = collectMeta();
+ sessionStorage.setItem(STORAGE_KEY, JSON.stringify({ meta, entries }));
+ showStatus("Daten temporär im Browser gespeichert (SessionStorage).", "success");
+};
+
+//Laden
+loadLocalBtn.onclick = () => {
+ const raw = sessionStorage.getItem(STORAGE_KEY);
+ if (!raw) {
+   showStatus("Keine gespeicherten Daten gefunden.", "error");
+   return;
+ }
+ const { meta, entries } = JSON.parse(raw);
+ applyMeta(meta);
+ tbody.innerHTML = "";
+ entries.forEach(appendRowFromEntry);
+ showStatus("Gespeicherte Daten geladen.", "success");
+};
+
+//Löschen
+deleteLocalBtn.onclick = () => {
+ sessionStorage.removeItem(STORAGE_KEY);
+ tbody.innerHTML = "";
+ showStatus("Gespeicherte Daten gelöscht.", "success");
+};
+
+
+/* ============================
+   JSON Export / Import
+============================ */
+
+exportJsonBtn.onclick = () => {
+  const entries = tableToJSON();
+  if (!entries.length) {
+    showStatus("Keine Positionen erfasst.","error");
+    return;
+  }
+  const meta = collectMeta();
+  const blob = new Blob(
+    [JSON.stringify({ version:1, meta, entries }, null, 2)],
+    { type: "application/json" }
+  );
+  const url = URL.createObjectURL(blob);
+
+  // Dateiname zusammensetzen
+  const fachschaft = document.getElementById("fachschaft")?.value || "Fachschaft";
+  const eventName = document.getElementById("purpose")?.value || "Event";
+  const eventDate = new Date().toLocaleDateString("de-DE").replace(/\./g,"-");
+  const eventAction = document.getElementById("action")?.value || "Aktion";
+
+  const filename = `${fachschaft}_${eventName}_${eventDate}_${eventAction}.json`
+    .replace(/\s+/g,"_");
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  a.click();
+  URL.revokeObjectURL(url);
+};
+
+
+/* ============================
+JSON Import
+============================ */
+
+document.getElementById("importJson").addEventListener("change", (e) => {
+const file = e.target.files[0];
+if (!file) return;
+
+const reader = new FileReader();
+reader.onload = (event) => {
+ try {
+   const data = JSON.parse(event.target.result);
+
+   // Erwartete Struktur:
+   // { version: 1, meta: {...}, entries: [...] }
+
+   if (!data.entries || !Array.isArray(data.entries)) {
+     showStatus("Ungültiges JSON-Format.", "error");
+     return;
+   }
+
+   // Meta anwenden
+   if (data.meta) applyMeta(data.meta);
+
+   // Tabelle leeren
+   const tbody = document.querySelector("#list tbody");
+   tbody.innerHTML = "";
+
+   // Einträge einfügen
+   data.entries.forEach(entry => appendRowFromEntry(entry));
+
+   showStatus("JSON-Daten importiert.", "success");
+
+ } catch (err) {
+   console.error(err);
+   showStatus("Fehler beim Lesen der JSON-Datei.", "error");
+ }
+};
+
+reader.readAsText(file);
+e.target.value = "";
+});
+
+
+  
+  /* ============================
+   Automatisches Backup (alle 60s)
+============================ */
+
+let lastSavedJSON = "";
+function autoBackup() {
+  const entries = tableToJSON();
+  if (entries.length === 0) return;
+
+  const json = JSON.stringify(entries);
+  if (json !== lastSavedJSON) {
+    localStorage.setItem("warenbewegung_autobackup", json);
+    lastSavedJSON = json;
+  }
+}
+setInterval(autoBackup, 60000); // 60 Sekunden
+
+
+/* ============================
+   Warnung beim Verlassen der Seite
+============================ */
+
+window.addEventListener("beforeunload", (e) => {
+  const entries = tableToJSON();
+  const saved = localStorage.getItem("warenbewegung_entries_v1");
+
+  if (entries.length === 0) return; // nichts erfasst → kein Popup
+
+  if (JSON.stringify(entries) !== saved) {
+    e.preventDefault();
+    e.returnValue = "";
+  }
+});
+
+
+/* ============================
+   Undo-Funktion für gelöschte Zeilen
+============================ */
+
+let undoStack = [];
+
+function deleteRowWithUndo(entry, rowElement) {
+  undoStack.push(entry);
+  rowElement.remove();
+  updateUndoButton();
+}
+
+function updateUndoButton() {
+  const btn = document.getElementById("undoBtn");
+  btn.style.display = undoStack.length > 0 ? "block" : "none";
+}
+
+document.getElementById("undoBtn").onclick = () => {
+  if (undoStack.length === 0) return;
+  const entry = undoStack.pop();
+  appendRowFromEntry(entry);
+  updateUndoButton();
+};
+
+
+/* ============================
+   Druckansicht – sauberer Print-Bereich
+============================ */
+
+document.getElementById("printBtn").onclick = () => {
+  const purpose   = (document.getElementById("purpose")?.value || "").trim();
+  const eventDate = (document.getElementById("event_date")?.value || "").trim();
+  const fachschaft= (document.getElementById("fachschaft")?.value || "").trim();
+  const action    = (document.getElementById("action")?.value || "").trim();
+  const fromLoc   = (document.getElementById("from_location")?.value || "").trim();
+  const toLoc     = (document.getElementById("to_location")?.value || "").trim();
+  const name      = (document.getElementById("name")?.value || "").trim();
+
+  // Datum formatieren (ISO → DE)
+  function fmtDate(iso) {
+    if (!iso) return "–";
+    const [y, m, d] = iso.split("-");
+    return `${d}.${m}.${y}`;
+  }
+
+  // Titel zusammenbauen
+  const titleParts = ["Zählliste"];
+  if (purpose)   titleParts.push(purpose);
+  if (eventDate) titleParts.push(fmtDate(eventDate));
+  const titleStr = titleParts.join(" – ");
+
+  // Tabellendaten aus der sichtbaren Liste holen
+  const rows = Array.from(document.querySelectorAll("#list tbody tr"))
+    .filter(r => r.style.display !== "none");
+
+  // Spalten im PDF: Produkt | Kisten | Fl. | Ges. | Kommentar
+  // (Zeit, Aktion, Zweck/Event, Von, Zu, Fachschaft, Entfernen werden weggelassen)
+  const colHeaders = ["Produkt","Kisten","Fl.","Ges.","Kommentar"];
+  const colIdx     = [1, 2, 3, 4, 10]; // index in den tds
+
+  const tableRows = rows.map(r => {
+    const tds = Array.from(r.querySelectorAll("td"));
+    return colIdx.map(i => (tds[i]?.textContent || "").trim());
+  });
+
+  // Unterschrift: wer übergibt / wer nimmt
+  const sigDate = eventDate ? fmtDate(eventDate) : "___________";
+
+  const printArea = document.getElementById("printArea");
+  printArea.innerHTML = `
+    <div class="print-header">
+      <h1>${titleStr}</h1>
+      <div class="print-meta-grid">
+        <span><b>Fachschaft:</b> ${fachschaft || "–"}</span>
+        <span><b>Aktion:</b> ${action || "–"}</span>
+        <span><b>Von:</b> ${fromLoc || "–"}</span>
+        <span><b>Nach:</b> ${toLoc || "–"}</span>
+        ${purpose   ? `<span><b>Event / Zweck:</b> ${purpose}</span>` : ""}
+        ${eventDate ? `<span><b>Datum:</b> ${fmtDate(eventDate)}</span>` : ""}
+        ${name      ? `<span><b>Verantwortlich:</b> ${name}</span>` : ""}
+        <span><b>Druckdatum:</b> ${new Date().toLocaleString("de-DE")}</span>
+      </div>
+    </div>
+
+    <table class="print-table">
+      <thead>
+        <tr>${colHeaders.map(h => `<th>${h}</th>`).join("")}</tr>
+      </thead>
+      <tbody>
+        ${tableRows.length
+          ? tableRows.map(row =>
+              `<tr>${row.map(cell => `<td>${cell}</td>`).join("")}</tr>`
+            ).join("")
+          : `<tr><td colspan="${colHeaders.length}" style="text-align:center; padding:8px;">Keine Einträge vorhanden</td></tr>`
+        }
+      </tbody>
+    </table>
+
+    <div class="print-signatures">
+      <div class="sig-block">
+        <div class="sig-line"></div>
+        <div><b>Übergabe durch:</b> ${name || "_______________________"}</div>
+        <div style="margin-top:2px; font-size:7.5pt;">Datum: ${sigDate} &nbsp;&nbsp; Unterschrift</div>
+      </div>
+      <div class="sig-block">
+        <div class="sig-line"></div>
+        <div><b>Übernahme durch:</b> _______________________</div>
+        <div style="margin-top:2px; font-size:7.5pt;">Datum: ${sigDate} &nbsp;&nbsp; Unterschrift</div>
+      </div>
+    </div>
+  `;
+
+  // Kurz warten, damit der Browser das DOM rendert, dann drucken
+  setTimeout(() => window.print(), 100);
+};
+
+
+document.addEventListener("keydown", (e) => {
+  if (e.ctrlKey && e.key.toLowerCase() === "s") {
+    e.preventDefault();
+    saveLocalBtn.click();
+  }
+  if (e.ctrlKey && e.key.toLowerCase() === "e") {
+    e.preventDefault();
+    exportExcelBtn.click();
+  }
+  if (e.ctrlKey && e.key.toLowerCase() === "p") {
+    e.preventDefault();
+    printBtn.click();
+  }
+  if (e.ctrlKey && e.key.toLowerCase() === "z") {
+	    e.preventDefault();
+	    undoBtn.click();
+	  }
+  if (e.ctrlKey && e.key.toLowerCase() === "m") {
+	    e.preventDefault();
+	    submitBtn.click();
+	  }
+  if (e.ctrlKey && e.key.toLowerCase() === ",") {
+	    e.preventDefault();
+	    exportCsvBtn.click();
+	  }
+  if (e.ctrlKey && e.key.toLowerCase() === "b") {
+	    e.preventDefault();
+	    scanBtn.click();
+	  }
+});
+
+
+
+
+
+
+
+
+helpBtn.onclick = () => {
+  if (helpBox.style.display === "block") {
+    helpBox.style.display = "none";   // schließen
+  } else {
+    helpBox.style.display = "block";  // öffnen
+  }
+};
+
+helpClose.onclick = () => {
+  helpBox.style.display = "none";
+};
+
+
+  // Statusmeldungen
+  function showStatus(message, type="success") {
+  const box = document.getElementById("statusBox");
+  box.textContent = message;
+  box.style.display = "block";
+  box.style.background = type === "success" ? "#e0ffe0" : "#ffe0e0";
+
+  setTimeout(() => {
+    box.style.display = "none";
+  }, 5000); // nach 5 Sekunden ausblenden
+}
+  
+  
+  
+//Initial laden
+  loadFavorites();
+  filterProducts();
+  updateFavButton();
+  
+	
+/* ============================================================
+   FESTE PRODUKTLISTE für Bestandsübersicht / Buchhaltung
+   → Neue Produkte hier ergänzen (Reihenfolge wird 1:1 übernommen)
+   ============================================================ */
+const BESTAND_PRODUKTLISTE = [
+  "Absolut Vodka (0,7L)",
+  "Absolut Vodka (1L)",
+  "Afri Cola (0,33L)",
+  "Afri Cola (0,5L) PET",
+  "Afri Cola (1L)",
+  "Afri Cola Zero (0,33L)",
+  "Ananassaft (1L)",
+  "Aperol Aperitivo Bitter (1L)",
+  "Apfelsaftschorle (0,5L)",
+  "Berliner Luft (0,7L)",
+  "Berliner Luft (1L)",
+  "Bluna (0,5L) PET",
+  "Bluna Orange (0,33L)",
+  "Burghardt Glühwein Rot (1L)",
+  "Coca Cola (1L)",
+  "Cranberry Saft",
+  "Dietz Weinschorle Winzerspritz Weiss/sauer (0,5L)",
+  "Dietz Weinschorle Winzerspritz Weiss/süß (0,5L)",
+  "Energy (1,5L)",
+  "ESSE - Sonnenradler (0,5L)",
+  "Ficken (0,7L)",
+  "Frangelico (0,7L)",
+  "Früchtepunsch (1 L)",
+  "Fürstengold Sekt halbtr. (0,75L)",
+  "Gletscherwasser (0,7L)",
+  "Glühwein Omegasorg (10L)",
+  "Glühwein Winzer v.WB rot",
+  "Glühwein Winzer v.WB weiß",
+  "Gold Ochsen Keller Radler (0,5L)",
+  "Gordons Dry Gin (0,7L)",
+  "Gordons Dry Gin (1L)",
+  "Havanna 3y (0,7L)",
+  "Havanna 3y (1L)",
+  "Jägermeister (0,7L)",
+  "Jägermeister (1L)",
+  "Kinderpunsch (10L)",
+  "Limettensaft (1L)",
+  "Lillet Blanc (0,75L)",
+  "Bayreuther Hell Maisel (0,5L)",
+  "Maisels Weisse *AF (0,5L)",
+  "Maisels Weisse Original (0,5L)",
+  "Mangosaft (1L)",
+  "Maracujasaft (1L)",
+  "Mineralwasser medium (0,5L)",
+  "Mineralwasser naturell (0,5L)",
+  "Monin Holunderblütensirup (1L)",
+  "Monin Mandelsirup (1L)",
+  "Mönchshof Natur-Radler (0,0%) (0,5L)",
+  "Orangensaft (1L)",
+  "Paulaner Spezi (0,5L)",
+  "Pitú (1L)",
+  "Rosé, Duo des Plages Cinsault (F) (0,75L)",
+  "Rot, Pleno Tempranillo Navarra tr. (Es) (0,75L)",
+  "Perlwein, Soligo Al Lungo Bianco Vino Frizzante (0,75L)",
+  "Prosecco Doc Treviso, Soligo Vino Frizzante (0,75L)",
+  "Rothaus Tannenzäpfle Pils *AF (0,33L)",
+  "Saurer Joster (0,7L)",
+  "Schorle Joh-Holunder (0,5L)",
+  "Schweppes Bitter Lemon (1L)",
+  "Schweppes Ginger Ale (1L)",
+  "Schweppes Tonic Water (1L)",
+  "Schweppes Wild Berry (1L)",
+  "Sprite (1L)",
+  "Tequila Gold (0,7L)",
+  "Tequila Silber (0,7L)",
+  "Weiß, Duo des Mers Sauvignon tr. (F) (0,75L)",
+  "White Rum Captain Sparrow (0,7L)",
+  "Wodka Achmatov (0,7L)",
+  "Pfirsich Apéritif - Pêche De Bonheur (0,5L)",
+  "Orangenliqeur - Le Favori (0,7L)",
+  "Blue Curacao Liqeur - Bols Amsterdam (0,7L)",
+  "Stuttgarter Hofbräu Käpsele Helles (0,33L)",
+  "Stuttgarter Hofbräu Pilsener (0,5L)",
+  "Monin Weißer Rohrzucker (1L)",
+  "Monin Lavendelsirup (1L)",
+  "Bacardi Carta Negra (0,7L)",
+  "Monin Cocos (1L)",
+  "0",
+  "0",
+  "0",
+  "0",
+  "Zusatz / nicht gelistet (Bitte dann in Kommentar Getränkbezeichnung, Gebindemenge und Kategorie eintragen!)"
+];
+
+/* ============================================================
+   buildBuchhaltungsData(entries)
+   Gibt Array-of-Arrays zurück: [Spalte A, Spalte B, Spalte C]
+   A = Label/Produktname (fest)
+   B = Metawert / Gesamtmenge (total aller Einträge je Produkt)
+   C = Kommentare je Produkt (note, kommagetrennt wenn mehrere)
+   ============================================================ */
+function buildBuchhaltungsData(entries) {
+  const meta = collectMeta();
+  const heute = new Date().toLocaleDateString("de-DE");
+
+  // Kontaktinfo zusammensetzen (wie im Mail-Export)
+  const contactParts = [
+    meta.name,
+    meta.matrikelnummer ? "Matrikel Nr.: " + meta.matrikelnummer : "",
+    meta.studmail && meta.studmail !== "@studmail.htw-aalen.de" ? meta.studmail : "",
+    meta.ext_contact
+  ].filter(v => v && v.trim() !== "");
+  const contactInfo = contactParts.join(", ");
+
+  // Menge je Produkt: alle total-Werte aufaddieren (unabhängig von Aktion)
+  const mengen = {};   // produkt → gesamte Flaschen
+  const notizen = {};  // produkt → Set von Kommentaren
+
+  entries.forEach(e => {
+    if (!e.product) return;
+    const total = Number(e.total) || 0;
+    mengen[e.product] = (mengen[e.product] || 0) + total;
+    if (e.note && e.note.trim() !== "") {
+      if (!notizen[e.product]) notizen[e.product] = new Set();
+      notizen[e.product].add(e.note.trim());
+    }
+  });
+
+  // Metablock: [Label, Wert, ""] – Rechnungsnummer leer (Benutzer trägt selbst ein)
+  const rows = [
+    ["Rechnungsnummer", "",                         ""],
+    ["Datum",           heute,                      ""],
+    ["Veranstalter",    meta.fachschaft || "",      ""],
+    ["Event",           meta.purpose || "",         ""],
+    ["Kommentar",       meta.note || "",            ""],
+    ["Kontakt",         contactInfo,                ""],
+    ["Von Bestand",     meta.from_location || "",   ""],
+    ["Aktion",          meta.action || "",          ""],
+    ["Zu Bestand",      meta.to_location || "",     ""],
+    [],                                              // Leerzeile
+    ["Produkt",         "Anzahl Flaschen",          "Kommentar"]
+  ];
+
+  // Feste Produktliste befüllen
+  const listeSet = new Set(BESTAND_PRODUKTLISTE);
+  BESTAND_PRODUKTLISTE.forEach(produkt => {
+    const menge  = mengen[produkt] !== undefined ? mengen[produkt] : "";
+    const notiz  = notizen[produkt] ? [...notizen[produkt]].join(", ") : "";
+    // Nur Menge eintragen wenn > 0 oder negativ (0 = leer lassen)
+    rows.push([produkt, menge !== 0 ? menge : "", notiz]);
+  });
+
+  // Produkte aus Einträgen die NICHT in der festen Liste stehen → ans Ende
+  const extras = [...new Set(
+    entries.map(e => e.product).filter(p => p && !listeSet.has(p))
+  )].sort();
+  extras.forEach(produkt => {
+    const menge = mengen[produkt] !== undefined ? mengen[produkt] : "";
+    const notiz = notizen[produkt] ? [...notizen[produkt]].join(", ") : "";
+    rows.push([produkt, menge !== 0 ? menge : "", notiz]);
+  });
+
+  return rows;
+}
+
+/* ============================================================
+   CSV-Export für Buchhaltung (Button: exportCsvBuchhaltungBtn)
+   ============================================================ */
+document.getElementById("exportCsvBuchhaltungBtn").onclick = () => {
+  const entries = tableToJSON();
+  if (!entries.length) {
+    showStatus("Keine Positionen erfasst.", "error");
+    return;
+  }
+
+  const fachschaft   = document.getElementById("fachschaft")?.value || "Fachschaft";
+  const eventName    = document.getElementById("purpose")?.value || "Event";
+  const eventDate    = document.getElementById("event_date")?.value || "";
+  const eventDateFmt = eventDate
+    ? eventDate.replace(/-/g, "")
+    : new Date().toLocaleDateString("de-DE").replace(/\./g, "-");
+
+  const data = buildBuchhaltungsData(entries);
+
+  const csvContent = data
+    .map(r => (r || []).map(v => `"${(v ?? "").toString().replace(/"/g, '""')}"`).join(";"))
+    .join("\n");
+
+  const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href     = url;
+  a.download = `${eventDateFmt}_${eventName}_${fachschaft}_Buchhaltung.csv`.replace(/\s+/g, "_");
+  a.click();
+  URL.revokeObjectURL(url);
+  showStatus("Buchhaltungs-CSV exportiert.", "success");
+};
+
+// Hilfsfunktion: JS-Date → Excel-Seriennummer
+function toExcelDate(date) {
+  // Excel zählt ab 30.12.1899
+  return Math.floor((date - new Date(1899, 11, 30)) / (1000 * 60 * 60 * 24));
+}
+
+  
+/*=========================
+	Optionsmenü Kram
+	======================*/
+  
+	// Tabs nur für Modi
+	document.querySelectorAll("#modeTabs .tab").forEach(btn => {
+	  btn.addEventListener("click", () => {
+	    const mode = btn.dataset.mode;
+
+	    // Alle Panels schließen
+	    document.querySelectorAll(".panel").forEach(p => p.style.display = "none");
+
+	    // normale Logik für Modi
+	    applyMode(mode);
+	    updatePurposeField();
+	  });
+	});
+
+	// Options-Button öffnet Modal
+	const optionsModal = document.getElementById("optionsModal");
+	const optionsOverlay = document.getElementById("optionsOverlay");
+
+	function openOptionsModal() {
+	  optionsModal.style.display = "flex";
+	  optionsOverlay.style.display = "block";
+	}
+	function closeOptionsModal() {
+	  optionsModal.style.display = "none";
+	  optionsOverlay.style.display = "none";
+	}
+
+	document.getElementById("optionsBtn").onclick = openOptionsModal;
+	document.getElementById("closeOptions").onclick = closeOptionsModal;
+	optionsOverlay.addEventListener("click", closeOptionsModal);
+
+	// alten window-click-Handler entfernt (war fehlerhaft wegen fehlendem Overlay)
+
+
+
+	const darkToggle = document.getElementById("darkModeToggle");
+
+	// beim Laden prüfen
+	if (localStorage.getItem("theme") === "dark") {
+	  document.body.classList.add("darkmode");
+	  darkToggle.checked = true;
+	}
+
+	darkToggle.addEventListener("change", () => {
+	  if (darkToggle.checked) {
+	    document.body.classList.add("darkmode");
+	    localStorage.setItem("theme", "dark");
+	  } else {
+	    document.body.classList.remove("darkmode");
+	    localStorage.setItem("theme", "light");
+	  }
+	});
+
+
+	
+		// LocalStorage komplett löschen
+		document.getElementById("clearStorageBtn").onclick = () => {
+		  localStorage.clear();
+		  alert("LocalStorage wurde zurückgesetzt!");
+		  loadFavorites();
+		  showStatus("LocalStorage des Browsers gelöscht! ", "success");
+		};
+
+		// Reset-Button: Favoriten leeren
+		document.getElementById("resetFavs").onclick = () => {
+		  localStorage.setItem("favorites", JSON.stringify([]));
+		  loadFavorites();
+		  filterProducts();       // Produktliste neu rendern
+		  updateFavButton();      // Stern-Button aktualisieren
+		  showStatus("Aktuelle Favoriten entfernt!", "success");
+		};
+
+		
+		// Standardfavoriten laden
+		document.getElementById("loadStandardFavs").onclick = () => {
+		  localStorage.setItem("favorites", JSON.stringify(standardFavorites));
+		  loadFavorites();
+		  filterProducts();
+		  updateFavButton();
+		  showStatus("Standardliste in Favoriten geladen!", "success");
+		};
+		
+		/* =========================
+		   Barcode-Scanner (optimiert)
+		========================= */
+
+		const scanBtn = document.getElementById("scanBarcode");
+		const video = document.getElementById("camera");
+		let scanning = false;
+
+		// Kamera-Erlaubnis
+		document.getElementById("requestCameraBtn").onclick = async () => {
+		  const statusEl = document.getElementById("cameraPermStatus");
+		  try {
+		    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+		    stream.getTracks().forEach(t => t.stop());
+		    statusEl.style.color = "#2a7";
+		    statusEl.textContent = "Kamera-Zugriff erlaubt.";
+		  } catch (err) {
+		    statusEl.style.color = "#c33";
+		    statusEl.textContent = "Zugriff verweigert oder keine Kamera gefunden.";
+		  }
+		};
+
+		// Barcode normalisieren (führt führende Nullen zusammen)
+		function normalizeBarcode(b) {
+		  if (!b) return [];
+		  if (Array.isArray(b)) return b.map(x => x.replace(/^0+/, ""));
+		  return [b.replace(/^0+/, "")];
+		}
+
+		// Stabilitäts-Tracking
+		let lastCode = null;
+		let stableCount = 0;
+
+		scanBtn.onclick = async () => {
+		  if (!scanning) {
+		    try {
+		      const stream = await navigator.mediaDevices.getUserMedia({
+		        video: {
+		          facingMode: "environment",
+		          width: { ideal: 1280 },
+		          height: { ideal: 720 }
+		        }
+		      });
+
+		      video.srcObject = stream;
+		      document.getElementById("cameraWrapper").style.display = "block";
+
+		      Quagga.init({
+		        inputStream: {
+		          type: "LiveStream",
+		          target: video,
+		          constraints: {
+		            facingMode: "environment",
+		            width: { ideal: 1280 },
+		            height: { ideal: 720 }
+		          }
+		        },
+		        locate: true,
+		        numOfWorkers: 2,
+		        frequency: 10,
+		        decoder: {
+		          readers: [
+		            "ean_reader",
+		            "ean_8_reader",
+		            "upc_reader",
+		            "upc_e_reader"
+		          ],
+		          debug: {
+		            drawBoundingBox: false,
+		            showFrequency: false,
+		            drawScanline: false,
+		            showPattern: false
+		          }
+		        }
+		      }, err => {
+		        if (err) {
+		          console.error(err);
+		          return;
+		        }
+		        Quagga.start();
+		      });
+
+		      Quagga.onDetected(result => {
+		        const raw = result.codeResult.code;
+		        const code = raw.replace(/^0+/, "");
+
+		        if (code === lastCode) {
+		          stableCount++;
+		        } else {
+		          lastCode = code;
+		          stableCount = 1;
+		        }
+
+		        if (stableCount >= 3) {
+		          handleBarcode(code);
+		        }
+		      });
+
+		      scanning = true;
+		      scanBtn.textContent = "Scanner stoppen";
+
+		    } catch (err) {
+		      alert("Kamera konnte nicht gestartet werden: " + err.message);
+		    }
+
+		  } else {
+		    stopScanner();
+		  }
+		};
+
+		// Barcode-Verarbeitung
+		function handleBarcode(code) {
+		  const data = loadData();
+		  const match = data.products.find(p =>
+		    normalizeBarcode(p.barcode).includes(code)
+		  );
+
+		  if (match) {
+		    productSelect.value = match.name;
+		    productSearch.value = match.name;
+		    showStatus("Produkt erkannt: " + match.name, "success");
+		    stopScanner(match.name);
+		  } else {
+		    showStatus("Unbekannter Barcode: " + code, "error");
+		    stopScanner();
+		  }
+		}
+
+		// Scanner stoppen
+		function stopScanner(matchName) {
+		  Quagga.stop();
+		  const stream = video.srcObject;
+		  if (stream) stream.getTracks().forEach(t => t.stop());
+		  video.srcObject = null;
+
+		  document.getElementById("cameraWrapper").style.display = "none";
+		  scanning = false;
+		  scanBtn.textContent = "Barcode scannen";
+
+		  if (matchName) {
+		    const oldHint = document.getElementById("scanHint");
+		    if (oldHint) oldHint.remove();
+
+		    const hint = document.createElement("div");
+		    hint.id = "scanHint";
+		    hint.textContent = "✔ Produkt erkannt: " + matchName;
+		    hint.style.cssText = `
+		      text-align:center;
+		      margin:0.5em 0;
+		      font-weight:bold;
+		      color:#2a7;
+		      opacity:1;
+		      transition:opacity 0.8s ease;
+		    `;
+		    video.parentNode.insertAdjacentElement("afterend", hint);
+
+		    const qtyBoxes = document.getElementById("qty_boxes");
+		    if (qtyBoxes) qtyBoxes.focus();
+
+		    setTimeout(() => {
+		      hint.style.opacity = "0";
+		      setTimeout(() => hint.remove(), 800);
+		    }, 2000);
+		  }
+
+		  lastCode = null;
+		  stableCount = 0;
+		}
+
+  
+  
+/*=======================
+	Admin Auswertung
+========================*/
+
+ document.getElementById('adminExcelUpload').addEventListener('change', (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    const wb = XLSX.read(evt.target.result, { type: 'binary' });
+    const sheetName = "Erfassung";
+    const ws = wb.Sheets[sheetName];
+    if (!ws) {
+      alert("Blatt 'Erfassung' nicht gefunden!");
+      return;
+    }
+
+    // Backup speichern
+    //XLSX.writeFile(wb, "Backup_" + file.name);
+
+    // Kontaktinfo aus Basis- und externen Feldern zusammensetzen
+    const contactInfo = [
+      "Name: " + (document.getElementById("name").value || ""),
+      "Matrikelnummer: " + (document.getElementById("MatNr").value || ""),
+      "Studmail: " + (document.getElementById("studmail").value || ""),
+      document.getElementById("ext_street").value,
+      document.getElementById("ext_number").value,
+      document.getElementById("ext_zip").value,
+      document.getElementById("ext_city").value,
+      document.getElementById("ext_contact").value
+    ].filter(v => v && v.trim() !== "").join(", ");
+
+    // Nur Tagesdatum ohne Uhrzeit → Excel-Seriennummer
+    const today = new Date();
+    today.setHours(0,0,0,0);
+    const excelDate = toExcelDate(today);
+
+    // Metadaten aus App
+    const newMeta = [
+      excelDate, // Zahl für Datum
+      document.getElementById("fachschaft").value,
+      document.getElementById("purpose").value || "",
+      document.getElementById("note").value || "",
+      contactInfo,
+      document.getElementById("from_location").value,
+      document.getElementById("action").value,
+      document.getElementById("to_location").value
+    ];
+
+    // Spaltenanzahl bestimmen
+    const range = XLSX.utils.decode_range(ws['!ref']);
+    const newColIndex = range.e.c + 1;
+    range.e.c = newColIndex;
+    ws['!ref'] = XLSX.utils.encode_range(range);
+
+    // Duplikatprüfung
+    let duplicate = false;
+    for (let col = 1; col <= range.e.c; col++) {
+      let match = true;
+      for (let row = 1; row < 9; row++) {
+        const addr = XLSX.utils.encode_cell({r: row, c: col});
+        const cellValue = ws[addr]?.v;
+        const metaValue = newMeta[row-1];
+        if (cellValue !== metaValue) {
+          match = false;
+          break;
+        }
+      }
+      if (match) {
+        duplicate = true;
+        break;
+      }
+    }
+    if (duplicate) {
+      alert("Dieses Event existiert bereits in der Auswertung!");
+      return;
+    }
+
+    // Metadaten schreiben
+    for (let row = 1; row < 9; row++) {
+      const addr = XLSX.utils.encode_cell({r: row, c: newColIndex});
+      if (row === 1) {
+        ws[addr] = { t: 'n', v: newMeta[row-1] }; // Zahl für Datum
+      } else {
+        ws[addr] = { t: 's', v: newMeta[row-1] };
+      }
+    }
+
+    // Getränkedaten aus App
+    const rows = document.querySelectorAll("#list tbody tr");
+    const appData = Array.from(rows).map(r => {
+      const cells = r.querySelectorAll("td");
+      return {
+        produkt: cells[1]?.innerText.trim(),
+        gesamt: cells[4]?.innerText.trim()
+      };
+    });
+
+    // Werte zuordnen
+    const debugLines = [];
+    for (let r = 9; r <= range.e.r; r++) {
+      const produktAddr = XLSX.utils.encode_cell({r, c:0});
+      const produktName = String(ws[produktAddr]?.v || "").trim();
+      const matches = appData.filter(a => a.produkt === produktName);
+      const total = matches.reduce((sum, m) => sum + Number(m.gesamt || 0), 0);
+
+      const addr = XLSX.utils.encode_cell({r, c:newColIndex});
+
+      // Wenn es Treffer gibt, schreibe die Summe, sonst leer
+      if (matches.length > 0) {
+        ws[addr] = { t: 'n', v: total };
+        debugLines.push(produktName + " → " + total);
+      } else {
+        ws[addr] = { t: 's', v: "" };
+        debugLines.push(produktName + " → (kein Eintrag)");
+      }}
+
+
+    // Debug-Ausgabe
+    const debugText =
+      "Neue Spalte Index: " + newColIndex + " (Excel-Spalte " + (newColIndex+1) + ")\n" +
+      "Metadaten:\n" + newMeta.map((m,i)=>"Zeile "+(i+1)+": "+m).join("\n") + "\n\n" +
+      "Produkte:\n" + debugLines.slice(0,20).join("\n") +
+      (debugLines.length > 20 ? "\n... weitere Produkte ..." : "");
+    document.getElementById("debugText").innerText = debugText;
+
+    // Datei speichern
+    XLSX.writeFile(wb, file.name);
+
+    alert("Event erfolgreich hinzugefügt – Formeln bleiben erhalten!");
+  };
+
+  reader.readAsBinaryString(file);
+
+  // Reset, damit dieselbe Datei erneut gewählt werden kann
+  e.target.value = "";
+});
+
+document.getElementById('adminExcelTrigger').addEventListener('click', () => {
+  document.getElementById('adminExcelUpload').click();
+});
+
+
+/* ============================
+Admin: Kategorien & Produkte
+============================ */
+
+const newProdName = document.getElementById("newProdName");
+const newProdCase = document.getElementById("newProdCase");
+const newProdCategory = document.getElementById("newProdCategory");
+const newProdBarcode = document.getElementById("newProdBarcode");
+const addProductBtn = document.getElementById("addProductBtn");
+
+const newCategoryName = document.getElementById("newCategoryName");
+const addCategoryBtn = document.getElementById("addCategoryBtn");
+const categoryList = document.getElementById("categoryList");
+
+const productEditor = document.getElementById("productEditor");
+const loadProductsBtn = document.getElementById("loadProductsBtn");
+const saveProductsBtn = document.getElementById("saveProductsBtn");
+
+const exportProductsBtn = document.getElementById("exportProductsBtn");
+const importProductsInput = document.getElementById("importProductsInput");
+
+// Produkte laden und speichern
+function loadData() {
+	  const raw = document.getElementById("productData").textContent;
+	  return JSON.parse(raw);
+	}
+
+	function saveData(data) {
+	  // Produkte sortieren
+	  data.products.sort((a, b) => a.name.localeCompare(b.name));
+
+	  document.getElementById("productData").textContent =
+	    JSON.stringify(data, null, 2);
+
+	  loadProductsIntoApp(data.products);
+	  updateCategoryUI(data);
+	}
+
+
+
+
+//Kategorien aus JSON extrahieren
+function updateCategoryUI(data) {
+  const categories = [...new Set(data.categories)].sort();
+
+  // Dropdown für neues Produkt
+  newProdCategory.innerHTML = categories
+    .map(c => `<option>${c}</option>`)
+    .join("");
+
+  // Kategorie-Liste
+  categoryList.innerHTML = "";
+  categories.forEach(cat => {
+    const li = document.createElement("li");
+    li.textContent = cat;
+
+    const del = document.createElement("button");
+    del.textContent = "Löschen";
+    del.onclick = () => deleteCategory(cat);
+
+    li.appendChild(del);
+    categoryList.appendChild(li);
+  });
+
+  updateCategoryFilter(data.products);
+}
+
+
+
+
+
+//Produkte aus Script-Tag laden
+function loadProducts() {
+const raw = document.getElementById("productData").textContent;
+return JSON.parse(raw);
+}
+
+
+//Produkte zurückschreiben
+function saveProducts(products) {
+products.sort((a, b) => a.name.localeCompare(b.name));
+
+document.getElementById("productData").textContent =
+ JSON.stringify(products, null, 2);
+
+loadProductsIntoApp(data.products);
+updateCategoryUI(data);
+}
+
+
+//Neues Produkt hinzufügen
+
+
+	addProductBtn.onclick = () => {
+	  const name = newProdName.value.trim();
+	  const perCase = parseInt(newProdCase.value.trim(), 10);
+	  const category = newProdCategory.value.trim();
+	  const barcode = newProdBarcode.value.trim();
+	
+	  if (!name || !perCase || !category) {
+	    alert("Bitte alle Felder ausfüllen.");
+	    return;
+	  }
+	
+	  let data = loadData();
+	
+	  if (data.products.some(p => p.name === name)) {
+	    alert("Dieses Produkt existiert bereits.");
+	    return;
+	  }
+	
+	  data.products.push({ name, perCase, category, barcode });
+	  saveData(data);
+	
+	  newProdName.value = "";
+	  newProdCase.value = "";
+	  newProdBarcode.value = "";
+	};
+
+
+
+
+//Neue Kategorie hinzufügen oder löschen
+addCategoryBtn.onclick = () => {
+  const cat = newCategoryName.value.trim();
+  if (!cat) return;
+
+  let data = loadData();
+  if (!data.categories.includes(cat)) {
+    data.categories.push(cat);
+    saveData(data);
+  }
+
+  newCategoryName.value = "";
+};
+
+function deleteCategory(cat) {
+  let data = loadData();
+  data.categories = data.categories.filter(c => c !== cat);
+
+  // Produkte dieser Kategorie auf "Sonstiges" setzen
+  data.products = data.products.map(p => {
+    if (p.category === cat) p.category = "Sonstiges";
+    return p;
+  });
+
+  saveData(data);
+}
+
+
+
+//JSON-Editor laden
+loadProductsBtn.onclick = () => {
+productEditor.value = document.getElementById("productData").textContent.trim();
+};
+
+
+//JSON-Editor speichern
+saveProductsBtn.onclick = () => {
+try {
+ const data = JSON.parse(productEditor.value);
+ saveData(data);
+ alert("Liste gespeichert.");
+} catch {
+ alert("Fehlerhafte JSON.");
+}
+};
+
+
+//Export
+exportProductsBtn.onclick = () => {
+const data = document.getElementById("productData").textContent;
+const blob = new Blob([data], { type: "application/json" });
+const url = URL.createObjectURL(blob);
+
+const a = document.createElement("a");
+a.href = url;
+a.download = "products.json";
+a.click();
+
+URL.revokeObjectURL(url);
+};
+
+
+//Import
+importProductsInput.onchange = e => {
+const file = e.target.files[0];
+if (!file) return;
+
+const reader = new FileReader();
+reader.onload = evt => {
+ try {
+   const list = JSON.parse(evt.target.result);
+   saveProducts(list);
+   alert("Liste importiert.");
+ } catch {
+   alert("Fehlerhafte JSON-Datei.");
+ }
+};
+reader.readAsText(file);
+};
+
+
+(function initProducts() {
+	  const raw = document.getElementById("productData").textContent;
+	  const products = JSON.parse(raw);
+	  loadProductsIntoApp(data.products);
+	})();
+	
+	
+const readmeBtn = document.getElementById("ReadMe");
+if (readmeBtn) {
+  readmeBtn.onclick = () => {
+    const readme = document.getElementById("readmeText").textContent;
+
+    const newWindow = window.open("", "_blank");
+
+    newWindow.document.write(`
+      <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>README – Ernas Warenbewegung</title>
+          <style>
+            body {
+              font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+              background: #f5f5f5;
+              padding: 20px;
+              line-height: 1.5;
+              color: #222;
+            }
+            h1 {
+              font-size: 22px;
+              margin-bottom: 10px;
+            }
+            pre {
+              white-space: pre-wrap;
+              font-family: "Consolas", "Courier New", monospace;
+              background: #ffffff;
+              padding: 16px;
+              border-radius: 8px;
+              border: 1px solid #ddd;
+              font-size: 14px;
+              max-width: 900px;
+              box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            }
+          </style>
+        </head>
+        <body>
+          <h1>README – Ernas Warenbewegung</h1>
+          <pre>${readme.replace(/</g, "&lt;")}</pre>
+        </body>
+      </html>
+    `);
+
+    newWindow.document.close();
+  };
+}
+
+
+
+
+  </script>
+
+  <script id="readmeText" type="text/plain">
+Ernas Warenbewegungs-Tool – README
+
+====================================
+1. Zweck des Tools
+====================================
+Dieses Tool dient zur Erfassung von Warenbewegungen (Ausgabe, Verbrauch, Bestände)
+für Events der Fachschaften an der HTW Aalen (z. B. Ernas-Separee, Fachschaftsstände).
+Es funktioniert vollständig offline und kann einfach per WhatsApp, E-Mail,
+OneDrive oder USB-Stick weitergegeben werden.
+
+Ziel:
+- Überblick über Ein- und Ausgänge von Getränken
+- Erfassung von Verbrauch und Beständen je Event / Ort
+- Bereitstellung von Daten für spätere Auswertungen (z. B. in Excel)
+
+====================================
+2. Aufbau der Datei
+====================================
+Die Anwendung besteht aus EINER HTML-Datei. Diese enthält:
+- Das komplette Layout (Formular, Tabelle, Buttons)
+- Die gesamte Logik (JavaScript)
+- Die Getränkeliste als JSON im Script-Tag mit der ID "productData"
+
+Es gibt KEINE externen Dateien, die zwingend benötigt werden:
+- Kein Server, kein fetch, keine CORS-Probleme
+- Vollständig offline nutzbar
+
+====================================
+3. Grundbedienung
+====================================
+Beim Öffnen der HTML-Datei im Browser können folgende Dinge gemacht werden:
+
+- Auswahl von:
+  - Fachschaft / Verantwortliche Stelle
+  - Von-Standort (from_location)
+  - Aktion (z. B. Ausgabe, Verbrauch, Anfangsbestand, Endbestand)
+  - Zu-Standort (to_location)
+
+- Eingabe von:
+  - Produkt (über Dropdown + Suche)
+  - Kisten (Gebinde / Kästen)
+  - Flaschen (Einzelflaschen)
+  - Zweck / Event (optional, abhängig von Aktion)
+  - Kontakt / Kommentar (optional)
+
+- Hinzufügen einer Position:
+  - Button „Position hinzufügen“ (o.ä.) erzeugt eine Zeile in der Tabelle.
+  - Die Zeile enthält: Zeitstempel, Produkt, Menge, Aktion, Orte, Fachschaft, Kommentar.
+
+- Entfernen einer Position:
+  - Jede Zeile hat einen „Entfernen“-Button mit Undo-Mechanik (je nach Version).
+
+====================================
+4. Felder im Detail
+====================================
+
+Wichtige Eingabefelder:
+
+- Fachschaft:
+  - Auswahl z. B. Fachschaft Elektro, WiWi, Extern etc.
+  - Bei „Extern“ werden zusätzliche Felder eingeblendet (z. B. externe Kontakte).
+
+- Von / Nach (from_location / to_location):
+  - Beschreibt die Warenbewegung (z. B. Lager -> Erna, Erna -> Event, Event -> Lager).
+  - Bei „Extern“ werden ebenfalls Zusatzfelder eingeblendet.
+
+- Aktion:
+  - Typische Aktionen können sein:
+    - Ausgabe
+    - Rücknahme
+    - Verbrauch
+    - Anfangsbestand
+    - Endbestand
+  - Bei „Verbrauch“, „Anfangsbestand“ oder „Endbestand“ wird das Feld „Zweck / Event“
+    eingeblendet, um den Anlass zu dokumentieren.
+
+- Produkt:
+  - Auswahl über ein Dropdown mit allen Produkten.
+  - Zusätzlich gibt es ein Suchfeld mit Autocomplete:
+    - Eingabe eines Namens-Teils → Vorschlagsliste
+    - Auswahl per Klick oder mit Pfeiltasten + Enter.
+
+- Kategorie-Filter:
+  - Dropdown, um die Produktliste nach Kategorie zu filtern (z. B. Bier, Softdrinks, Spirituosen).
+  - „Alle“ zeigt alle Produkte.
+
+- Kisten / Flaschen:
+  - Eingabe von Kisten (perCase) und Einzelflaschen.
+  - Die App berechnet automatisch die Gesamtflaschen.
+
+====================================
+5. Getränkeliste bearbeiten
+====================================
+Die Getränkeliste ist als JSON direkt in der HTML-Datei eingebettet:
+
+<script id="productData" type="application/json">
+[
+  { "name": "Absolut Vodka (0,7L)", "perCase": 6, "category": "Spirituosen" },
+  { "name": "Afri Cola (0,33L)", "perCase": 24, "category": "Softdrinks" },
+  ...
+]
+<\/script>
+
+Wichtige Felder:
+- "name": Anzeigename des Produkts (erscheint im Dropdown).
+- "perCase": Anzahl Flaschen pro Kiste / Gebinde.
+- "category": Freier Text zur Einteilung (z. B. "Bier", "Softdrinks", "Spirituosen", "Wein", "Sekt", "Sonstiges").
+
+So wird ein neues Produkt hinzugefügt:
+- Innerhalb der eckigen Klammern ein neues Objekt ergänzen:
+  {
+    "name": "Neues Getränk (0,5L)",
+    "perCase": 20,
+    "category": "Softdrinks"
+  }
+
+Hinweis:
+- JSON-Syntax beachten:
+  - Einträge mit Komma trennen
+  - Keine abschließenden Kommata nach dem letzten Eintrag
+- Kategorien sind beliebig, sollten aber einigermaßen konsistent bleiben.
+
+====================================
+6. Kategorien
+====================================
+Die Kategorien steuern:
+- Den Kategorie-Filter im Produktbereich
+- Die Gruppierung der Produkte in der UI
+
+Empfohlene Kategorien (Beispiele):
+- Bier
+- Softdrinks
+- Spirituosen
+- Wein
+- Sekt
+- Sonstiges
+
+Es ist möglich, weitere Kategorien zu verwenden (z. B. „Wein & Sekt“, „Perlwein“),
+aber für die Bedienung ist eine übersichtliche, einfache Struktur hilfreich.
+
+====================================
+7. Export-Funktionen
+====================================
+Je nach Version der Datei gibt es folgende Exportmöglichkeiten:
+
+- Excel-Export:
+  - Schreibt alle aktuellen Tabelleneinträge in eine Excel-Datei.
+  - Typischerweise eine Datei mit Datum/Uhrzeit im Namen.
+  - Eignet sich zur späteren Auswertung, Archivierung oder Weitergabe.
+
+- JSON-Export (falls vorhanden):
+  - Exportiert die Getränkeliste als JSON-Datei (z. B. products.json).
+  - Praktisch, um die Liste separat zu sichern oder in andere Tools zu übernehmen.
+
+- Lokale Speicherung (falls vorhanden):
+  - Die App kann ggf. Daten in localStorage des Browsers ablegen.
+  - Das betrifft nur den lokalen Browser und wird beim Weitergeben der HTML-Datei nicht mit übertragen.
+
+====================================
+8. Import-Funktionen (falls vorhanden)
+====================================
+Falls ein JSON-Import implementiert ist:
+
+- JSON-Import:
+  - Ermöglicht das Einlesen einer JSON-Datei mit Produktdaten.
+  - Ersetzt oder aktualisiert die aktuelle Getränkeliste in der App.
+  - Achtung: Nur gültige JSON-Dateien verwenden, die dem erwarteten Schema entsprechen:
+    [
+      { "name": "...", "perCase": 24, "category": "..." },
+      ...
+    ]
+
+====================================
+9. Technische Hinweise
+====================================
+- Die Datei sollte möglichst immer mit einem normalen Browser geöffnet werden
+  (z. B. Chrome, Edge, Firefox).
+- Kein Webserver notwendig, Öffnen per Doppelklick reicht.
+- Änderungen an der Getränkeliste werden direkt in der HTML-Datei vorgenommen
+  (im Script-Tag "productData").
+- JavaScript-Code befindet sich in einem <script>-Block innerhalb der HTML-Datei.
+
+Wichtige Funktionen im Code (nur grob):
+- loadProductsIntoApp(data.products):
+  - Lädt die Produkte in Dropdown, Autocomplete und Kategorien.
+- filterProducts():
+  - Filtert die Produktanzeige nach Kategorie.
+- appendRowFromEntry(e):
+  - Fügt eine Zeile in die Tabelle ein.
+- Event-Handler für Buttons:
+  - "Position hinzufügen" → neue Zeile erzeugen
+  - "Export" → Exportfunktion ausführen
+
+====================================
+10. Weitergabe und Übergabe an Nachfolger
+====================================
+Bei Übergabe des Tools an eine andere Person (z. B. neue Verantwortliche):
+
+Empfohlen ist, Folgendes weiterzugeben:
+- Die aktuelle HTML-Datei des Tools
+- Diese README (ist in der Datei integriert, über den Button „README öffnen“)
+- Optional:
+  - Beispiel-Excel-Export als Referenz
+  - Kurze Erklärung, wie:
+    - Produkte ergänzt werden
+    - Kategorien verwaltet werden
+    - Exporte erstellt werden
+
+Nachfolger:innen sollten vor allem wissen:
+- Wo die Getränkeliste steht (Script-Tag "productData")
+- Wie man neue Produkte hinzufügt
+- Wie Exporte erstellt werden
+- Dass die Datei offline funktioniert und leicht weitergegeben werden kann
+
+====================================
+11. Kontakt / Notizen für die Zukunft
+====================================
+Wenn Anpassungen gewünscht sind (z. B. neue Felder, weitere Exportformate, andere Kategorien),
+sollten diese direkt im JavaScript-Bereich der HTML-Datei erfolgen.
+
+Die Struktur ist so gehalten, dass sie mit grundlegenden JavaScript-/HTML-Kenntnissen
+relativ leicht erweiterbar ist.
+</script>
+
+  
+</body>
+</html>
