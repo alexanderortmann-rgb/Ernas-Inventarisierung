@@ -4267,34 +4267,39 @@ return Math.floor((date - new Date(1899, 11, 30)) / (1000 * 60 * 60 * 24));
 	-----------------------*/
 
 document.getElementById("importOrgExcelBtn").onclick = () => {
-  document.getElementById("importOrgExcelInput").click();
-};
+		  document.getElementById("importOrgExcelInput").click();
+		};
 
-document.getElementById("importOrgExcelInput").addEventListener("change", (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  e.target.value = "";
+		document.getElementById("importOrgExcelInput").addEventListener("change", (e) => {
+		  const file = e.target.files[0];
+		  if (!file) return;
+		  e.target.value = "";
 
-  const reader = new FileReader();
-  reader.onload = (evt) => {
-    try {
-      const wb = XLSX.read(evt.target.result, { type: "binary" });
-      const ws = wb.Sheets[wb.SheetNames[0]];
-      const org = XLSX.utils.sheet_to_json(ws, { defval: "" });
+		  const reader = new FileReader();
+		  reader.onload = (evt) => {
+		    try {
+		      const wb = XLSX.read(evt.target.result, { type: "binary" });
 
-      // Erwartete Spalten (aus deinem Screenshot):
-      // Fakultät, Vorname, Nachname, Fachschaft, Geschlecht, Straße,
-      // Hausnummer, 2. Adresszeile, PLZ, Ort, Kostenstelle, Mail
+		      // Sheet auswählen: bevorzugt "Orgapositionen", sonst zweites Blatt
+		      const sheetName = wb.SheetNames.includes("Orgapositionen")
+		        ? "Orgapositionen"
+		        : wb.SheetNames[1];
 
-      window.orgTable = org;
-      showStatus(`✅ Organisationstabelle geladen (${org.length} Einträge).`, "success");
-    } catch (err) {
-      console.error(err);
-      showStatus("Fehler beim Lesen der Organisationstabelle: " + err.message, "error");
-    }
-  };
-  reader.readAsBinaryString(file);
-});
+		      const ws = wb.Sheets[sheetName];
+		      const org = XLSX.utils.sheet_to_json(ws, { defval: "" });
+
+		      window.orgTable = org;
+
+		      showStatus(`✅ Organisationstabelle geladen (${org.length} Einträge, Blatt: ${sheetName}).`, "success");
+		    } catch (err) {
+		      console.error(err);
+		      showStatus("Fehler beim Lesen der Organisationstabelle: " + err.message, "error");
+		    }
+		  };
+
+		  reader.readAsBinaryString(file);
+		});
+
 
 // Hilft Fachschaft zuzuordnen
 
