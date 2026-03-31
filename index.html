@@ -843,6 +843,19 @@ body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
     <button class="btn" id="clearStorageBtn">🔄 LocalStorage zurücksetzen</button><br>
     <h3>Export-Optionen</h3>
     <button class="btn" id="exportExcel" type="button">Als Excel herunterladen</button>
+	<h3>Speicher-Optionen</h3>
+	<span class="hint">Daten werden nur temporär im Browser gespeichert. Beim Schließen des Tabs wird alles gelöscht.</span>
+	
+	<div class="row">
+	<button class="btn" id="saveLocal" type="button">
+      Speichern (lokal)
+    </button>
+
+    <button class="btn" id="loadLocal" type="button">
+      Laden (lokal)
+    </button>
+    </div>  
+	  
     <h3>Kamera-Zugriff</h3>
     <p style="font-size:0.85em; color:#666; margin:4px 0 8px;">Falls der Barcode-Scanner nicht funktioniert, hier explizit den Kamera-Zugriff anfragen:</p>
     <button class="btn" id="requestCameraBtn" type="button">📷 Kamera-Zugriff anfragen</button>
@@ -1151,21 +1164,8 @@ body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
 
     
 	
-	<span class="hint">Daten werden nur temporär im Browser gespeichert. Beim Schließen des Tabs wird alles gelöscht.</span>
 	
-	<div class="row">
-	<button class="btn" id="saveLocal" type="button">
-      Speichern (lokal)
-    </button>
-
-    <button class="btn" id="loadLocal" type="button">
-      Laden (lokal)
-    </button>
-    
-    <button class="btn" id="deleteLocalBtn">Daten löschen</button>
-    
-    </div>
-	
+	<button class="btn" id="deleteLocalBtn">Daten löschen</button>
 	
     
 	
@@ -1195,6 +1195,14 @@ body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
 	  
 	  <input type="file" id="adminExcelUpload" accept=".xlsx" style="display:none;">
 		<button class="btn" id="adminExcelTrigger">📥 In Auswertung schreiben</button>
+	<hint>Buchhaltungs-Excel auswählen und die jeweilige Spalte hochladen.</hint>
+		
+	<div class="row">
+    <button class="btn" id="importBestandExcelBtn" type="button">
+      📥 Bestand aus Excel laden
+    </button>
+    <input type="file" id="importBestandExcelInput" accept=".xlsx,.xls" style="display:none;">
+    </div>
 		
 	<div class="row">
     <button class="btn" id="exportJson" type="button">
@@ -3943,6 +3951,173 @@ function toExcelDate(date) {
   return Math.floor((date - new Date(1899, 11, 30)) / (1000 * 60 * 60 * 24));
 }
 
+
+/* ============================================================
+   BESTAND AUS EXCEL LADEN
+   Liest eine Buchhaltungs-Excel (Bestandsübersicht-Sheet oder
+   erstes Sheet), zeigt Spaltenauswahl und lädt dann die Daten
+   als Anfangsbestand-Einträge in die App.
+   ============================================================ */
+document.getElementById("importBestandExcelBtn").onclick = () => {
+  document.getElementById("importBestandExcelInput").click();
+};
+
+document.getElementById("importBestandExcelInput").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  e.target.value = "";
+
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    try {
+      const wb = XLSX.read(evt.target.result, { type: "binary" });
+
+      // Sheet auswählen: bevorzugt "Bestandsübersicht", sonst erstes
+      const sheetName = wb.SheetNames.includes("Bestandsübersicht")
+        ? "Bestandsübersicht"
+        : wb.SheetNames[0];
+      const ws = wb.Sheets[sheetName];
+      const raw = XLSX.utils.sheet_to_json(ws, { header:1, defval:"" });
+
+      // --- Struktur erkennen ---
+      // Zeilen 0-8: Metablock (Label | Wert)
+      // Zeile 9: leer
+      // Zeile 10: Header (Produkt | Anzahl Flaschen | ...)
+      // Ab Zeile 11: Produkte
+
+      // Spaltenanzahl bestimmen (ohne Spalte A = Labels)
+      const headerRow = raw[10] || [];
+      // Datenspalten = alle Spalten ab Index 1 mit Inhalt im Header oder in Daten
+      // Wir schauen auf die Metazeile "Datum" (Zeile 1, Index 0-basiert)
+      // um verfügbare Spalten zu finden
+
+      // Alle Spaltenindizes ≥ 1 die irgendwo in Meta oder Daten einen Wert haben
+      const maxCols = Math.max(...raw.map(r => r.length));
+      const dataCols = [];
+      for (let col = 1; col < maxCols; col++) {
+        // Prüfen ob Spalte irgendwo Inhalt hat (Meta-Zeilen 0-8)
+        const hasContent = raw.slice(0, 9).some(r => r[col] && r[col] !== "");
+        if (hasContent) dataCols.push(col);
+      }
+
+      if (dataCols.length === 0) {
+        showStatus("Keine befüllten Datenspalten gefunden.", "error");
+        return;
+      }
+
+      // Spalten-Labels für Auswahl erstellen (Datum + Veranstalter + Event aus Metablock)
+      function getColLabel(col) {
+		const RechNr	  = raw[0]?.[col] || "";   // Zeile 1 = Rechnungsnummer
+        const datum       = raw[1]?.[col] || "";   // Zeile 2 = Datum
+        const veranstalter= raw[2]?.[col] || "";   // Zeile 3 = Veranstalter
+        const event       = raw[3]?.[col] || "";   // Zeile 4 = Event
+        const aktion      = raw[7]?.[col] || "";   // Zeile 8 = Aktion
+        return [RechNr, datum, veranstalter, event, aktion].filter(Boolean).join(" | ") || `Spalte ${col+1}`;
+      }
+
+      // --- Spaltenauswahl ---
+      let selectedCol;
+      if (dataCols.length === 1) {
+        selectedCol = dataCols[0];
+      } else {
+        // Auswahl-Dialog bauen
+        const options = dataCols.map(col => `${col}: ${getColLabel(col)}`).join("\n");
+        const input = prompt(
+          `Mehrere Datenspalten gefunden. Bitte Nummer eingeben:\n\n${options}\n\nSpalten-Nummer:`,
+          String(dataCols[0])
+        );
+        if (input === null) return;
+        selectedCol = parseInt(input.trim(), 10);
+        if (!dataCols.includes(selectedCol)) {
+          showStatus("Ungültige Spaltenauswahl.", "error");
+          return;
+        }
+      }
+
+      // --- Metadaten aus gewählter Spalte auslesen ---
+      const importMeta = {
+        event_date:    raw[1]?.[selectedCol] || "",   // Datum
+        fachschaft:    raw[2]?.[selectedCol] || "",   // Veranstalter
+        purpose:       raw[3]?.[selectedCol] || "",   // Event
+        note:          raw[4]?.[selectedCol] || "",   // Kommentar
+        name:          raw[5]?.[selectedCol] || "",   // Kontakt → ins Namensfeld
+        from_location: raw[6]?.[selectedCol] || "",   // Von Bestand
+        action:        raw[7]?.[selectedCol] || "",   // Aktion
+        to_location:   raw[8]?.[selectedCol] || "",   // Zu Bestand
+      };
+
+      // Datum ggf. konvertieren (Excel-Seriennummer oder Textformat)
+      function parseExcelDate(val) {
+        if (!val) return "";
+        if (typeof val === "number") {
+          // Excel-Seriennummer → JS-Date
+          const d = new Date(Math.round((val - 25569) * 86400 * 1000));
+          return d.toISOString().split("T")[0]; // YYYY-MM-DD für input[type=date]
+        }
+        if (typeof val === "string") {
+          // Deutsches Format DD.MM.YYYY oder D.M.YYYY
+          const m = val.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+          if (m) return `${m[3]}-${m[2].padStart(2,"0")}-${m[1].padStart(2,"0")}`;
+          // ISO direkt
+          if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
+        }
+        return "";
+      }
+      importMeta.event_date = parseExcelDate(importMeta.event_date);
+
+      // Metadaten ins Formular übernehmen
+      applyMeta(importMeta);
+
+      // --- Produktdaten ab Zeile 11 (Index 11) einlesen ---
+      const produktRows = raw.slice(11);
+      const now = new Date().toLocaleString("de-DE");
+      let geladen = 0;
+
+      produktRows.forEach(row => {
+        const produkt = String(row[0] || "").trim();
+        const menge   = Number(row[selectedCol]) || 0;
+        const notiz   = String(row[2] || "").trim(); // Spalte C = Kommentar
+
+        if (!produkt || produkt === "0" || menge === 0) return;
+
+        const perCase = bottlesPerCase[normalizeKey(produkt)] || 1;
+        const boxes   = perCase > 1 ? Math.floor(menge / perCase) : 0;
+        const bottles = perCase > 1 ? menge % perCase : menge;
+
+        const entry = {
+          timestamp: now,
+          product:   produkt,
+          boxes,
+          bottles,
+          total:     menge,
+          action:    importMeta.action || "Anfangsbestand",
+          purpose:   importMeta.purpose || "",
+          from:      importMeta.from_location || "",
+          to:        importMeta.to_location || "",
+          fachschaft:importMeta.fachschaft || "",
+          note:      notiz,
+          contact:   importMeta.name || ""
+        };
+        appendRowFromEntry(entry);
+        geladen++;
+      });
+
+      showStatus(`✅ ${geladen} Produkt(e) aus Excel geladen (Spalte: ${getColLabel(selectedCol)}).`, "success");
+
+    } catch (err) {
+      console.error(err);
+      showStatus("Fehler beim Lesen der Excel-Datei: " + err.message, "error");
+    }
+  };
+  reader.readAsBinaryString(file);
+});
+
+// Hilfsfunktion: JS-Date → Excel-Seriennummer
+function toExcelDate(date) {
+
+  // Excel zählt ab 30.12.1899
+  return Math.floor((date - new Date(1899, 11, 30)) / (1000 * 60 * 60 * 24));
+}	
   
 /*=========================
 	Optionsmenü Kram
