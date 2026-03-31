@@ -4076,7 +4076,7 @@ document.getElementById("importBestandExcelInput").addEventListener("change", (e
       produktRows.forEach(row => {
         const produkt = String(row[0] || "").trim();
         const menge   = Number(row[selectedCol]) || 0;
-        const notiz   = String(row[2] || "").trim(); // Spalte C = Kommentar
+        //const notiz   = String(row[2] || "").trim(); // Spalte C = Kommentar
 
         if (!produkt || produkt === "0" || menge === 0) return;
 
@@ -4095,7 +4095,7 @@ document.getElementById("importBestandExcelInput").addEventListener("change", (e
           from:      importMeta.from_location || "",
           to:        importMeta.to_location || "",
           fachschaft:importMeta.fachschaft || "",
-          note:      notiz,
+          note:      note,
           contact:   importMeta.name || ""
         };
         appendRowFromEntry(entry);
