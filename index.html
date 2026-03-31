@@ -1204,6 +1204,13 @@ body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
     </button>
     <input type="file" id="importBestandExcelInput" accept=".xlsx,.xls" style="display:none;">
     </div>
+
+	<span class="hint"> Tabelle mit Kontaktdaten zur Rechnungserstellung laden. </span>
+	<input type="file" id="importOrgExcelInput" accept=".xlsx,.xls" style="display:none">
+	<button class="btn" id="importOrgExcelBtn">Organisationstabelle laden</button>
+
+	<button class="btn" type="button" id="generateRechnungBtn" type="button">Rechnung erzeugen</button>
+
 		
 	<div class="row">
     <button class="btn" id="exportJson" type="button">
@@ -4176,15 +4183,20 @@ if (commentCol !== null) {
 
 // Metadaten aus gewählter Spalte auslesen (wie im Original)
 const importMeta = {
- event_date:    raw[1]?.[selectedCol] || "",   // Datum
- fachschaft:    raw[2]?.[selectedCol] || "",   // Veranstalter
- purpose:       raw[3]?.[selectedCol] || "",   // Event
- note:          raw[4]?.[selectedCol] || "",   // Kommentar
- name:          raw[5]?.[selectedCol] || "",   // Kontakt
- from_location: raw[6]?.[selectedCol] || "",   // Von Bestand
- action:        raw[7]?.[selectedCol] || "",   // Aktion
- to_location:   raw[8]?.[selectedCol] || "",   // Zu Bestand
+  rechnungsnummer: 	raw[0]?.[selectedCol] || "",   // Rechnungsnummer
+  rechnungstyp:	raw[1]?.[selectedCol] || "",	// Intern oder Extern
+  event_date:    raw[2]?.[selectedCol] || "",   // Datum
+  veranstalter:  raw[3]?.[selectedCol] || "",   // Veranstalter
+  fachschaftCode:raw[4]?.[selectedCol] || "",   // Fachschafts-Kürzel
+  purpose:       raw[5]?.[selectedCol] || "",   // Event
+  note:          raw[6]?.[selectedCol] || "",   // Kommentar
+  name:          raw[7]?.[selectedCol] || "",   // Kontakt
+  from_location: raw[8]?.[selectedCol] || "",   // Von Bestand
+  action:        raw[9]?.[selectedCol] || "",   // Aktion
+  to_location:   raw[10]?.[selectedCol] || "",   // Zu Bestand
 };
+window.lastImportMeta = importMeta;
+
 
 // Datum ggf. konvertieren
 function parseExcelDate(val) {
@@ -4249,6 +4261,217 @@ Hilfsfunktion: JS-Date → Excel-Seriennummer
 function toExcelDate(date) {
 return Math.floor((date - new Date(1899, 11, 30)) / (1000 * 60 * 60 * 24));
 }
+
+/*--------------------------
+	Import für Organisations-Tabelle
+	-----------------------*/
+
+document.getElementById("importOrgExcelBtn").onclick = () => {
+  document.getElementById("importOrgExcelInput").click();
+};
+
+document.getElementById("importOrgExcelInput").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  e.target.value = "";
+
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    try {
+      const wb = XLSX.read(evt.target.result, { type: "binary" });
+      const ws = wb.Sheets[wb.SheetNames[0]];
+      const org = XLSX.utils.sheet_to_json(ws, { defval: "" });
+
+      // Erwartete Spalten (aus deinem Screenshot):
+      // Fakultät, Vorname, Nachname, Fachschaft, Geschlecht, Straße,
+      // Hausnummer, 2. Adresszeile, PLZ, Ort, Kostenstelle, Mail
+
+      window.orgTable = org;
+      showStatus(`✅ Organisationstabelle geladen (${org.length} Einträge).`, "success");
+    } catch (err) {
+      console.error(err);
+      showStatus("Fehler beim Lesen der Organisationstabelle: " + err.message, "error");
+    }
+  };
+  reader.readAsBinaryString(file);
+});
+
+// Hilft Fachschaft zuzuordnen
+
+function findOrgEntryByCode(code) {
+  if (!window.orgTable || !Array.isArray(window.orgTable)) return null;
+  if (!code) return null;
+  const c = code.toString().trim();
+  return window.orgTable.find(row => {
+    const f = (row["Fakultät"] || row["Fakultaet"] || "").toString().trim();
+    return f.toLowerCase() === c.toLowerCase();
+
+  }) || null;
+}
+
+/*--------------------------
+		Rechnungserstellung
+------------------------*/
+
+// Preis-LookUp und Verbrauchstabelle erstellen
+	
+function getProductByName(name) {
+  if (!window.products || !Array.isArray(window.products)) return null;
+  return window.products.find(p => p.name === name) || null;
+}
+
+function buildVerbrauchstabelle(entries, isIntern) {
+  const rows = [];
+  let sum = 0;
+
+  entries.forEach(e => {
+    if (!e.product) return;
+    const total = Number(e.total) || 0;
+    if (total === 0) return;
+
+    const p = getProductByName(e.product);
+    if (!p) return;
+
+    const preis = isIntern ? (p.ek_int || 0) : (p.ek_ext || 0);
+    const gesamt = preis * total;
+
+    rows.push({
+      Getränk: e.product,
+      Menge: total,
+      Einzelpreis: preis.toFixed(2),
+      Gesamtpreis: gesamt.toFixed(2)
+    });
+
+    sum += gesamt;
+  });
+
+  return { rows, sum };
+}
+
+// Zusatzkosten aus der App holen
+
+function collectZusatzkosten() {
+  const val = id => Number(document.getElementById(id)?.value.replace(",", ".") || 0);
+
+  const gema       = val("kosten_gema");
+  const reinigung  = val("kosten_reinigung");
+  const glasbruch  = val("kosten_glasbruch");
+  const kommission = val("kosten_kommission");
+  const sonstige   = val("kosten_sonstige");
+
+  const sumZusatz = gema + reinigung + glasbruch + kommission + sonstige;
+
+  return {
+    gema,
+    reinigung,
+    glasbruch,
+    kommission,
+    sonstige,
+    sumZusatz
+  };
+}
+
+	// Hauptfunktion der Rechnungserstellung
+async function generateRechnungDoc(entries, importMeta) {
+  if (!window.orgTable) {
+    showStatus("Bitte zuerst die Organisationstabelle laden.", "error");
+    return;
+  }
+
+  const org = findOrgEntryByCode(importMeta.fachschaftCode);
+  if (!org) {
+    showStatus(`Kein Organisationseintrag für Code "${importMeta.fachschaftCode}" gefunden.`, "error");
+    return;
+  }
+
+  const isIntern = (importMeta.rechnungstyp || "").toString().toLowerCase().includes("intern");
+
+  const { rows: verbrauchRows, sum: sumGetr } = buildVerbrauchstabelle(entries, isIntern);
+  const zusatz = collectZusatzkosten();
+  const gesamt = sumGetr + zusatz.sumZusatz;
+
+  const templateFile = isIntern
+    ? "AStA Rechnung Vorlage intern.docx"
+    : "AStA Rechnung Vorlage externV2.docx";
+
+  try {
+    const res = await fetch(templateFile);
+    const buffer = await res.arrayBuffer();
+
+    const zip = new PizZip(buffer);
+    const doc = new window.docxtemplater(zip, {
+      paragraphLoop: true,
+      linebreaks: true
+    });
+
+    const datumRech = new Date().toLocaleDateString("de-DE");
+    const datumEvent = importMeta.event_date || "";
+
+    doc.setData({
+      Verfasste_Studierendenschaft: "Verfasste Studierendenschaft",
+      Fachschaft: org.Fachschaft || "",
+      Vorname: org.Vorname || "",
+      Nachname: org.Nachname || "",
+      zweite_Adresszeile: org["2. Adresszeile"] || "",
+      Straße: org.Straße || "",
+      Hausnummer: org.Hausnummer || "",
+      PLZ: org.PLZ || "",
+      Ort: org.Ort || "",
+      Kostenstelle: org.Kostenstelle || "",
+      Anrede: org.Geschlecht || "geehrte Damen und Herren",
+
+      DatumRech: datumRech,
+      Datum: datumEvent,
+      Rechnungsnummer: importMeta.rechnungsnummer || "",
+
+      Event: importMeta.purpose || "",
+
+      Getr: sumGetr.toFixed(2),
+      Reig: zusatz.reinigung.toFixed(2),
+      GBr: zusatz.glasbruch.toFixed(2),
+      Kom: zusatz.kommission.toFixed(2),
+      Gema: zusatz.gema.toFixed(2),
+      Sonst: zusatz.sonstige.toFixed(2),
+      Rechnungsbetrag: gesamt.toFixed(2),
+
+      Verbrauchstabelle: verbrauchRows
+    });
+
+    doc.render();
+
+    const out = doc.getZip().generate({
+      type: "blob",
+      mimeType: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    });
+
+    const fnameBase = `${importMeta.rechnungsnummer || "Rechnung"}_${importMeta.purpose || ""}`.replace(/\s+/g, "_");
+    saveAs(out, `${fnameBase}.docx`);
+
+    showStatus("✅ Rechnung erzeugt und heruntergeladen.", "success");
+  } catch (err) {
+    console.error(err);
+    showStatus("Fehler beim Erzeugen der Rechnung: " + err.message, "error");
+  }
+}
+
+	// Der on-click handler
+document.getElementById("generateRechnungBtn").onclick = () => {
+  const entries = tableToJSON();
+  if (!entries.length) {
+    showStatus("Keine Positionen erfasst.", "error");
+    return;
+  }
+
+  if (!window.lastImportMeta) {
+    showStatus("Keine Buchhaltungs-Metadaten vorhanden (Excel-Import).", "error");
+    return;
+  }
+
+  generateRechnungDoc(entries, window.lastImportMeta);
+};
+
+
+
 
   
 /*=========================
