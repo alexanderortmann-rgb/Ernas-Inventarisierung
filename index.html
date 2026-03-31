@@ -3953,171 +3953,302 @@ function toExcelDate(date) {
 
 
 /* ============================================================
-   BESTAND AUS EXCEL LADEN
-   Liest eine Buchhaltungs-Excel (Bestandsübersicht-Sheet oder
-   erstes Sheet), zeigt Spaltenauswahl und lädt dann die Daten
-   als Anfangsbestand-Einträge in die App.
-   ============================================================ */
+BESTAND AUS EXCEL LADEN
+Liest eine Buchhaltungs-Excel (Bestandsübersicht-Sheet oder
+erstes Sheet), zeigt Spaltenauswahl (visuell) und lädt dann
+die Daten als Einträge in die App.
+============================================================ */
+
 document.getElementById("importBestandExcelBtn").onclick = () => {
-  document.getElementById("importBestandExcelInput").click();
+document.getElementById("importBestandExcelInput").click();
 };
 
 document.getElementById("importBestandExcelInput").addEventListener("change", (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-  e.target.value = "";
+const file = e.target.files[0];
+if (!file) return;
+e.target.value = "";
 
-  const reader = new FileReader();
-  reader.onload = (evt) => {
-    try {
-      const wb = XLSX.read(evt.target.result, { type: "binary" });
+const reader = new FileReader();
+reader.onload = (evt) => {
+ try {
+   const wb = XLSX.read(evt.target.result, { type: "binary" });
 
-      // Sheet auswählen: bevorzugt "Bestandsübersicht", sonst erstes
-      const sheetName = wb.SheetNames.includes("Bestandsübersicht")
-        ? "Bestandsübersicht"
-        : wb.SheetNames[0];
-      const ws = wb.Sheets[sheetName];
-      const raw = XLSX.utils.sheet_to_json(ws, { header:1, defval:"" });
+   // Sheet auswählen: bevorzugt "Bestandsübersicht", sonst erstes
+   const sheetName = wb.SheetNames.includes("Bestandsübersicht")
+     ? "Bestandsübersicht"
+     : wb.SheetNames[0];
+   const ws = wb.Sheets[sheetName];
+   const raw = XLSX.utils.sheet_to_json(ws, { header:1, defval:"" });
 
-      // --- Struktur erkennen ---
-      // Zeilen 0-8: Metablock (Label | Wert)
-      // Zeile 9: leer
-      // Zeile 10: Header (Produkt | Anzahl Flaschen | ...)
-      // Ab Zeile 11: Produkte
+   // --- Produkt-Header robust finden ---
+   function findProductHeader(raw) {
+     for (let i = 0; i < raw.length; i++) {
+       const cell = (raw[i][0] || "").toString().trim().toLowerCase();
+       if (cell === "produkt") return i;
+     }
+     return -1;
+   }
 
-      // Spaltenanzahl bestimmen (ohne Spalte A = Labels)
-      const headerRow = raw[10] || [];
-      // Datenspalten = alle Spalten ab Index 1 mit Inhalt im Header oder in Daten
-      // Wir schauen auf die Metazeile "Datum" (Zeile 1, Index 0-basiert)
-      // um verfügbare Spalten zu finden
+   const headerIndex = findProductHeader(raw);
+   if (headerIndex === -1) {
+     showStatus("Keine Produktliste gefunden (keine Zeile beginnt mit 'Produkt').", "error");
+     return;
+   }
 
-      // Alle Spaltenindizes ≥ 1 die irgendwo in Meta oder Daten einen Wert haben
-      const maxCols = Math.max(...raw.map(r => r.length));
-      const dataCols = [];
-      for (let col = 1; col < maxCols; col++) {
-        // Prüfen ob Spalte irgendwo Inhalt hat (Meta-Zeilen 0-8)
-        const hasContent = raw.slice(0, 9).some(r => r[col] && r[col] !== "");
-        if (hasContent) dataCols.push(col);
-      }
+   let produktStart = headerIndex + 1;
+   while (produktStart < raw.length && (raw[produktStart] || []).every(v => v === "")) {
+     produktStart++;
+   }
+   const produktRows = raw.slice(produktStart);
 
-      if (dataCols.length === 0) {
-        showStatus("Keine befüllten Datenspalten gefunden.", "error");
-        return;
-      }
+   // --- Datenspalten erkennen (alle Spalten mit Mengenwerten) ---
+   const maxCols = Math.max(...raw.map(r => r.length));
+   const dataCols = [];
+   for (let col = 1; col < maxCols; col++) {
+     const hasData = produktRows.some(r => r[col] && r[col] !== "");
+     if (hasData) dataCols.push(col);
+   }
 
-      // Spalten-Labels für Auswahl erstellen (Datum + Veranstalter + Event aus Metablock)
-      function getColLabel(col) {
-		const RechNr	  = raw[0]?.[col] || "";   // Zeile 1 = Rechnungsnummer
-        const datum       = raw[1]?.[col] || "";   // Zeile 2 = Datum
-        const veranstalter= raw[2]?.[col] || "";   // Zeile 3 = Veranstalter
-        const event       = raw[3]?.[col] || "";   // Zeile 4 = Event
-        const aktion      = raw[7]?.[col] || "";   // Zeile 8 = Aktion
-        return [RechNr, datum, veranstalter, event, aktion].filter(Boolean).join(" | ") || `Spalte ${col+1}`;
-      }
+   if (dataCols.length === 0) {
+     showStatus("Keine befüllten Datenspalten gefunden.", "error");
+     return;
+   }
 
-      // --- Spaltenauswahl ---
-      let selectedCol;
-      if (dataCols.length === 1) {
-        selectedCol = dataCols[0];
-      } else {
-        // Auswahl-Dialog bauen
-        const options = dataCols.map(col => `${col}: ${getColLabel(col)}`).join("\n");
-        const input = prompt(
-          `Mehrere Datenspalten gefunden. Bitte Nummer eingeben:\n\n${options}\n\nSpalten-Nummer:`,
-          String(dataCols[0])
-        );
-        if (input === null) return;
-        selectedCol = parseInt(input.trim(), 10);
-        if (!dataCols.includes(selectedCol)) {
-          showStatus("Ungültige Spaltenauswahl.", "error");
-          return;
-        }
-      }
+   // --- visuelle Spaltenauswahl oder Direktwahl ---
+   if (dataCols.length === 1) {
+     continueImport(raw, produktRows, headerIndex, dataCols[0]);
+   } else {
+     showColumnSelector(dataCols, raw, (col) => {
+       continueImport(raw, produktRows, headerIndex, col);
+     });
+   }
 
-      // --- Metadaten aus gewählter Spalte auslesen ---
-      const importMeta = {
-        event_date:    raw[1]?.[selectedCol] || "",   // Datum
-        fachschaft:    raw[2]?.[selectedCol] || "",   // Veranstalter
-        purpose:       raw[3]?.[selectedCol] || "",   // Event
-        note:          raw[4]?.[selectedCol] || "",   // Kommentar
-        name:          raw[5]?.[selectedCol] || "",   // Kontakt → ins Namensfeld
-        from_location: raw[6]?.[selectedCol] || "",   // Von Bestand
-        action:        raw[7]?.[selectedCol] || "",   // Aktion
-        to_location:   raw[8]?.[selectedCol] || "",   // Zu Bestand
-      };
-
-      // Datum ggf. konvertieren (Excel-Seriennummer oder Textformat)
-      function parseExcelDate(val) {
-        if (!val) return "";
-        if (typeof val === "number") {
-          // Excel-Seriennummer → JS-Date
-          const d = new Date(Math.round((val - 25569) * 86400 * 1000));
-          return d.toISOString().split("T")[0]; // YYYY-MM-DD für input[type=date]
-        }
-        if (typeof val === "string") {
-          // Deutsches Format DD.MM.YYYY oder D.M.YYYY
-          const m = val.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
-          if (m) return `${m[3]}-${m[2].padStart(2,"0")}-${m[1].padStart(2,"0")}`;
-          // ISO direkt
-          if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
-        }
-        return "";
-      }
-      importMeta.event_date = parseExcelDate(importMeta.event_date);
-
-      // Metadaten ins Formular übernehmen
-      applyMeta(importMeta);
-
-      // --- Produktdaten ab Zeile 11 (Index 11) einlesen ---
-      const produktRows = raw.slice(11);
-      const now = new Date().toLocaleString("de-DE");
-      let geladen = 0;
-
-      produktRows.forEach(row => {
-        const produkt = String(row[0] || "").trim();
-        const menge   = Number(row[selectedCol]) || 0;
-        const notiz   = String(row[2] || "").trim(); // Spalte C = Kommentar
-
-        if (!produkt || produkt === "0" || menge === 0) return;
-
-        const perCase = bottlesPerCase[normalizeKey(produkt)] || 1;
-        const boxes   = perCase > 1 ? Math.floor(menge / perCase) : 0;
-        const bottles = perCase > 1 ? menge % perCase : menge;
-
-        const entry = {
-          timestamp: now,
-          product:   produkt,
-          boxes,
-          bottles,
-          total:     menge,
-          action:    importMeta.action || "Anfangsbestand",
-          purpose:   importMeta.purpose || "",
-          from:      importMeta.from_location || "",
-          to:        importMeta.to_location || "",
-          fachschaft:importMeta.fachschaft || "",
-          note:      notiz,
-          contact:   importMeta.name || ""
-        };
-        appendRowFromEntry(entry);
-        geladen++;
-      });
-
-      showStatus(`✅ ${geladen} Produkt(e) aus Excel geladen (Spalte: ${getColLabel(selectedCol)}).`, "success");
-
-    } catch (err) {
-      console.error(err);
-      showStatus("Fehler beim Lesen der Excel-Datei: " + err.message, "error");
-    }
-  };
-  reader.readAsBinaryString(file);
+ } catch (err) {
+   console.error(err);
+   showStatus("Fehler beim Lesen der Excel-Datei: " + err.message, "error");
+ }
+};
+reader.readAsBinaryString(file);
 });
 
-// Hilfsfunktion: JS-Date → Excel-Seriennummer
-function toExcelDate(date) {
+/* ------------------------------------------------------------
+VISUELLE SPALTENAUSWAHL (mit Suchfeld + größerem Fenster)
+------------------------------------------------------------ */
+function showColumnSelector(dataCols, raw, onSelect) {
+// Overlay
+const overlay = document.createElement("div");
+overlay.style.position = "fixed";
+overlay.style.top = 0;
+overlay.style.left = 0;
+overlay.style.width = "100vw";
+overlay.style.height = "100vh";
+overlay.style.background = "rgba(0,0,0,0.55)";
+overlay.style.zIndex = 9999;
+overlay.style.display = "flex";
+overlay.style.alignItems = "center";
+overlay.style.justifyContent = "center";
+overlay.style.backdropFilter = "blur(4px)";
 
-  // Excel zählt ab 30.12.1899
-  return Math.floor((date - new Date(1899, 11, 30)) / (1000 * 60 * 60 * 24));
-}	
+// Container
+const box = document.createElement("div");
+box.style.background = "white";
+box.style.padding = "24px";
+box.style.borderRadius = "14px";
+box.style.width = "80vw";
+box.style.height = "80vh";
+box.style.overflow = "hidden";
+box.style.display = "flex";
+box.style.flexDirection = "column";
+box.style.boxShadow = "0 6px 30px rgba(0,0,0,0.35)";
+overlay.appendChild(box);
+
+// Suchfeld
+const search = document.createElement("input");
+search.type = "text";
+search.placeholder = "Spalten durchsuchen (Datum, Event, Aktion …)";
+search.style.padding = "10px 14px";
+search.style.marginBottom = "16px";
+search.style.border = "1px solid #ccc";
+search.style.borderRadius = "8px";
+search.style.fontSize = "16px";
+search.style.width = "100%";
+box.appendChild(search);
+
+// Scrollbereich
+const scroll = document.createElement("div");
+scroll.style.flex = "1";
+scroll.style.overflowY = "auto";
+scroll.style.display = "grid";
+scroll.style.gridTemplateColumns = "repeat(auto-fit, minmax(260px, 1fr))";
+scroll.style.gap = "16px";
+box.appendChild(scroll);
+
+document.body.appendChild(overlay);
+
+// Farblogik
+function getActionColor(action) {
+ const a = (action || "").toLowerCase();
+ if (a.includes("verbrauch")) return "#ffe0e0";
+ if (a.includes("anfangs")) return "#e0ffe0";
+ if (a.includes("endbestand")) return "#e0f0ff";
+ if (a.includes("lager")) return "#f0f0f0";
+ if (a.includes("liefer")) return "#fffbe0";
+ return "#f7f7f7";
+}
+
+// Karten erzeugen
+const cards = [];
+
+dataCols.forEach(col => {
+ const rechNr = raw[0]?.[col] || "";
+ const datum  = raw[1]?.[col] || "";
+ const fach   = raw[2]?.[col] || "";
+ const event  = raw[3]?.[col] || "";
+ const aktion = raw[7]?.[col] || "";
+
+ const card = document.createElement("div");
+ card.style.padding = "14px";
+ card.style.borderRadius = "10px";
+ card.style.cursor = "pointer";
+ card.style.border = "1px solid #ccc";
+ card.style.background = getActionColor(aktion);
+ card.style.transition = "transform 0.15s ease, box-shadow 0.15s ease";
+ card.dataset.search = `${rechNr} ${datum} ${fach} ${event} ${aktion}`.toLowerCase();
+
+ card.onmouseenter = () => {
+   card.style.transform = "scale(1.03)";
+   card.style.boxShadow = "0 3px 10px rgba(0,0,0,0.2)";
+ };
+ card.onmouseleave = () => {
+   card.style.transform = "scale(1)";
+   card.style.boxShadow = "none";
+ };
+
+ card.innerHTML = `
+   <strong>Spalte ${col+1}</strong><br>
+   <small>${rechNr}</small><br>
+   <strong>${datum}</strong><br>
+   ${fach}<br>
+   <em>${event}</em><br>
+   <strong>${aktion}</strong>
+ `;
+
+ card.onclick = () => {
+   document.body.removeChild(overlay);
+   onSelect(col);
+ };
+
+ scroll.appendChild(card);
+ cards.push(card);
+});
+
+// Live-Suche
+search.addEventListener("input", () => {
+ const q = search.value.toLowerCase();
+ cards.forEach(card => {
+   card.style.display = card.dataset.search.includes(q) ? "block" : "none";
+ });
+});
+}
+
+
+/* ------------------------------------------------------------
+HAUPT-IMPORTLOGIK (nach Spaltenwahl)
+------------------------------------------------------------ */
+function continueImport(raw, produktRows, headerIndex, selectedCol) {
+// Kommentarspalte erkennen
+function detectCommentColumn() {
+ const headerRow = raw[headerIndex] || [];
+ if (headerRow.length >= 3 && (headerRow[2] || "").toString().toLowerCase().includes("kommentar")) {
+   return 2;
+ }
+ if (headerRow.length > 3) return null;
+ return null;
+}
+
+const commentCol = detectCommentColumn();
+
+let importComments = true;
+if (commentCol !== null) {
+ importComments = confirm("Kommentarspalte erkannt. Kommentare importieren?");
+}
+
+// Metadaten aus gewählter Spalte auslesen (wie im Original)
+const importMeta = {
+ event_date:    raw[1]?.[selectedCol] || "",   // Datum
+ fachschaft:    raw[2]?.[selectedCol] || "",   // Veranstalter
+ purpose:       raw[3]?.[selectedCol] || "",   // Event
+ note:          raw[4]?.[selectedCol] || "",   // Kommentar
+ name:          raw[5]?.[selectedCol] || "",   // Kontakt
+ from_location: raw[6]?.[selectedCol] || "",   // Von Bestand
+ action:        raw[7]?.[selectedCol] || "",   // Aktion
+ to_location:   raw[8]?.[selectedCol] || "",   // Zu Bestand
+};
+
+// Datum ggf. konvertieren
+function parseExcelDate(val) {
+ if (!val) return "";
+ if (typeof val === "number") {
+   const d = new Date(Math.round((val - 25569) * 86400 * 1000));
+   return d.toISOString().split("T")[0];
+ }
+ if (typeof val === "string") {
+   const m = val.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})$/);
+   if (m) return `${m[3]}-${m[2].padStart(2,"0")}-${m[1].padStart(2,"0")}`;
+   if (/^\d{4}-\d{2}-\d{2}$/.test(val)) return val;
+ }
+ return "";
+}
+importMeta.event_date = parseExcelDate(importMeta.event_date);
+
+applyMeta(importMeta);
+
+const now = new Date().toLocaleString("de-DE");
+let geladen = 0;
+
+produktRows.forEach(row => {
+ const produkt = String(row[0] || "").trim();
+ const menge   = Number(row[selectedCol]) || 0;
+
+ const notiz = (importComments && commentCol !== null && row.length > commentCol)
+   ? String(row[commentCol] || "").trim()
+   : "";
+
+ if (!produkt || produkt === "0" || menge === 0) return;
+
+ const perCase = bottlesPerCase[normalizeKey(produkt)] || 1;
+ const boxes   = perCase > 1 ? Math.floor(menge / perCase) : 0;
+ const bottles = perCase > 1 ? menge % perCase : menge;
+
+ const entry = {
+   timestamp: now,
+   product:   produkt,
+   boxes,
+   bottles,
+   total:     menge,
+   action:    importMeta.action || "Anfangsbestand",
+   purpose:   importMeta.purpose || "",
+   from:      importMeta.from_location || "",
+   to:        importMeta.to_location || "",
+   fachschaft:importMeta.fachschaft || "",
+   note:      notiz,
+   contact:   importMeta.name || ""
+ };
+
+ appendRowFromEntry(entry);
+ geladen++;
+});
+
+showStatus(`✅ ${geladen} Produkt(e) aus Excel geladen (Spalte ${selectedCol+1}).`, "success");
+}
+
+/* ------------------------------------------------------------
+Hilfsfunktion: JS-Date → Excel-Seriennummer
+------------------------------------------------------------ */
+function toExcelDate(date) {
+return Math.floor((date - new Date(1899, 11, 30)) / (1000 * 60 * 60 * 24));
+}
+
   
 /*=========================
 	Optionsmenü Kram
