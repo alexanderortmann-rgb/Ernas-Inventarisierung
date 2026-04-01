@@ -3908,24 +3908,38 @@ document.getElementById("printBtn").onclick = () => {
 function druckeHTML(html) {
   const iframe = document.createElement("iframe");
   Object.assign(iframe.style, {
-    position: "fixed", left: "-9999px", top: "0",
-    width: "210mm", height: "297mm", border: "none"
+    position: "fixed",
+    left: "-9999px",
+    top: "0",
+    width: "210mm",
+    height: "297mm",
+    border: "none"
   });
+
   document.body.appendChild(iframe);
+
   const doc = iframe.contentDocument || iframe.contentWindow.document;
+
+  // WICHTIG: Template ist bereits ein vollständiges HTML-Dokument
   doc.open();
   doc.write(html);
   doc.close();
+
+  // Firefox braucht onload auf dem iframe.contentWindow
   iframe.onload = () => {
     setTimeout(() => {
       iframe.contentWindow.focus();
       iframe.contentWindow.print();
+
       setTimeout(() => {
-        if (document.body.contains(iframe)) document.body.removeChild(iframe);
-      }, 2000);
+        if (document.body.contains(iframe)) {
+          document.body.removeChild(iframe);
+        }
+      }, 1500);
     }, 200);
   };
 }
+
  
 // Fallback falls Template-Datei nicht erreichbar
 function doPrintFallback(titleStr, metaItems, tabellenZeilen, name, sigDate, fachschaft, action, fromLoc, toLoc, purpose, eventDate, fmtDate) {
