@@ -4446,22 +4446,102 @@ const blob = new Blob([html], { type: "text/html" });
 saveAs(blob, window.currentRechnungFilename + ".html");
 }
 
+const PDF_STYLES = `
+	  @page {
+	    size: A4;
+	    margin: 20mm;
+	  }
+
+	  body {
+	    width: 170mm;
+	    min-height: 257mm;
+	    font-family: Arial, sans-serif;
+	    font-size: 12pt;
+	    color: #000;
+	    background: #fff;
+	  }
+
+	  h1, h2, h3 {
+	    margin: 0 0 10px 0;
+	    font-weight: bold;
+	  }
+
+	  table {
+	    width: 100%;
+	    border-collapse: collapse;
+	    margin-top: 10px;
+	    font-size: 11pt;
+	  }
+
+	  th {
+	    background: #eee;
+	    border: 1px solid #000;
+	    padding: 6px;
+	    text-align: left;
+	  }
+
+	  td {
+	    border: 1px solid #000;
+	    padding: 6px;
+	  }
+
+	  .right {
+	    text-align: right;
+	  }
+
+	  .section {
+	    margin-top: 20px;
+	  }
+	`;
+
+
 function downloadPDF() {
-	  const container = document.getElementById("rechnungPreviewContainer");
-	  const element = document.getElementById("rechnungPreview");
+  const html = window.currentRechnungHTML;
 
-	  // Sicherstellen, dass es sichtbar ist
-	  const oldDisplay = container.style.display;
-	  container.style.display = "block";
+  // 1. Iframe erzeugen
+  const iframe = document.createElement("iframe");
+  iframe.style.position = "absolute";
+  iframe.style.left = "-9999px";
+  iframe.style.top = "0";
+  iframe.style.width = "210mm";
+  iframe.style.height = "297mm";
+  document.body.appendChild(iframe);
 
-	  // Minimal warten, damit Browser rendert
-	  setTimeout(() => {
-	    html2pdf().from(element).save(window.currentRechnungFilename + ".pdf")
-	      .then(() => {
-	        container.style.display = oldDisplay;
-	      });
-	  }, 50);
-	}
+  // 2. HTML + isoliertes Stylesheet in das Iframe schreiben
+  iframe.contentDocument.open();
+  iframe.contentDocument.write(`
+    <html>
+      <head>
+        <meta charset="UTF-8">
+        <style>${PDF_STYLES}</style>
+      </head>
+      <body>${html}</body>
+    </html>
+  `);
+  iframe.contentDocument.close();
+
+  // 3. Warten, bis alles gerendert ist
+  setTimeout(() => {
+    const element = iframe.contentDocument.body;
+
+    const opt = {
+      margin: 0,
+      filename: window.currentRechnungFilename + ".pdf",
+      image: { type: "jpeg", quality: 0.98 },
+      html2canvas: {
+        scale: 2,
+        useCORS: true,
+        backgroundColor: "#ffffff"
+      },
+      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
+    };
+
+    html2pdf().set(opt).from(element).save().then(() => {
+      document.body.removeChild(iframe);
+    });
+
+  }, 300);
+}
 
 
 /* ==========================
