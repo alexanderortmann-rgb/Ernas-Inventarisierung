@@ -4715,33 +4715,32 @@ saveAs(blob, window.currentRechnungFilename + ".html");
 
 function downloadPDF() {
   const html = window.currentRechnungHTML;
-  if (!html) { alert("Keine Rechnung vorhanden."); return; }
- 
-  // Iframe unsichtbar erstellen
-  const iframe = document.createElement("iframe");
-  Object.assign(iframe.style, {
-    position: "fixed", left: "-9999px", top: "0",
-    width: "210mm", height: "297mm", border: "none"
-  });
-  document.body.appendChild(iframe);
- 
-  const doc = iframe.contentDocument || iframe.contentWindow.document;
-  doc.open();
-  doc.write(html);
-  doc.close();
- 
-  // Warten bis gerendert, dann drucken
-  iframe.onload = () => {
-    setTimeout(() => {
-      iframe.contentWindow.focus();
-      iframe.contentWindow.print();
-      // Iframe nach kurzer Zeit entfernen (nach Print-Dialog)
-      setTimeout(() => {
-        if (document.body.contains(iframe)) document.body.removeChild(iframe);
-      }, 2000);
-    }, 300);
+  if (!html) {
+    alert("Keine Rechnung vorhanden.");
+    return;
+  }
+
+  // Neues Fenster öffnen
+  const win = window.open("", "_blank");
+
+  if (!win) {
+    alert("Popup blockiert. Bitte Popups erlauben.");
+    return;
+  }
+
+  // Rechnung in das neue Fenster schreiben
+  win.document.open();
+  win.document.write(html);
+  win.document.close();
+
+  // Optional: Fenster fokussieren, damit STRG+P sofort geht
+  win.onload = () => {
+    win.focus();
+    // Wenn du willst, dass der Druckdialog automatisch aufgeht:
+    // win.print();
   };
 }
+
 
 
 /* ==========================
