@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Rechnung {{Rechnungsnummer}}</title>
+  <style>
+    body { font-family: Arial, sans-serif; font-size: 11pt; line-height: 1.4; }
+    h1, h2, h3 { margin: 0 0 8px 0; }
+    .header { margin-bottom: 16px; }
+    .addr-block { margin-bottom: 16px; }
+    .table-wrapper { margin: 16px 0; }
+    table { border-collapse: collapse; width: 100%; }
+    td, th { border: 1px solid #000; padding: 4px 6px; }
+    th { background: #eee; }
+    .right { text-align: right; }
+    .mt-2 { margin-top: 8px; }
+    .mt-3 { margin-top: 16px; }
+  </style>
+</head>
+<body>
+
+  <div class="addr-block">
+    {{AdresseBlock}}
+  </div>
+
+  <div class="header">
+    <div>Verfasste Studierendenschaft – Beethovenstraße 1 – 73430 Aalen</div>
+  </div>
+
+  <p>Datum: {{DatumRech}}<br>
+  Rechnungsnummer: {{Rechnungsnummer}}</p>
+
+  <p><strong>Rechnung: {{Rechnungsnummer}}</strong></p>
+
+  <p>Sehr {{Anrede}} {{Nachname}},</p>
+
+  <p>vielen Dank für Ihren Auftrag für das Event „{{Event}}“ am {{Datum}}.</p>
+
+  <p>Vereinbarungsgemäß berechnen wir Ihnen hiermit folgende Leistungen:</p>
+
+  <div class="table-wrapper">
+    <table>
+      <tr>
+        <td>Position</td>
+        <td colspan="2">Bezeichnung</td>
+        <td colspan="2">Betrag (€)</td>
+      </tr>
+      <tr>
+        <td>1</td>
+        <td colspan="2">Getränkeverbrauch (siehe Mengenliste im Anhang)</td>
+        <td colspan="2" class="right">{{Getr}} €</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td colspan="2">Reinigungskosten und Hygieneartikel</td>
+        <td colspan="2" class="right">{{Reig}} €</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td colspan="2">Glasbruch</td>
+        <td colspan="2" class="right">{{GBr}} €</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td colspan="2">Kommissionskosten</td>
+        <td colspan="2" class="right">{{Kom}} €</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td colspan="2">GEMA-Gebühren</td>
+        <td colspan="2" class="right">{{Gema}} €</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td colspan="2">Sonstige Gebühren</td>
+        <td colspan="2" class="right">{{Sonst}} €</td>
+      </tr>
+      <tr>
+        <td colspan="2">Rechnungsbetrag</td>
+        <td colspan="2" class="right">{{Rechnungsbetrag}} €</td>
+        <td></td>
+      </tr>
+    </table>
+  </div>
+
+  <p>IBAN: DE51 6145 0050 1001 4615 99<br>
+  Verwendungszweck: Rechnung {{Rechnungsnummer}}</p>
+
+  <p>Bitte überweisen Sie den Rechnungsbetrag innerhalb von 14 Tagen auf unser oben genanntes Konto. Nach Ablauf dieser Frist geraten Sie automatisch in Zahlungsverzug (§ 286 Abs. 3 BGB). Verzugszinsen werden gemäß den gesetzlichen Bestimmungen berechnet.</p>
+
+  <p>Für weitere Fragen stehen wir Ihnen sehr gerne zur Verfügung.</p>
+
+  <p class="mt-3">Mit freundlichen Grüßen<br><br>{{Finanzvorstand}}<br>Finanzvorstand</p>
+
+  <p class="mt-3"><strong>Rechtlicher Hinweis:</strong><br>
+  Als Körperschaft des öffentlichen Rechts sind wir gemäß den geltenden umsatzsteuerrechtlichen Vorschriften von der Erhebung der Umsatzsteuer befreit. Rechnungen werden daher ohne Ausweis von Umsatzsteuer ausgestellt.</p>
+
+  <p class="mt-3"><strong>Anhang:</strong> Getränkemengenliste</p>
+
+  <div class="mt-2">
+    {{GetraenkeTabelle}}
+  </div>
+
+</body>
+</html>

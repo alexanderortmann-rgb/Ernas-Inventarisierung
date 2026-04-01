@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>Interne Kostenstellenverrechnung {{Rechnungsnummer}}</title>
+  <style>
+    body { font-family: Arial, sans-serif; font-size: 11pt; line-height: 1.4; }
+    h1, h2, h3 { margin: 0 0 8px 0; }
+    .header { margin-bottom: 16px; }
+    .addr-block { margin-bottom: 16px; }
+    .table-wrapper { margin: 16px 0; }
+    table { border-collapse: collapse; width: 100%; }
+    td, th { border: 1px solid #000; padding: 4px 6px; }
+    th { background: #eee; }
+    .right { text-align: right; }
+    .mt-2 { margin-top: 8px; }
+    .mt-3 { margin-top: 16px; }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <div>Verfasste Studierendenschaft – Beethovenstraße 1 – 73430 Aalen</div>
+  </div>
+
+  <div class="addr-block">
+    {{AdresseBlock}}
+  </div>
+
+  <p>Datum: {{DatumRech}}<br>
+  Rechnungsnummer: {{Rechnungsnummer}}</p>
+
+  <p><strong>Interne Kostenstellenverrechnung – {{Kostenstelle}}</strong><br>
+  Verrechnungsnummer: {{Rechnungsnummer}}</p>
+
+  <p>Betreff: Interne Verrechnung – Veranstaltung „{{Event}}“</p>
+
+  <p>Sehr {{Anrede}} {{Nachname}},</p>
+
+  <p>vielen Dank für Ihren Auftrag für das Event „{{Event}}“ am {{Datum}}.</p>
+
+  <p>Vereinbarungsgemäß berechnen wir Ihnen hiermit folgende Leistungen:</p>
+
+  <div class="table-wrapper">
+    <table>
+      <tr>
+        <td>Position</td>
+        <td colspan="2">Bezeichnung</td>
+        <td colspan="3">Betrag (€)</td>
+      </tr>
+      <tr>
+        <td>1</td>
+        <td colspan="2">Getränkeverbrauch (siehe Mengenliste im Anhang)</td>
+        <td colspan="3" class="right">{{Getr}} €</td>
+      </tr>
+      <tr>
+        <td>2</td>
+        <td colspan="2">Reinigungskosten und Hygieneartikel</td>
+        <td colspan="3" class="right">{{Reig}} €</td>
+      </tr>
+      <tr>
+        <td>3</td>
+        <td colspan="2">Glasbruch</td>
+        <td colspan="3" class="right">{{GBr}} €</td>
+      </tr>
+      <tr>
+        <td>4</td>
+        <td colspan="2">Kommissionskosten</td>
+        <td colspan="3" class="right">{{Kom}} €</td>
+      </tr>
+      <tr>
+        <td>5</td>
+        <td colspan="2">GEMA-Gebühren</td>
+        <td colspan="3" class="right">{{Gema}} €</td>
+      </tr>
+      <tr>
+        <td>6</td>
+        <td colspan="2">Sonstige Gebühren</td>
+        <td colspan="3" class="right">{{Sonst}} €</td>
+      </tr>
+      <tr>
+        <td colspan="2">Rechnungsbetrag</td>
+        <td colspan="3" class="right">{{Rechnungsbetrag}} €</td>
+        <td></td>
+      </tr>
+    </table>
+  </div>
+
+  <p>Der Betrag ist innerhalb von 14 Tagen nach Erhalt dieser internen Verrechnung auf das untenstehende Konto zu überweisen.</p>
+
+  <p>Diese Abrechnung erfolgt innerhalb der Studierendenschaft der Hochschule Aalen zwischen dem AStA und den betreffenden Kostenstellen. Sie stellt keine steuerrechtliche Rechnung im Sinne des § 14 UStG dar, sondern dient ausschließlich der internen Kostenstellenverrechnung. Die aufgeführten Beträge dienen der internen Aufteilung und haben keine Außenwirkung.</p>
+
+  <p class="mt-3">Mit freundlichen Grüßen<br><br>{{Finanzvorstand}}<br>Finanzvorstand</p>
+
+  <p class="mt-3"><strong>Anhang:</strong> Getränkemengenliste</p>
+
+  <div class="mt-2">
+    {{GetraenkeTabelle}}
+  </div>
+
+</body>
+</html>
