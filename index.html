@@ -189,6 +189,184 @@ body.darkmode #autocomplete_list li b {
 .action-lieferung:hover { background-color: #fff2b3; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transform: scale(1.01); }
 
 /* =========================
+   Rechnung Preview Modal
+========================= */
+#rechnungPreviewOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(4px);
+  z-index: 10000;
+  animation: rechnungFadeIn 0.2s ease;
+}
+
+#rechnungPreviewModal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(95vw, 900px);
+  height: min(92vh, 1000px);
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+  z-index: 10001;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: rechnungSlideIn 0.25s cubic-bezier(0.34,1.56,0.64,1);
+}
+
+@keyframes rechnungFadeIn {
+  from { opacity: 0; } to { opacity: 1; }
+}
+@keyframes rechnungSlideIn {
+  from { transform: translate(-50%, -48%); opacity: 0; }
+  to   { transform: translate(-50%, -50%); opacity: 1; }
+}
+
+#rechnungModalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: #fff;
+  flex-shrink: 0;
+  gap: 12px;
+}
+
+#rechnungModalTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.05em;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+
+#rechnungEditBadge {
+  font-size: 0.75em;
+  background: rgba(255,200,50,0.25);
+  color: #ffd700;
+  border: 1px solid rgba(255,200,50,0.4);
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+
+#rechnungModalActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.rechnung-btn {
+  padding: 7px 14px;
+  border: none;
+  border-radius: 7px;
+  font-size: 0.85em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+.rechnung-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+}
+.rechnung-btn-primary {
+  background: #2563eb;
+  color: #fff;
+}
+.rechnung-btn-primary:hover { background: #1d4ed8; }
+.rechnung-btn-secondary {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.3);
+}
+.rechnung-btn-secondary:hover { background: rgba(255,255,255,0.25); }
+.rechnung-btn-edit {
+  background: #f59e0b;
+  color: #fff;
+}
+.rechnung-btn-edit:hover { background: #d97706; }
+.rechnung-btn-danger {
+  background: rgba(239,68,68,0.2);
+  color: #fca5a5;
+  border: 1px solid rgba(239,68,68,0.35);
+}
+.rechnung-btn-danger:hover {
+  background: rgba(239,68,68,0.35);
+  color: #fff;
+}
+
+#rechnungModalBody {
+  flex: 1;
+  overflow-y: auto;
+  background: #f4f5f7;
+  padding: 28px;
+  display: flex;
+  justify-content: center;
+}
+
+#rechnungPreview {
+  background: #fff;
+  width: 100%;
+  max-width: 800px;
+  min-height: 400px;
+  padding: 40px 48px;
+  border-radius: 8px;
+  box-shadow: 0 2px 16px rgba(0,0,0,0.12);
+  font-family: 'Georgia', 'Times New Roman', serif;
+  line-height: 1.6;
+  color: #1a1a1a;
+}
+
+/* Darkmode fuer Modal */
+body.darkmode #rechnungPreviewModal {
+  background: #1e1e2e;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+}
+body.darkmode #rechnungModalBody {
+  background: #13131f;
+}
+body.darkmode #rechnungPreview {
+  background: #fff;
+  color: #1a1a1a;
+}
+
+/* Quill-Editor im Modal */
+#rechnungPreview .ql-toolbar {
+  border-radius: 6px 6px 0 0;
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+  position: sticky;
+  top: -28px;
+  z-index: 5;
+}
+#rechnungPreview .ql-container {
+  border-radius: 0 0 6px 6px;
+  border: 1px solid #d1d5db;
+  border-top: none;
+  font-size: 1em;
+  font-family: inherit;
+}
+
+@media (max-width: 600px) {
+  #rechnungPreviewModal {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+    top: 0; left: 0;
+    transform: none;
+  }
+  #rechnungModalBody { padding: 12px; }
+  #rechnungPreview { padding: 20px 16px; }
+  .rechnung-btn { padding: 6px 10px; font-size: 0.78em; }
+}
+
+/* =========================
    Print / PDF
 ========================= */
 #printTitle {
@@ -781,7 +959,6 @@ body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
 <script src="https://cdn.quilljs.com/1.3.7/quill.js"></script>
 
 
-
   
 </head>
 
@@ -1308,17 +1485,36 @@ body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
   </div>
 </div>
     
- <div id="rechnungPreviewContainer" style="display:none;">
-    <div style="margin-bottom:10px;">
-        <button onclick="downloadHTML()">HTML herunterladen</button>
-        <button onclick="downloadPDF()">PDF herunterladen</button>
-        <button onclick="enableEditor()">Bearbeiten</button>
-        <button onclick="closePreview()">Schließen</button>
+ <!-- Rechnung Preview Modal -->
+<div id="rechnungPreviewContainer" style="display:none;">
+  <div id="rechnungPreviewOverlay"></div>
+  <div id="rechnungPreviewModal">
+    <div id="rechnungModalHeader">
+      <div id="rechnungModalTitle">
+        <span style="font-size:1.2em;">🧾</span>
+        <span>Rechnungsvorschau</span>
+        <span id="rechnungEditBadge" style="display:none;">✏️ Bearbeitungsmodus</span>
+      </div>
+      <div id="rechnungModalActions">
+        <button class="rechnung-btn rechnung-btn-secondary" onclick="downloadHTML()" title="Als HTML-Datei speichern">
+          ⬇️ HTML
+        </button>
+        <button class="rechnung-btn rechnung-btn-primary" onclick="downloadPDF()" title="Als PDF herunterladen">
+          📄 PDF
+        </button>
+        <button class="rechnung-btn rechnung-btn-edit" onclick="enableEditor()" id="editRechnungBtn" title="Rechnung bearbeiten">
+          ✏️ Bearbeiten
+        </button>
+        <button class="rechnung-btn rechnung-btn-danger" onclick="closePreview()" title="Vorschau schließen">
+          ✕ Schließen
+        </button>
+      </div>
     </div>
 
-    <div id="rechnungPreview"
-         style="background:white; padding:20px; border:1px solid #ccc;">
+    <div id="rechnungModalBody">
+      <div id="rechnungPreview"></div>
     </div>
+  </div>
 </div>
 
   </div>
