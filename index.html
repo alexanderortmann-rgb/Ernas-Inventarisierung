@@ -301,27 +301,29 @@ body.darkmode #autocomplete_list li b {
   color: #fff;
 }
 
-#rechnungModalBody {
-  flex: 1;
-  overflow-y: auto;
-  background: #f4f5f7;
-  padding: 28px;
-  display: flex;
-  justify-content: center;
-}
+  #rechnungModalBody {
+    flex: 1;
+    overflow-y: auto;
+    background: #e8e8e8;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;  /* oben ausrichten, nicht zentriert */
+  }
 
-#rechnungPreview {
-  background: #fff;
-  width: 100%;
-  max-width: 800px;
-  min-height: 400px;
-  padding: 40px 48px;
-  border-radius: 8px;
-  box-shadow: 0 2px 16px rgba(0,0,0,0.12);
-  font-family: 'Georgia', 'Times New Roman', serif;
-  line-height: 1.6;
-  color: #1a1a1a;
-}
+  #rechnungPreview {
+    background: #fff;
+    width: 794px;          /* A4-Breite in Pixel (96dpi) */
+    min-height: 1122px;    /* A4-Höhe in Pixel */
+    padding: 0;            /* Padding kommt vom Template selbst */
+    border-radius: 4px;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.15);
+    font-family: Arial, sans-serif;
+    line-height: 1.45;
+    color: #1a1a1a;
+    flex-shrink: 0;        /* wichtig: kein Zusammenquetschen im Flex-Container */
+    overflow: visible;
+  }
 
 /* Darkmode fuer Modal */
 body.darkmode #rechnungPreviewModal {
@@ -3831,84 +3833,143 @@ document.getElementById("printBtn").onclick = () => {
   const fromLoc   = (document.getElementById("from_location")?.value || "").trim();
   const toLoc     = (document.getElementById("to_location")?.value || "").trim();
   const name      = (document.getElementById("name")?.value || "").trim();
-
-  // Datum formatieren (ISO → DE)
+ 
   function fmtDate(iso) {
     if (!iso) return "–";
     const [y, m, d] = iso.split("-");
     return `${d}.${m}.${y}`;
   }
-
-  // Titel zusammenbauen
+ 
   const titleParts = ["Zählliste"];
   if (purpose)   titleParts.push(purpose);
   if (eventDate) titleParts.push(fmtDate(eventDate));
   const titleStr = titleParts.join(" – ");
-
-  // Tabellendaten aus der sichtbaren Liste holen
+ 
   const rows = Array.from(document.querySelectorAll("#list tbody tr"))
     .filter(r => r.style.display !== "none");
-
-  // Spalten im PDF: Produkt | Kisten | Fl. | Ges. | Kommentar
-  // (Zeit, Aktion, Zweck/Event, Von, Zu, Fachschaft, Entfernen werden weggelassen)
-  const colHeaders = ["Produkt","Kisten","Fl.","Ges.","Kommentar"];
-  const colIdx     = [1, 2, 3, 4, 10]; // index in den tds
-
+ 
+  const colIdx = [1, 2, 3, 4, 10];
   const tableRows = rows.map(r => {
     const tds = Array.from(r.querySelectorAll("td"));
     return colIdx.map(i => (tds[i]?.textContent || "").trim());
   });
-
-  // Unterschrift: wer übergibt / wer nimmt
+ 
   const sigDate = eventDate ? fmtDate(eventDate) : "___________";
-
-  const printArea = document.getElementById("printArea");
-  printArea.innerHTML = `
-    <div class="print-header">
-      <h1>${titleStr}</h1>
-      <div class="print-meta-grid">
-        <span><b>Fachschaft:</b> ${fachschaft || "–"}</span>
-        <span><b>Aktion:</b> ${action || "–"}</span>
-        <span><b>Von:</b> ${fromLoc || "–"}</span>
-        <span><b>Nach:</b> ${toLoc || "–"}</span>
-        ${purpose   ? `<span><b>Event / Zweck:</b> ${purpose}</span>` : ""}
-        ${eventDate ? `<span><b>Datum:</b> ${fmtDate(eventDate)}</span>` : ""}
-        ${name      ? `<span><b>Verantwortlich:</b> ${name}</span>` : ""}
-        <span><b>Druckdatum:</b> ${new Date().toLocaleString("de-DE")}</span>
-      </div>
-    </div>
-
-    <table class="print-table">
-      <thead>
-        <tr>${colHeaders.map(h => `<th>${h}</th>`).join("")}</tr>
-      </thead>
-      <tbody>
-        ${tableRows.length
-          ? tableRows.map(row =>
-              `<tr>${row.map(cell => `<td>${cell}</td>`).join("")}</tr>`
-            ).join("")
-          : `<tr><td colspan="${colHeaders.length}" style="text-align:center; padding:8px;">Keine Einträge vorhanden</td></tr>`
-        }
-      </tbody>
-    </table>
-
-    <div class="print-signatures">
-      <div class="sig-block">
-        <div class="sig-line"></div>
-        <div><b>Übergabe durch:</b> ${name || "_______________________"}</div>
-        <div style="margin-top:2px; font-size:7.5pt;">Datum: ${sigDate} &nbsp;&nbsp; Unterschrift</div>
-      </div>
-      <div class="sig-block">
-        <div class="sig-line"></div>
-        <div><b>Übernahme durch:</b> _______________________</div>
-        <div style="margin-top:2px; font-size:7.5pt;">Datum: ${sigDate} &nbsp;&nbsp; Unterschrift</div>
-      </div>
-    </div>
-  `;
-
-  // Kurz warten, damit der Browser das DOM rendert, dann drucken
-  setTimeout(() => window.print(), 100);
+ 
+  // Meta-Felder als HTML-Schnipsel
+  const metaItems = [
+    fachschaft ? `<span><b>Fachschaft:</b> ${fachschaft}</span>` : "",
+    action     ? `<span><b>Aktion:</b> ${action}</span>`         : "",
+    fromLoc    ? `<span><b>Von:</b> ${fromLoc}</span>`           : "",
+    toLoc      ? `<span><b>Nach:</b> ${toLoc}</span>`            : "",
+    purpose    ? `<span><b>Event / Zweck:</b> ${purpose}</span>` : "",
+    eventDate  ? `<span><b>Datum:</b> ${fmtDate(eventDate)}</span>` : "",
+    name       ? `<span><b>Verantwortlich:</b> ${name}</span>`   : "",
+    `<span><b>Druckdatum:</b> ${new Date().toLocaleString("de-DE")}</span>`
+  ].filter(Boolean).join("\n");
+ 
+  // Tabellenzeilen
+  const tabellenZeilen = tableRows.length
+    ? tableRows.map(row =>
+        `<tr>${row.map(cell => `<td>${cell}</td>`).join("")}</tr>`
+      ).join("\n")
+    : `<tr><td colspan="5" style="text-align:center;padding:8px;">Keine Einträge vorhanden</td></tr>`;
+ 
+  // Template laden (oder inline wenn kein fetch möglich)
+  const templatePath = "zaehlliste.html"; // Pfad anpassen falls nötig
+  // Fallback: Template inline bauen wenn fetch nicht verfügbar
+  const templateURL = typeof window._zaehlistenTemplatePath !== "undefined"
+    ? window._zaehlistenTemplatePath
+    : templatePath;
+ 
+  fetch(templateURL)
+    .then(r => {
+      if (!r.ok) throw new Error("Template nicht gefunden");
+      return r.text();
+    })
+    .then(tmpl => {
+      const filled = tmpl
+        .replace(/{{Titel}}/g,               titleStr)
+        .replace(/{{DruckDatum}}/g,           new Date().toLocaleString("de-DE"))
+        .replace(/{{MetaFelder}}/g,           metaItems)
+        .replace(/{{TabellenZeilen}}/g,       tabellenZeilen)
+        .replace(/{{VerantwortlichePerson}}/g, name || "_______________________")
+        .replace(/{{EventDatum}}/g,           sigDate);
+ 
+      druckeHTML(filled);
+    })
+    .catch(() => {
+      // Fallback: direkt inline drucken (alter Weg mit printArea)
+      doPrintFallback(titleStr, metaItems, tabellenZeilen, name, sigDate, fachschaft, action, fromLoc, toLoc, purpose, eventDate, fmtDate);
+    });
 };
+ 
+// Hilfsfunktion: HTML in Iframe drucken
+function druckeHTML(html) {
+  const iframe = document.createElement("iframe");
+  Object.assign(iframe.style, {
+    position: "fixed", left: "-9999px", top: "0",
+    width: "210mm", height: "297mm", border: "none"
+  });
+  document.body.appendChild(iframe);
+  const doc = iframe.contentDocument || iframe.contentWindow.document;
+  doc.open();
+  doc.write(html);
+  doc.close();
+  iframe.onload = () => {
+    setTimeout(() => {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+      setTimeout(() => {
+        if (document.body.contains(iframe)) document.body.removeChild(iframe);
+      }, 2000);
+    }, 200);
+  };
+}
+ 
+// Fallback falls Template-Datei nicht erreichbar
+function doPrintFallback(titleStr, metaItems, tabellenZeilen, name, sigDate, fachschaft, action, fromLoc, toLoc, purpose, eventDate, fmtDate) {
+  const html = `<!DOCTYPE html>
+<html lang="de"><head><meta charset="UTF-8"><title>${titleStr}</title>
+<style>
+  * { box-sizing:border-box; margin:0; padding:0; }
+  body { font-family:Arial,sans-serif; font-size:9pt; color:#000; }
+  .page { width:210mm; padding:12mm 14mm 0 14mm; min-height:297mm; display:flex; flex-direction:column; }
+  h1 { font-size:13pt; margin-bottom:3mm; }
+  .meta { display:grid; grid-template-columns:1fr 1fr; gap:1px 12mm; font-size:8pt; margin-bottom:4mm; padding-bottom:2mm; border-bottom:1px solid #000; }
+  .meta b { min-width:90px; display:inline-block; }
+  table { width:100%; border-collapse:collapse; font-size:7.5pt; margin-top:3mm; }
+  th { background:#e8e8e8; border:1px solid #000; padding:2px 4px; text-align:left; }
+  td { border:1px solid #000; padding:2px 4px; vertical-align:top; }
+  th:nth-child(1),td:nth-child(1){width:42%} th:nth-child(2),td:nth-child(2){width:10%;text-align:center}
+  th:nth-child(3),td:nth-child(3){width:10%;text-align:center} th:nth-child(4),td:nth-child(4){width:10%;text-align:center}
+  .sigs { margin-top:12mm; display:grid; grid-template-columns:1fr 1fr; gap:0 20mm; }
+  .sig-line { border-bottom:1px solid #000; height:12mm; margin-bottom:2px; }
+  .footer { margin-top:auto; padding:2mm 0 3mm; border-top:1px solid #888; font-size:7pt; color:#555; display:flex; justify-content:space-between; }
+  .content { flex:1; }
+  @page { size:A4 portrait; margin:0; }
+</style></head><body>
+<div class="page">
+  <div class="content">
+    <h1>${titleStr}</h1>
+    <div class="meta">${metaItems}</div>
+    <table>
+      <thead><tr><th>Produkt</th><th>Kisten</th><th>Fl.</th><th>Ges.</th><th>Kommentar</th></tr></thead>
+      <tbody>${tabellenZeilen}</tbody>
+    </table>
+    <div class="sigs">
+      <div><div class="sig-line"></div><b>Übergabe durch:</b> ${name||"_______________________"}<br><small>Datum: ${sigDate} &nbsp; Unterschrift</small></div>
+      <div><div class="sig-line"></div><b>Übernahme durch:</b> _______________________<br><small>Datum: ${sigDate} &nbsp; Unterschrift</small></div>
+    </div>
+  </div>
+  <div class="footer">
+    <span>Verfasste Studierendenschaft · Beethovenstraße 1 · 73430 Aalen · Finanzen-VS@hs-aalen.de</span>
+    <span>www.vs-hs-aalen.de</span>
+  </div>
+</div>
+</body></html>`;
+  druckeHTML(html);
+}
 
 
 document.addEventListener("keydown", (e) => {
@@ -4621,10 +4682,21 @@ const data = {
 html = fillTemplate(html, data);
 
 // Preview anzeigen
-const preview = document.getElementById("rechnungPreview");
-preview.innerHTML = html;
-
-document.getElementById("rechnungPreviewContainer").style.display = "block";
+  const preview = document.getElementById("rechnungPreview");
+  preview.setAttribute("contenteditable", "false");
+  preview.style.outline = "";
+  preview.innerHTML = html;
+ 
+  const editBtn = document.getElementById("editRechnungBtn");
+  if (editBtn) { editBtn.textContent = "✏️ Bearbeiten"; editBtn.title = "Rechnung bearbeiten"; }
+  const badge = document.getElementById("rechnungEditBadge");
+  if (badge) badge.style.display = "none";
+ 
+  document.getElementById("rechnungPreviewContainer").style.display = "block";
+ 
+  window.currentRechnungHTML = html;
+  window.currentRechnungFilename =
+    `${data.Rechnungsnummer}_${data.Event}`.replace(/\s+/g, "_");
 
 // Speichern für Export
 window.currentRechnungHTML = html;
@@ -4642,101 +4714,34 @@ const blob = new Blob([html], { type: "text/html" });
 saveAs(blob, window.currentRechnungFilename + ".html");
 }
 
-const PDF_STYLES = `
-	  @page {
-	    size: A4;
-	    margin: 20mm;
-	  }
-
-	  body {
-	    width: 170mm;
-	    min-height: 257mm;
-	    font-family: Arial, sans-serif;
-	    font-size: 12pt;
-	    color: #000;
-	    background: #fff;
-	  }
-
-	  h1, h2, h3 {
-	    margin: 0 0 10px 0;
-	    font-weight: bold;
-	  }
-
-	  table {
-	    width: 100%;
-	    border-collapse: collapse;
-	    margin-top: 10px;
-	    font-size: 11pt;
-	  }
-
-	  th {
-	    background: #eee;
-	    border: 1px solid #000;
-	    padding: 6px;
-	    text-align: left;
-	  }
-
-	  td {
-	    border: 1px solid #000;
-	    padding: 6px;
-	  }
-
-	  .right {
-	    text-align: right;
-	  }
-
-	  .section {
-	    margin-top: 20px;
-	  }
-	`;
-
-
 function downloadPDF() {
   const html = window.currentRechnungHTML;
-
-  // 1. Iframe erzeugen
+  if (!html) { alert("Keine Rechnung vorhanden."); return; }
+ 
+  // Iframe unsichtbar erstellen
   const iframe = document.createElement("iframe");
-  iframe.style.position = "absolute";
-  iframe.style.left = "-9999px";
-  iframe.style.top = "0";
-  iframe.style.width = "210mm";
-  iframe.style.height = "297mm";
+  Object.assign(iframe.style, {
+    position: "fixed", left: "-9999px", top: "0",
+    width: "210mm", height: "297mm", border: "none"
+  });
   document.body.appendChild(iframe);
-
-  // 2. HTML + isoliertes Stylesheet in das Iframe schreiben
-  iframe.contentDocument.open();
-  iframe.contentDocument.write(`
-    <html>
-      <head>
-        <meta charset="UTF-8">
-        <style>${PDF_STYLES}</style>
-      </head>
-      <body>${html}</body>
-    </html>
-  `);
-  iframe.contentDocument.close();
-
-  // 3. Warten, bis alles gerendert ist
-  setTimeout(() => {
-    const element = iframe.contentDocument.body;
-
-    const opt = {
-      margin: 0,
-      filename: window.currentRechnungFilename + ".pdf",
-      image: { type: "jpeg", quality: 0.98 },
-      html2canvas: {
-        scale: 2,
-        useCORS: true,
-        backgroundColor: "#ffffff"
-      },
-      jsPDF: { unit: "mm", format: "a4", orientation: "portrait" }
-    };
-
-    html2pdf().set(opt).from(element).save().then(() => {
-      document.body.removeChild(iframe);
-    });
-
-  }, 300);
+ 
+  const doc = iframe.contentDocument || iframe.contentWindow.document;
+  doc.open();
+  doc.write(html);
+  doc.close();
+ 
+  // Warten bis gerendert, dann drucken
+  iframe.onload = () => {
+    setTimeout(() => {
+      iframe.contentWindow.focus();
+      iframe.contentWindow.print();
+      // Iframe nach kurzer Zeit entfernen (nach Print-Dialog)
+      setTimeout(() => {
+        if (document.body.contains(iframe)) document.body.removeChild(iframe);
+      }, 2000);
+    }, 300);
+  };
 }
 
 
@@ -4744,19 +4749,45 @@ function downloadPDF() {
 EDITOR (QUILL)
 ========================== */
 
-let quillEditor = null;
-
 function enableEditor() {
-if (quillEditor) return;
-
-quillEditor = new Quill('#rechnungPreview', {
- theme: 'snow'
-});
+  const preview = document.getElementById("rechnungPreview");
+  const badge   = document.getElementById("rechnungEditBadge");
+  const editBtn = document.getElementById("editRechnungBtn");
+ 
+  if (preview.getAttribute("contenteditable") === "true") {
+    // Bearbeitungsmodus beenden und HTML speichern
+    preview.setAttribute("contenteditable", "false");
+    preview.style.outline = "";
+    preview.style.cursor  = "";
+    badge.style.display   = "none";
+    editBtn.textContent   = "✏️ Bearbeiten";
+    editBtn.title         = "Rechnung bearbeiten";
+ 
+    // Aktuellen Inhalt sichern (inkl. Bearbeitungen)
+    window.currentRechnungHTML = preview.innerHTML;
+    showStatus("Änderungen gespeichert.", "success");
+  } else {
+    // Bearbeitungsmodus starten
+    preview.setAttribute("contenteditable", "true");
+    preview.style.outline = "2px dashed #f59e0b";
+    preview.style.cursor  = "text";
+    badge.style.display   = "";
+    editBtn.textContent   = "💾 Speichern";
+    editBtn.title         = "Änderungen speichern";
+    preview.focus();
+  }
 }
-
+ 
 function closePreview() {
-document.getElementById("rechnungPreviewContainer").style.display = "none";
-quillEditor = null;
+  const preview = document.getElementById("rechnungPreview");
+  // Bearbeitungsmodus sicher beenden
+  if (preview.getAttribute("contenteditable") === "true") {
+    window.currentRechnungHTML = preview.innerHTML;
+    preview.setAttribute("contenteditable", "false");
+    preview.style.outline = "";
+  }
+  document.getElementById("rechnungPreviewContainer").style.display = "none";
+  document.getElementById("rechnungEditBadge").style.display = "none";
 }
 
 
