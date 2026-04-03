@@ -961,7 +961,9 @@ body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
 <script src="https://cdn.quilljs.com/1.3.7/quill.js"></script>
 
 <!-- ICON -->
-<link rel="icon" type="image/x-icon" href="favicon.ico">
+<link rel="icon" type="image/svg+xml" href="AStA_Logo_Endversion_2025">
+<link rel="alternate icon" href="favicon.ico">
+
 
 
   
@@ -3010,6 +3012,15 @@ function normalizeKey(str) {
   ============================ */
 
   function appendRowFromEntry(e) {
+	  
+	  // Zusatzkosten NICHT als Produkt importieren
+	  const blacklist = ["kosten", "gema", "reinigung", "glasbruch", "kommisionskosten", "sonstige gebühren", "gesamtkosten"];
+	  const prod = String(e.product || "").trim().toLowerCase();
+	  if (blacklist.includes(prod)) {
+	    return; // komplett überspringen
+	  }
+
+	  
 	  const strichlistenMode = document.getElementById("strichlistenMode").checked;
 
 	  const hasNote = e.note && e.note.trim() !== "";
@@ -4239,6 +4250,7 @@ document.getElementById("importBestandExcelInput").addEventListener("change", (e
   const file = e.target.files[0];
   if (!file) return;
   e.target.value = "";
+  
 
   const reader = new FileReader();
   reader.onload = (evt) => {
@@ -4398,6 +4410,11 @@ function continueImport(raw, produktRows, headerIndex, selectedCol) {
   // 0=Rechnungsnummer, 1=Rechnungstyp, 2=Datum, 3=Veranstalter,
   // 4=Kürzel/Code, 5=Event, 6=Kommentar, 7=Kontakt,
   // 8=Von Bestand, 9=Aktion, 10=Zu Bestand
+  
+  
+  const tbody = document.querySelector("#list tbody");
+  tbody.innerHTML = ""
+  
   const importMeta = {
     rechnungsnummer: String(raw[0]?.[selectedCol] || ""),
     rechnungstyp:    String(raw[1]?.[selectedCol] || ""),
@@ -4440,6 +4457,24 @@ function continueImport(raw, produktRows, headerIndex, selectedCol) {
   if (importMeta.to_location)   metaForApp.to_location   = importMeta.to_location;
   if (importMeta.note)          metaForApp.note          = importMeta.note;
   applyMeta(metaForApp);
+  
+//-------------------------------------------------------------
+//Zusatzkosten aus Excel lesen (Zeilen 96–100, 0-basiert)
+//-------------------------------------------------------------
+	{
+	 function parseKosten(v) {
+	   return Number(String(v || "0").replace(",", ".")) || 0;
+	 }
+	
+	 window.zusatzKosten = {
+	   gema:       parseKosten(raw[96]?.[selectedCol]),
+	   sonstige:   parseKosten(raw[97]?.[selectedCol]),
+	   kommission: parseKosten(raw[98]?.[selectedCol]),
+	   glasbruch:  parseKosten(raw[99]?.[selectedCol]),
+	   reinigung:  parseKosten(raw[100]?.[selectedCol])
+	 };
+	}
+	
 
   // Kommentarspalte prüfen (Spalte C = Index 2 in Produkt-Header)
   const headerRow = raw[headerIndex] || [];
@@ -4456,6 +4491,13 @@ function continueImport(raw, produktRows, headerIndex, selectedCol) {
     const produkt = String(row[0] || "").trim();
     const menge   = Number(row[selectedCol]) || 0;
     const notiz   = (importComments && hasCommentCol) ? String(row[2] || "").trim() : "";
+    
+ // Zusatzkosten NICHT als Produkt importieren
+    const blacklist = ["Kosten", "gema", "reinigung", "glasbruch", "Kommisionskosten", "Sonstige Gebühren","Gesamtkosten"];
+    if (blacklist.includes(produkt.toLowerCase())) {
+      return; // komplett überspringen
+    }
+
 
     if (!produkt || produkt === "0" || menge === 0) return;
 
@@ -4528,23 +4570,32 @@ RECHNUNGSERSTELLUNG (HTML-Templates statt docxtemplater)
 function formatDateDE(val) {
   if (!val) return "";
   let d;
+
   if (val instanceof Date) {
     d = val;
+  } else if (typeof val === "number") {
+    // Excel-Seriennummer
+    d = new Date(Math.round((val - 25569) * 86400 * 1000));
   } else if (typeof val === "string") {
-    if (/^\d{4}-\d{2}-\d{2}$/.test(val)) {
-      const [y, m, day] = val.split("-");
+    const s = val.trim();
+    // ISO JJJJ-MM-TT
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+      const [y, m, day] = s.split("-");
       return `${day.padStart(2,"0")}.${m.padStart(2,"0")}.${y}`;
     }
-    if (/^\d{1,2}\.\d{1,2}\.\d{4}$/.test(val)) return val;
-    d = new Date(val);
-  } else if (typeof val === "number") {
-    d = new Date(Math.round((val - 25569) * 86400 * 1000));
+    // Bereits TT.MM.JJJJ
+    if (/^\d{1,2}\.\d{1,2}\.\d{4}$/.test(s)) return s;
+    d = new Date(s);
   } else {
     return String(val);
   }
+
   if (isNaN(d.getTime())) return String(val);
-  return `${String(d.getDate()).padStart(2,"0")}.${String(d.getMonth()+1).padStart(2,"0")}.${d.getFullYear()}`;
+  const day = String(d.getDate()).padStart(2,"0");
+  const mon  = String(d.getMonth()+1).padStart(2,"0");
+  return `${day}.${mon}.${d.getFullYear()}`;
 }
+
  
 /**
  * Finanzvorstand aus Orgatabelle ermitteln.
@@ -4654,53 +4705,46 @@ catch { return null; }
 }
 
 function buildVerbrauchstabelle(entries, isIntern) {
-const zusammen = {};
-entries.forEach(e => {
- if (!e.product) return;
- zusammen[e.product] = (zusammen[e.product] || 0) + (Number(e.total) || 0);
-});
+	  const zusammen = {};
 
-const rows = [];
-let sum = 0;
+	  entries.forEach(e => {
+	    if (!e.product) return;
 
-Object.entries(zusammen).forEach(([name, total]) => {
- if (total === 0) return;
- const p = getProductByName(name);
- if (!p) return;
+	    // Zusatzkosten NICHT als Getränk behandeln
+	    const name = String(e.product).trim().toLowerCase();
+	    if (["Kosten", "gema", "reinigung", "glasbruch", "Kommisionskosten", "Sonstige Gebühren","Gesamtkosten"].includes(name)) {
+	      return;
+	    }
 
- const preis = isIntern ? (p.ek_int || 0) : (p.ek_ext || 0);
- const gesamt = preis * total;
+	    zusammen[e.product] = (zusammen[e.product] || 0) + (Number(e.total) || 0);
+	  });
 
- rows.push({
-   "Getränk": name,
-   "Menge": total,
-   "Einzelpreis": preis.toFixed(2),
-   "Gesamtpreis": gesamt.toFixed(2)
- });
+	  const rows = [];
+	  let sum = 0;
 
- sum += gesamt;
-});
+	  Object.entries(zusammen).forEach(([name, total]) => {
+	    if (total === 0) return;
+	    const p = getProductByName(name);
+	    if (!p) return;
 
-return { rows, sum };
-}
+	    const preis = isIntern ? (p.ek_int || 0) : (p.ek_ext || 0);
+	    const gesamt = preis * total;
 
-function collectZusatzkosten() {
-const val = id => {
- const el = document.getElementById(id);
- return el ? Number((el.value || "0").replace(",", ".")) || 0 : 0;
-};
+	    rows.push({
+	      "Getränk": name,
+	      "Menge": total,
+	      "Einzelpreis": preis.toFixed(2),
+	      "Gesamtpreis": gesamt.toFixed(2)
+	    });
 
-const gema = val("kosten_gema"),
-     reinigung = val("kosten_reinigung"),
-     glasbruch = val("kosten_glasbruch"),
-     kommission = val("kosten_kommission"),
-     sonstige = val("kosten_sonstige");
+	    sum += gesamt;
+	  });
 
-return {
- gema, reinigung, glasbruch, kommission, sonstige,
- sumZusatz: gema + reinigung + glasbruch + kommission + sonstige
-};
-}
+	  return { rows, sum };
+	}
+
+
+
 
 async function loadHTMLTemplate(path) {
 const response = await fetch(path);
@@ -4722,8 +4766,18 @@ if (!isIntern && !org && importMeta.fachschaftCode) {
 }
 
 const { rows: verbrauchRows, sum: sumGetr } = buildVerbrauchstabelle(entries, isIntern);
-const zusatz = collectZusatzkosten();
-const gesamt = sumGetr + zusatz.sumZusatz;
+const zusatz = window.zusatzKosten || {
+	  gema: 0, reinigung: 0, glasbruch: 0, kommission: 0, sonstige: 0
+	};
+
+	const gesamt =
+		  sumGetr +
+		  zusatz.gema +
+		  zusatz.reinigung +
+		  zusatz.glasbruch +
+		  zusatz.kommission +
+		  zusatz.sonstige;
+
 
 const templatePath = isIntern
  ? "https://raw.githubusercontent.com/alexanderortmann-rgb/Ernas-Inventarisierung/main/rechnung_intern.html"
@@ -4737,16 +4791,17 @@ const data = {
  Kostenstelle: org?.Kostenstelle || "",
  Anrede: org?.Geschlecht || "geehrte Damen und Herren",
  Nachname: org?.Nachname || "",
- DatumRech: new Date().toLocaleDateString("de-DE"),
- Datum: importMeta.event_date,
+ DatumRech: formatDateDE(new Date()),
+ Datum: formatDateDE(importMeta.event_date),
  Event: importMeta.purpose || "",
- Finanzvorstand: document.getElementById("finanzvorstand")?.value || "",
+ Finanzvorstand: getFinanzvorstand(importMeta.event_date) || "",
  Getr: sumGetr.toFixed(2),
- Reig: zusatz.reinigung.toFixed(2),
- GBr: zusatz.glasbruch.toFixed(2),
- Kom: zusatz.kommission.toFixed(2),
- Gema: zusatz.gema.toFixed(2),
- Sonst: zusatz.sonstige.toFixed(2),
+ Reig: zusatz.reinigung?.toFixed(2) || "0.00",
+ GBr: zusatz.glasbruch?.toFixed(2) || "0.00",
+ Kom: zusatz.kommission?.toFixed(2) || "0.00",
+ Gema: zusatz.gema?.toFixed(2) || "0.00",
+ Sonst: zusatz.sonstige?.toFixed(2) || "0.00",
+
  Rechnungsbetrag: gesamt.toFixed(2),
  GetraenkeTabelle: buildGetraenkeHTMLTable(verbrauchRows)
 };
