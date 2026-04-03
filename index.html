@@ -1403,8 +1403,11 @@ body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
 	<input type="file" id="importOrgExcelInput" accept=".xlsx,.xls" style="display:none">
 	<button class="btn" id="importOrgExcelBtn">Organisationstabelle laden</button>
 
-	<button class="btn" type="button" id="generateRechnungBtn" type="button">Rechnung erzeugen</button>
-
+	<div class="row">
+ 	<button class="btn" type="button" id="generateRechnungBtn">🧾 Rechnung erzeugen</button>
+  	<button class="btn" type="button" id="openRechnungPreviewBtn">📂 HTML laden & bearbeiten</button>
+	</div>
+	<input type="file" id="rechnungHtmlInput" accept=".html" style="display:none;">
 		
 	<div class="row">
     <button class="btn" id="exportJson" type="button">
@@ -4518,6 +4521,54 @@ function findOrgEntryByCode(code) {
 RECHNUNGSERSTELLUNG (HTML-Templates statt docxtemplater)
 ============================================================ */
 
+/** Datum einheitlich als TT.MM.JJJJ */
+function formatDateDE(val) {
+  if (!val) return "";
+  let d;
+  if (val instanceof Date) {
+    d = val;
+  } else if (typeof val === "string") {
+    if (/^\d{4}-\d{2}-\d{2}$/.test(val)) {
+      const [y, m, day] = val.split("-");
+      return `${day.padStart(2,"0")}.${m.padStart(2,"0")}.${y}`;
+    }
+    if (/^\d{1,2}\.\d{1,2}\.\d{4}$/.test(val)) return val;
+    d = new Date(val);
+  } else if (typeof val === "number") {
+    d = new Date(Math.round((val - 25569) * 86400 * 1000));
+  } else {
+    return String(val);
+  }
+  if (isNaN(d.getTime())) return String(val);
+  return `${String(d.getDate()).padStart(2,"0")}.${String(d.getMonth()+1).padStart(2,"0")}.${d.getFullYear()}`;
+}
+ 
+/**
+ * Finanzvorstand aus Orgatabelle ermitteln.
+ * Liest die Zeile mit Schlüssel "vorNeun" oder "nachNeun" (Groß/Klein egal).
+ * Stichtag: 01.09.2026 – davor vorNeun, ab dann nachNeun.
+ * eventDateISO: ISO-String JJJJ-MM-TT oder leer (→ heutiges Datum).
+ */
+function getFinanzvorstand(eventDateISO) {
+  const org = window.orgTable;
+  if (!org || !org.length) return "";
+ 
+  const stichtag = new Date("2026-09-01");
+  const datum    = eventDateISO ? new Date(eventDateISO) : new Date();
+  const schluessel = datum < stichtag ? "vorneun" : "nachneun";
+ 
+  const zeile = org.find(row =>
+    Object.values(row).some(v => String(v || "").trim().toLowerCase() === schluessel)
+  );
+  if (!zeile) return "";
+ 
+  // Werte der Zeile: [Schlüssel, Vorname, Nachname]
+  const vals = Object.values(zeile).map(v => String(v || "").trim()).filter(Boolean);
+  if (vals.length >= 3) return `${vals[1]} ${vals[2]}`.trim();
+  if (vals.length === 2) return vals[1];
+  return "";
+}
+	
 document.getElementById("generateRechnungBtn").onclick = () => {
 	  const entries = tableToJSON();
 	  if (!entries.length) {
@@ -4531,6 +4582,25 @@ document.getElementById("generateRechnungBtn").onclick = () => {
 	  generateRechnungDoc(entries, window.lastImportMeta);
 	};
 
+
+/* Neuer Button: vorhandene HTML-Rechnung laden, bearbeiten, drucken */
+document.getElementById("openRechnungPreviewBtn").addEventListener("click", () => {
+  document.getElementById("rechnungHtmlInput").click();
+});
+ 
+document.getElementById("rechnungHtmlInput").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  e.target.value = "";
+ 
+  const reader = new FileReader();
+  reader.onload = (evt) => {
+    const html = evt.target.result;
+    zeigeRechnungPreview(html, file.name.replace(/\.html$/i, ""));
+    showStatus(`"${file.name}" geladen – bearbeitbar und druckbar.`, "success");
+  };
+  reader.readAsText(file, "UTF-8");
+});
 
 function buildGetraenkeHTMLTable(rows) {
 if (!rows || !rows.length) {
