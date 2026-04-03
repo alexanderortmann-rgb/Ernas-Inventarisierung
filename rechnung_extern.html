@@ -20,7 +20,7 @@
       width: 210mm;
       min-height: 297mm;
       margin: 0 auto;
-      padding: 18mm 20mm 0 20mm;
+      padding: 14mm 18mm 0 18mm;
       position: relative;
       display: flex;
       flex-direction: column;
@@ -30,13 +30,14 @@
     .logo-bar {
       display: flex;
       align-items: center;
+      justify-content: space-between;
       gap: 14px;
-      margin-bottom: 8mm;
-      padding-bottom: 4mm;
+      margin-bottom: 5mm;
+      padding-bottom: 3mm;
       border-bottom: 2px solid #c00;
     }
     .logo-bar img {
-      height: 52px;
+      height: 56px;
       width: auto;
     }
     .logo-bar .org-name {
@@ -55,13 +56,13 @@
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 0 20mm;
-      margin-bottom: 8mm;
+      margin-bottom: 5mm;
     }
     .doc-header .addr-col {
       font-size: 10pt;
     }
     .doc-header .addr-col .absender-mini {
-      font-size: 7.5pt;
+      font-size: 6.5pt;
       color: #555;
       border-bottom: 1px solid #aaa;
       padding-bottom: 2px;
@@ -96,13 +97,13 @@
     }
 
     /* ===== Fließtext ===== */
-    p { margin-bottom: 3.5mm; }
+    p { margin-bottom: 2.5mm; }
 
     /* ===== Rechnungstabelle ===== */
     .rech-table {
       width: 100%;
       border-collapse: collapse;
-      margin: 4mm 0 5mm 0;
+      margin: 2.5mm 0 3mm 0;
       font-size: 9.5pt;
     }
     .rech-table th {
@@ -128,18 +129,18 @@
       background: #f9f9f9;
       border: 1px solid #ddd;
       border-left: 3px solid #c00;
-      padding: 3mm 5mm;
-      font-size: 9pt;
-      margin: 4mm 0;
+      padding: 2mm 4mm;
+      font-size: 8.5pt;
+      margin: 2.5mm 0;
     }
     .zahlungs-box b { color: #c00; }
 
     /* ===== Grußformel ===== */
-    .gruss { margin-top: 6mm; }
+    .gruss { margin-top: 4mm; }
 
     /* ===== Anhang-Trennlinie ===== */
     .anhang-hint {
-      margin-top: 5mm;
+      margin-top: 3mm;
       font-size: 9pt;
       font-weight: bold;
       color: #555;
@@ -149,8 +150,8 @@
     .rechtl-hinweis {
       font-size: 8pt;
       color: #555;
-      margin-top: 4mm;
-      padding-top: 3mm;
+      margin-top: 3mm;
+      padding-top: 2mm;
       border-top: 1px solid #ccc;
     }
 
@@ -159,17 +160,17 @@
 
     /* ===== Footer ===== */
     .page-footer {
-      margin-top: 6mm;
-      padding: 3mm 0 5mm 0;
+      margin-top: 4mm;
+      padding: 2.5mm 0 4mm 0;
       border-top: 1.5px solid #c00;
-      font-size: 7.5pt;
+      font-size: 7pt;
       color: #444;
       display: grid;
       grid-template-columns: 1fr 1fr 1fr;
-      gap: 0 6mm;
+      gap: 0 5mm;
     }
     .page-footer .fc { }
-    .page-footer .fc b { display: block; color: #111; font-size: 7.5pt; margin-bottom: 1px; }
+    .page-footer .fc b { display: block; color: #111; font-size: 7pt; margin-bottom: 1px; }
 
     /* ===== Seitenumbruch ===== */
     .page-break {
@@ -238,11 +239,11 @@
 
     <!-- Logo-Leiste -->
     <div class="logo-bar">
-      <!-- Hier Logo einfügen: <img src="logo.png" alt="VS Logo"> -->
       <div>
         <div class="org-name">Verfasste Studierendenschaft</div>
         <div class="org-sub">Hochschule Aalen · Beethovenstraße 1 · 73430 Aalen</div>
       </div>
+      <img src="AStA_Logo_Endversion_2025.svg" alt="VS Logo">
     </div>
 
     <!-- 2-Spalten-Header -->
@@ -336,7 +337,7 @@
       Verfasste Studierendenschaft<br>
       Beethovenstraße 1, 73430 Aalen<br>
       Tel: +49 (0) 7361 576-2296<br>
-      E-Mail: Finanzen-VS@hs-aalen.de
+      E-Mail: <a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="2066494e414e5a454e0d76736048530d41414c454e0e4445">[email&#160;protected]</a>
     </div>
     <div class="fc">
       <b>Bankverbindung</b>
@@ -369,6 +370,7 @@
         <div class="org-name">Verfasste Studierendenschaft</div>
         <div class="org-sub">Hochschule Aalen · Beethovenstraße 1 · 73430 Aalen</div>
       </div>
+      <img src="AStA_Logo_Endversion_2025.svg" alt="VS Logo">
     </div>
 
     <h2>Anhang – Getränkemengenliste</h2>
