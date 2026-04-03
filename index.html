@@ -4750,7 +4750,11 @@ const data = {
 
 html = fillTemplate(html, data);
 
-// Preview anzeigen
+zeigeRechnungPreview(html, `${data.Rechnungsnummer}_${data.Event}`.replace(/\s+/g, "_"));
+}
+ 
+/** Zentrales Öffnen des Preview-Modals – wird von generateRechnungDoc UND dem HTML-Laden genutzt */
+function zeigeRechnungPreview(html, filename) {
   const preview = document.getElementById("rechnungPreview");
   preview.setAttribute("contenteditable", "false");
   preview.style.outline = "";
@@ -4762,15 +4766,8 @@ html = fillTemplate(html, data);
   if (badge) badge.style.display = "none";
  
   document.getElementById("rechnungPreviewContainer").style.display = "block";
- 
-  window.currentRechnungHTML = html;
-  window.currentRechnungFilename =
-    `${data.Rechnungsnummer}_${data.Event}`.replace(/\s+/g, "_");
-
-// Speichern für Export
-window.currentRechnungHTML = html;
-window.currentRechnungFilename =
- `${data.Rechnungsnummer}_${data.Event}`.replace(/\s+/g, "_");
+  window.currentRechnungHTML     = html;
+  window.currentRechnungFilename = filename || "rechnung";
 }
 
 /* ==========================
