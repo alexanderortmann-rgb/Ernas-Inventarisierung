@@ -3913,11 +3913,14 @@ document.getElementById("printBtn").onclick = () => {
         .replace(/{{VerantwortlichePerson}}/g, name || "_______________________")
         .replace(/{{EventDatum}}/g,           sigDate);
  
-      TML(filled);
+      //TML(filled);
+      zeigeZaehllistePreview(filled);
+
     })
     .catch(() => {
       // Fallback: direkt inline drucken (alter Weg mit printArea)
-      doPrintFallback(titleStr, metaItems, tabellenZeilen, name, sigDate, fachschaft, action, fromLoc, toLoc, purpose, eventDate, fmtDate);
+      const html = doPrintFallback(titleStr, metaItems, tabellenZeilen, name, sigDate, fachschaft, action, fromLoc, toLoc, purpose, eventDate, fmtDate, true);
+      zeigeZaehllistePreview(html);
     });
 };
  
@@ -3939,6 +3942,25 @@ function druckeHTML(html) {
     win.focus();
   };
 }
+
+function zeigeZaehllistePreview(html) {
+	  const preview = document.getElementById("rechnungPreview"); 
+	  // Du kannst auch ein eigenes DIV nehmen, z. B. #zaehllistePreview
+
+	  preview.innerHTML = html;
+	  preview.setAttribute("contenteditable", "true");
+	  preview.style.outline = "2px dashed #f59e0b";
+
+	  document.getElementById("rechnungPreviewContainer").style.display = "block";
+
+	  // Button um zu drucken
+	  const printBtn = document.getElementById("editRechnungBtn");
+	  printBtn.textContent = "🖨️ Drucken";
+	  printBtn.onclick = () => {
+	    const finalHTML = preview.innerHTML;
+	    druckeHTML(finalHTML);
+	  };
+	}
 
 
 
@@ -3984,8 +4006,9 @@ function doPrintFallback(titleStr, metaItems, tabellenZeilen, name, sigDate, fac
   </div>
 </div>
 </body></html>`;
-  druckeHTML(html);
+	return html; // statt druckeHTML(html)
 }
+
 
 
 document.addEventListener("keydown", (e) => {
