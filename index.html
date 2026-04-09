@@ -975,6 +975,7 @@ body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
 
 	- Die Barcodes der Getränke erfassen ------------------------------------------------------- CHECK
 		- Barcode geht nicht immer 
+	- Barcode Erfassung sollte dann direkt in die Flaschen rein bei Erfassung wie im Dropdown
 	- VK Preise anpassen
 	- Mehrere Kategorien einem Produkt zuordnen?	
 		
@@ -1604,8 +1605,9 @@ body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
   },
   {
     "name": "Ananassaft (1L)",
-    "perCase": 1,
-    "category": ["Saft", "Softdrinks", "Aktuell auf Lager"]
+    "perCase": 6,
+    "category": ["Saft", "Softdrinks", "Aktuell auf Lager"],
+	"barcode": "4004154085209"
   },
   {
     "name": "Aperol Aperitivo Bitter (1L)",
@@ -1827,6 +1829,7 @@ body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
     "name": "Gordons Dry Gin (1L)",
     "perCase": 6,
     "category": ["Spirituosen", "Aktuell auf Lager"],
+	"barcode": "5000289925433",
     "vk_price": 40.00,
     "ek_int": 16.72,
     "ek_ext": 16.72
@@ -1842,7 +1845,7 @@ body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
     "name": "Havanna 3y (1L)",
     "perCase": 6,
     "category": ["Spirituosen", "Aktuell auf Lager", "Ernas Standardsortiment"],
-    "barcode": "8501110089982",
+    "barcode": ["8501110089982", "8501110080255"],
     "vk_price": 40.00,
     "ek_int": 22.08,
     "ek_ext": 22.08
@@ -1859,7 +1862,7 @@ body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
     "name": "Jägermeister (1L)",
     "perCase": 6,
     "category": ["Spirituosen", "Aktuell auf Lager", "Ernas Standardsortiment"],
-    "barcode": "4067700011015",
+    "barcode": ["4067700011015", "4067700011008"],
     "vk_price": 40.00,
     "ek_int": 16.89,
     "ek_ext": 16.89
@@ -1911,7 +1914,8 @@ body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
   {
     "name": "Mangosaft (1L)",
     "perCase": 1,
-    "category": ["Saft", "Aktuell auf Lager", "Softdrinks"]
+    "category": ["Saft", "Aktuell auf Lager", "Softdrinks"],
+	"barcode": "4056489318323"
   },
   {
     "name": "Maracujasaft (1L)",
@@ -2132,7 +2136,7 @@ body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
     "name": "Tequila Silber (0,7L)",
     "perCase": 6,
     "category": ["Spirituosen", "Aktuell auf Lager", "Ernas Standardsortiment"],
-    "barcode": ["4062400716408", "4062400542104"],
+    "barcode": ["4062400716408", "4062400542104", "4062400130608"],
     "vk_price": 30.00,
     "ek_int": 13.60,
     "ek_ext": 13.60
@@ -2167,9 +2171,10 @@ body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
     "category": ["Spirituosen", "Sonstiges" ,"Aktuell auf Lager"]
   },
   {
-    "name": "Bacardi Carta Negra (0,7L)",
+    "name": "Bacardi Carta Blanca (0,7L)",
     "perCase": 1,
-    "category": ["Spirituosen" ,"Aktuell auf Lager"]
+    "category": ["Spirituosen" ,"Aktuell auf Lager"],
+	"barcode": "5010677012638"
   },
   {
     "name": "Monin Cocos (1L)",
