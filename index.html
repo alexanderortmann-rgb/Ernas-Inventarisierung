@@ -3937,21 +3937,32 @@ function druckeHTML(html) {
 
 function zeigeZaehllistePreview(html) {
 	  const preview = document.getElementById("rechnungPreview"); 
-	  // Du kannst auch ein eigenes DIV nehmen, z. B. #zaehllistePreview
 
 	  preview.innerHTML = html;
-	  preview.setAttribute("contenteditable", "true");
-	  preview.style.outline = "2px dashed #f59e0b";
+	  // Startet im Ansichtsmodus – Bearbeiten-Button bleibt funktionsfähig
+	  preview.setAttribute("contenteditable", "false");
+	  preview.style.outline = "";
+
+	  // Titelzeile anpassen
+	  const titleEl = document.querySelector("#rechnungModalTitle span:nth-child(2)");
+	  if (titleEl) titleEl.textContent = "Zähllisten-Vorschau";
+
+	  // Merken, dass dies eine Zählliste ist (kein Rechnungs-HTML)
+	  window.currentRechnungHTML = html;
+	  window.currentRechnungFilename = "zaehlliste";
+
+	  // Bearbeiten-Button zurücksetzen (falls vorher im Speichern-Modus)
+	  const editBtn = document.getElementById("editRechnungBtn");
+	  if (editBtn) {
+	    editBtn.textContent = "✏️ Bearbeiten";
+	    editBtn.title = "Zählliste bearbeiten";
+	    // onclick bleibt enableEditor() aus dem HTML – das funktioniert korrekt
+	  }
+
+	  const badge = document.getElementById("rechnungEditBadge");
+	  if (badge) badge.style.display = "none";
 
 	  document.getElementById("rechnungPreviewContainer").style.display = "block";
-
-	  // Button um zu drucken
-	  const printBtn = document.getElementById("editRechnungBtn");
-	  printBtn.textContent = "🖨️ Drucken";
-	  printBtn.onclick = () => {
-	    const finalHTML = preview.innerHTML;
-	    druckeHTML(finalHTML);
-	  };
 	}
 
 
@@ -4508,7 +4519,7 @@ function continueImport(raw, produktRows, headerIndex, selectedCol) {
     const notiz   = (importComments && hasCommentCol) ? String(row[2] || "").trim() : "";
     
  // Zusatzkosten NICHT als Produkt importieren
-    const blacklist = ["Kosten", "gema", "reinigung", "glasbruch", "Kommisionskosten", "Sonstige Gebühren","Gesamtkosten"];
+    const blacklist = ["kosten", "gema", "reinigung", "glasbruch", "kommisionskosten", "sonstige gebühren", "gesamtkosten"];
     if (blacklist.includes(produkt.toLowerCase())) {
       return; // komplett überspringen
     }
@@ -4569,12 +4580,41 @@ document.getElementById("importOrgExcelInput").addEventListener("change", (e) =>
 function findOrgEntryByCode(code) {
   if (!window.orgTable || !code) return null;
   const c = code.toString().trim().toLowerCase();
-  return window.orgTable.find(row =>
-    Object.keys(row).some(k =>
-      /code|kürzel|kuerzel|fakultät|fakultaet/i.test(k) &&
-      (row[k] || "").toString().trim().toLowerCase() === c
-    )
-  ) || null;
+
+  // Sonderzeilen die keine Fachschaft sind – diese überspringen
+  const sonderzeilen = ["vorneun", "nachneun", "stichtag", "buchung", "inventur"];
+
+  // Suche primär in der "Fakultät"-Spalte, Sonderzeilen ausschließen
+  let found = window.orgTable.find(row => {
+    const fak = (row["Fakultät"] || "").toString().trim().toLowerCase();
+    if (sonderzeilen.includes(fak)) return false;
+    return fak === c;
+  });
+
+  // Fallback: weitere Spalten (Fachschaft, Art, Kürzel, Code)
+  if (!found) {
+    const fallbackCols = ["Fachschaft", "Art", "Kürzel", "Code"];
+    found = window.orgTable.find(row => {
+      const fak = (row["Fakultät"] || "").toString().trim().toLowerCase();
+      if (sonderzeilen.includes(fak)) return false;
+      return fallbackCols.some(col =>
+        (row[col] || "").toString().trim().toLowerCase() === c
+      );
+    });
+  }
+
+  // Letzter Fallback: Wert irgendwo in der Zeile (Sonderzeilen weiterhin ausschließen)
+  if (!found) {
+    found = window.orgTable.find(row => {
+      const fak = (row["Fakultät"] || "").toString().trim().toLowerCase();
+      if (sonderzeilen.includes(fak)) return false;
+      return Object.values(row).some(v =>
+        (v || "").toString().trim().toLowerCase() === c
+      );
+    }) || null;
+  }
+
+  return found || null;
 }
 
 /* ============================================================
@@ -4624,18 +4664,20 @@ function getFinanzvorstand(eventDateISO) {
  
   const stichtag = new Date("2026-09-01");
   const datum    = eventDateISO ? new Date(eventDateISO) : new Date();
+  // Groß-/Kleinschreibung egal: "vorNeun", "vorneun", "VorNeun" etc.
   const schluessel = datum < stichtag ? "vorneun" : "nachneun";
  
+  // Suche in der "Fakultät"-Spalte (dort stehen vorNeun/nachNeun)
   const zeile = org.find(row =>
-    Object.values(row).some(v => String(v || "").trim().toLowerCase() === schluessel)
+    (row["Fakultät"] || "").toString().trim().toLowerCase() === schluessel
   );
+
   if (!zeile) return "";
  
-  // Werte der Zeile: [Schlüssel, Vorname, Nachname]
-  const vals = Object.values(zeile).map(v => String(v || "").trim()).filter(Boolean);
-  if (vals.length >= 3) return `${vals[1]} ${vals[2]}`.trim();
-  if (vals.length === 2) return vals[1];
-  return "";
+  // Vorname (kann zweiteilig sein) + Nachname aus den Spalten
+  const vorname  = String(zeile["Vorname"]  || "").trim();
+  const nachname = String(zeile["Nachname"] || "").trim();
+  return `${vorname} ${nachname}`.trim();
 }
 	
 document.getElementById("generateRechnungBtn").onclick = () => {
@@ -4699,19 +4741,28 @@ return `
 }
 
 function buildAdresseBlock(meta, org) {
-const v = (key) => org?.[key] || meta[key] || "";
-const zweite = v("zweite_Adresszeile") || v("2. Adresszeile");
+  // Hilfsfunktion: erst in org-Zeile schauen, dann in importMeta
+  const v = (key) => (org?.[key] ?? "") || (meta[key] ?? "");
 
-const lines = [
- "Verfasste Studierendenschaft",
- v("Fachschaft"),
- `${v("Vorname")} ${v("Nachname")}`.trim(),
- zweite,
- `${v("Straße")} ${v("Hausnummer")}`.trim(),
- `${v("PLZ")} ${v("Ort")}`.trim()
-];
+  const vorname  = v("Vorname");
+  const nachname = v("Nachname");
+  const fachschaft = v("Fachschaft");
+  const strasse  = v("Straße");
+  const hausnr   = v("Hausnummer");
+  const zweite   = v("2. Adresszeile");
+  const plz      = v("PLZ");
+  const ort      = v("Ort");
 
-return lines.filter(x => x && x.trim()).join("<br>");
+  const lines = [
+    "Verfasste Studierendenschaft",
+    fachschaft,
+    `${vorname} ${nachname}`.trim(),
+    zweite,
+    `${strasse} ${hausnr}`.trim(),
+    `${plz} ${ort}`.trim()
+  ];
+
+  return lines.filter(x => x && x.trim()).join("<br>");
 }
 
 function getProductByName(name) {
@@ -4775,9 +4826,16 @@ async function generateRechnungDoc(entries, importMeta) {
 const isIntern = (importMeta.rechnungstyp || "").toLowerCase().includes("intern");
 const org = importMeta.fachschaftCode ? findOrgEntryByCode(importMeta.fachschaftCode) : null;
 
-if (!isIntern && !org && importMeta.fachschaftCode) {
- showStatus(`Kein Org-Eintrag für Code "${importMeta.fachschaftCode}".`, "error");
- return;
+// Warnung wenn kein Org-Eintrag gefunden – bei intern UND extern
+if (!org && importMeta.fachschaftCode) {
+  const weiter = confirm(
+    `⚠️ Kein Org-Eintrag gefunden für Code: "${importMeta.fachschaftCode}"\n\n` +
+    `Mögliche Ursachen:\n` +
+    `• Kürzel in der Excel stimmt nicht exakt mit der Fakultät-Spalte überein\n` +
+    `• Organisationstabelle noch nicht geladen\n\n` +
+    `Trotzdem fortfahren? (Adress- und Namensdaten werden leer bleiben)`
+  );
+  if (!weiter) return;
 }
 
 const { rows: verbrauchRows, sum: sumGetr } = buildVerbrauchstabelle(entries, isIntern);
@@ -4803,9 +4861,11 @@ let html = await loadHTMLTemplate(templatePath);
 const data = {
  AdresseBlock: buildAdresseBlock(importMeta, org),
  Rechnungsnummer: importMeta.rechnungsnummer || "",
- Kostenstelle: org?.Kostenstelle || "",
- Anrede: org?.Geschlecht || "geehrte Damen und Herren",
- Nachname: org?.Nachname || "",
+ Kostenstelle: org?.["Kostenstelle"] || "",
+ Anrede: org?.["Geschlecht"] || "geehrte Damen und Herren",
+ Nachname: org?.["Nachname"] || "",
+ Mail: org?.["Mail"] || "",
+ MatrikelNr: org?.["Matrikel Nr."] || "",
  DatumRech: formatDateDE(new Date()),
  Datum: formatDateDE(importMeta.event_date),
  Event: importMeta.purpose || "",
