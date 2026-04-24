@@ -1023,9 +1023,15 @@ body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
     <h2>Optionen</h2>
     <label><input type="checkbox" id="darkModeToggle"> Dark Mode aktivieren</label><br>
     <h3>Favoriten-Optionen</h3>
-<button class="btn" id="loadStandardFavs">📥 Standardliste laden</button><br>
-<button class="btn" id="resetFavs">🔄 Favoriten zurücksetzen</button><br>
-<h3>Allgemeine-Optionen</h3>
+	<button class="btn" id="loadStandardFavs">📥 Standardliste laden</button><br>
+	<button class="btn" id="resetFavs">🔄 Favoriten zurücksetzen</button><br>
+
+	<h3>Verkaufspreise festlegen</h3>
+	<button class="btn" id="VKListExport">VK-Listenvorlage runterladen</button><br>
+	<button class="btn" id="VKListImport">VK-Preise reinladen</button><br>
+	
+
+	<h3>Allgemeine-Optionen</h3>
     <button class="btn" id="clearStorageBtn">🔄 LocalStorage zurücksetzen</button><br>
     <h3>Export-Optionen</h3>
     <button class="btn" id="exportExcel" type="button">Als Excel herunterladen</button>
@@ -1392,9 +1398,17 @@ body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
     </div>
 
 	<span class="hint"> Tabelle mit Kontaktdaten zur Rechnungserstellung laden. </span>
+	<div class="row">
 	<input type="file" id="importOrgExcelInput" accept=".xlsx,.xls" style="display:none">
 	<button class="btn" id="importOrgExcelBtn">Organisationstabelle laden</button>
-
+	</div>
+	
+	<span class="hint"> Tabelle mit Preisen zur Rechnungserstellung laden. </span>
+	<div class="row">
+	<input type="file" id="importPriceExcelInput" accept=".xlsx,.xls" style="display:none">
+	<button class="btn" id="importPriceExcelBtn">Preistabelle laden</button>
+	</div>
+	
 	<div class="row">
  	<button class="btn" type="button" id="generateRechnungBtn">🧾 Rechnung erzeugen</button>
   	<button class="btn" type="button" id="openRechnungPreviewBtn">📂 HTML laden & bearbeiten</button>
@@ -1474,9 +1488,12 @@ body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
   <div class="modal-content">
     <div id="eventTiles"></div>
     <div id="eventActions">
-  <button id="bookBtn">Buchen</button>
-  <button id="closeEventBtn">Schließen</button>
-</div>
+  		<button id="bookBtn">Buchen</button>
+  		<div id="posSumme" style="font-size:1.3em; font-weight:bold; color:#fff; display:flex; align-items:center;">
+    	Gesamt: <span id="posSummeWert" style="margin-left:8px;">0,00 €</span>
+  		</div>
+  		<button id="closeEventBtn">Schließen</button>
+	</div>
 <div id="eventFeedback"></div>
 
   </div>
@@ -2877,57 +2894,81 @@ function normalizeKey(str) {
 
 
 	function buildEventTiles() {
-	  eventTiles.innerHTML = "";
-	  productCounts = {};
-	  const favSelect = document.getElementById("favorites");
+		  eventTiles.innerHTML = "";
+		  productCounts = {};
+		  const favSelect = document.getElementById("favorites");
 
-	  for (let i=0; i<favSelect.options.length; i++) {
-	    const drink = favSelect.options[i].text;
-	    if (!drink || drink.toLowerCase().includes("favorit")) continue;
+		  for (let i = 0; i < favSelect.options.length; i++) {
+		    const drink = favSelect.options[i].text;
+		    if (!drink || drink.toLowerCase().includes("favorit")) continue;
 
-	    productCounts[drink] = 0;
-	    const category = productCategories[drink] || "Sonstiges";
-	    const icon = getCategoryIcon(category);
+		    productCounts[drink] = 0;
+		    const category = productCategories[drink] || "Sonstiges";
+		    const icon = getCategoryIcon(category);
 
-	    const tile = document.createElement("div");
-	    tile.className = "tile";
-	    const vk = window.productVkPrice?.[drink];
-	    const priceTag = vk != null ? `<div class="tile-price">${vk.toFixed(2)} €</div>` : "";
-	    tile.innerHTML = `
-	      <div class="icon">${icon}</div>
-	      <h3>${drink}</h3>
-	      ${priceTag}
-	      <div class="controls">
-	        <span class="count">0</span>
-	        <button class="minus" style="display:none;">−</button>
-	      </div>`;
-	    eventTiles.appendChild(tile);
+		    // VK-Preis: zuerst window.vkPrices (Import), dann window.productVkPrice (Produkt-JSON)
+		    const vk = window.vkPrices?.[drink] ?? window.productVkPrice?.[drink] ?? null;
 
-	    const countSpan = tile.querySelector(".count");
-	    const minusBtn = tile.querySelector(".minus");
+		    const tile = document.createElement("div");
+		    tile.className = "tile";
+		    tile.dataset.drink = drink;
 
-	    tile.onclick = () => {
-	      productCounts[drink]++;
-	      countSpan.textContent = productCounts[drink];
-	      if (productCounts[drink] > 0) {
-	        minusBtn.style.display = "inline-block";
-	      }
-	      tile.classList.add("selected");
-	    };
+		    const priceTag  = vk != null ? `<div class="tile-price">${vk.toFixed(2)} € / Stk.</div>` : "";
+		    const summeTag  = vk != null ? `<div class="tile-summe" style="font-size:0.95em; color:#888; min-height:1.2em;"></div>` : "";
 
-	    minusBtn.onclick = (e) => {
-	      e.stopPropagation();
-	      if (productCounts[drink] > 0) {
-	        productCounts[drink]--;
-	        countSpan.textContent = productCounts[drink];
-	      }
-	      if (productCounts[drink] === 0) {
-	        minusBtn.style.display = "none";
-	        tile.classList.remove("selected");
-	      }
-	    };
-	  }
-	}
+		    tile.innerHTML = `
+		      <div class="icon">${icon}</div>
+		      <h3>${drink}</h3>
+		      ${priceTag}
+		      <div class="controls">
+		        <span class="count">0</span>
+		        <button class="minus" style="display:none;">−</button>
+		      </div>
+		      ${summeTag}`;
+
+		    eventTiles.appendChild(tile);
+
+		    const countSpan  = tile.querySelector(".count");
+		    const minusBtn   = tile.querySelector(".minus");
+		    const summeDiv   = tile.querySelector(".tile-summe");
+
+		    function updateTile() {
+		      const n = productCounts[drink];
+		      countSpan.textContent = n;
+		      minusBtn.style.display = n > 0 ? "inline-block" : "none";
+		      tile.classList.toggle("selected", n > 0);
+		      if (summeDiv && vk != null) {
+		        summeDiv.textContent = n > 0 ? `= ${(vk * n).toFixed(2)} €` : "";
+		      }
+		      updatePosGesamtsumme();
+		    }
+
+		    tile.onclick = () => {
+		      productCounts[drink]++;
+		      updateTile();
+		    };
+
+		    minusBtn.onclick = (e) => {
+		      e.stopPropagation();
+		      if (productCounts[drink] > 0) productCounts[drink]--;
+		      updateTile();
+		    };
+		  }
+
+		  updatePosGesamtsumme();
+		}
+
+		function updatePosGesamtsumme() {
+		  const wert = document.getElementById("posSummeWert");
+		  if (!wert) return;
+		  let gesamt = 0;
+		  Object.entries(productCounts).forEach(([name, n]) => {
+		    if (n <= 0) return;
+		    const vk = window.vkPrices?.[name] ?? window.productVkPrice?.[name] ?? null;
+		    if (vk != null) gesamt += vk * n;
+		  });
+		  wert.textContent = gesamt > 0 ? gesamt.toFixed(2).replace(".", ",") + " €" : "0,00 €";
+		}
 
 	function showEventFeedback(message, type="success") {
 		  const fb = document.getElementById("eventFeedback");
@@ -4183,61 +4224,64 @@ const BESTAND_PRODUKTLISTE = [
    zur Buchhaltungs-Excel (Spalte H=Label, I=Wert):
    Zeilen 1-11: Metablock, Zeile 12-13: leer, Zeile 14+: Produkte
    ============================================================ */
-function buildBuchhaltungsData(entries) {
-  const meta = collectMeta();
-  const heute = new Date().toLocaleDateString("de-DE");
-  const contactParts = [
-    meta.name,
-    meta.matrikelnummer ? "Matrikel Nr.: " + meta.matrikelnummer : "",
-    meta.studmail && meta.studmail !== "@studmail.htw-aalen.de" ? meta.studmail : "",
-    meta.ext_contact
-  ].filter(v => v && v.trim() !== "");
-  const contactInfo = contactParts.join(", ");
+   function buildBuchhaltungsData(entries) {
+	   const meta = collectMeta();
+	   const heute = new Date().toLocaleDateString("de-DE");
 
-  const mengen = {}, notizen = {};
-  entries.forEach(e => {
-    if (!e.product) return;
-    mengen[e.product] = (mengen[e.product] || 0) + (Number(e.total) || 0);
-    if (e.note && e.note.trim()) {
-      if (!notizen[e.product]) notizen[e.product] = new Set();
-      notizen[e.product].add(e.note.trim());
-    }
-  });
+	   // Event-Datum aus dem Formular nutzen, Fallback auf heutiges Datum
+	   const eventDateRaw = document.getElementById("event_date")?.value || "";
+	   const datumFuerCSV = eventDateRaw
+	     ? new Date(eventDateRaw).toLocaleDateString("de-DE")
+	     : heute;
 
-  // Metablock (11 Zeilen) – leere Felder bleiben leer
-  // Spalte A=Label, Spalte B=Wert, Spalte C=""
-  // Zeilen 1-11 entsprechen der Buchhaltungs-Excel Spalte H/I
-  const rows = [
-    ["Rechnungsnummer", "",                       ""],  // Zeile 1  – manuell befüllen
-    ["Rechnungstyp",    "",                       ""],  // Zeile 2  – nicht in App
-    ["Datum",           heute,                    ""],  // Zeile 3
-    ["Veranstalter",    meta.fachschaft || "",    ""],  // Zeile 4
-    ["Kürzel/Code",     "",                       ""],  // Zeile 5  – nicht in App
-    ["Event",           meta.purpose || "",       ""],  // Zeile 6
-    ["Kommentar",       meta.note || "",          ""],  // Zeile 7
-    ["Kontakt",         contactInfo,              ""],  // Zeile 8
-    ["Von Bestand",     meta.from_location || "", ""],  // Zeile 9
-    ["Aktion",          meta.action || "",        ""],  // Zeile 10
-    ["Zu Bestand",      meta.to_location || "",   ""],  // Zeile 11
-    [],                                                  // Zeile 12 – leer
-    ["Produkt",         "Anzahl Flaschen",        "Kommentar"] // Zeile 13 = Header
-  ];
-  // Ab Zeile 15: Produkte
+	   const contactParts = [
+	     meta.name,
+	     meta.matrikelnummer ? "Matrikel Nr.: " + meta.matrikelnummer : "",
+	     meta.studmail && meta.studmail !== "@studmail.htw-aalen.de" ? meta.studmail : "",
+	     meta.ext_contact
+	   ].filter(v => v && v.trim() !== "");
+	   const contactInfo = contactParts.join(", ");
 
-  const listeSet = new Set(BESTAND_PRODUKTLISTE);
-  BESTAND_PRODUKTLISTE.forEach(produkt => {
-    const menge = mengen[produkt] || 0;
-    const notiz = notizen[produkt] ? [...notizen[produkt]].join(", ") : "";
-    rows.push([produkt, menge !== 0 ? menge : "", notiz]);
-  });
-  [...new Set(entries.map(e => e.product).filter(p => p && !listeSet.has(p)))].sort()
-    .forEach(produkt => {
-      const menge = mengen[produkt] || 0;
-      rows.push([produkt, menge !== 0 ? menge : "",
-        notizen[produkt] ? [...notizen[produkt]].join(", ") : ""]);
-    });
-  return rows;
-}
+	   const mengen = {}, notizen = {};
+	   entries.forEach(e => {
+	     if (!e.product) return;
+	     mengen[e.product] = (mengen[e.product] || 0) + (Number(e.total) || 0);
+	     if (e.note && e.note.trim()) {
+	       if (!notizen[e.product]) notizen[e.product] = new Set();
+	       notizen[e.product].add(e.note.trim());
+	     }
+	   });
+
+	   const rows = [
+	     ["Rechnungsnummer", "",                       ""],  // Zeile 1
+	     ["Rechnungstyp",    "",                       ""],  // Zeile 2
+	     ["Datum",           datumFuerCSV,             ""],  // Zeile 3  ← Event-Datum statt heute
+	     ["Veranstalter",    meta.fachschaft || "",    ""],  // Zeile 4
+	     ["Kürzel/Code",     "",                       ""],  // Zeile 5
+	     ["Event",           meta.purpose || "",       ""],  // Zeile 6
+	     ["Kommentar",       meta.note || "",          ""],  // Zeile 7
+	     ["Kontakt",         contactInfo,              ""],  // Zeile 8
+	     ["Von Bestand",     meta.from_location || "", ""],  // Zeile 9
+	     ["Aktion",          meta.action || "",        ""],  // Zeile 10
+	     ["Zu Bestand",      meta.to_location || "",   ""],  // Zeile 11
+	     [],                                                  // Zeile 12 – leer
+	     ["Produkt",         "Anzahl Flaschen",        "Kommentar"] // Zeile 13 = Header
+	   ];
+
+	   const listeSet = new Set(BESTAND_PRODUKTLISTE);
+	   BESTAND_PRODUKTLISTE.forEach(produkt => {
+	     const menge = mengen[produkt] || 0;
+	     const notiz = notizen[produkt] ? [...notizen[produkt]].join(", ") : "";
+	     rows.push([produkt, menge !== 0 ? menge : "", notiz]);
+	   });
+	   [...new Set(entries.map(e => e.product).filter(p => p && !listeSet.has(p)))].sort()
+	     .forEach(produkt => {
+	       const menge = mengen[produkt] || 0;
+	       rows.push([produkt, menge !== 0 ? menge : "",
+	         notizen[produkt] ? [...notizen[produkt]].join(", ") : ""]);
+	     });
+	   return rows;
+	 }
 
 /* CSV-Export für Buchhaltung */
 document.getElementById("exportCsvBuchhaltungBtn").onclick = () => {
@@ -4261,6 +4305,91 @@ document.getElementById("exportCsvBuchhaltungBtn").onclick = () => {
   URL.revokeObjectURL(url);
   showStatus("Buchhaltungs-CSV exportiert.", "success");
 };
+
+
+/*================================================================
+ Verkaufspreise für den Point-of-Sale Modus 
+ Listenvorlage Exportieren
+ Bearbeitete Liste Importieren
+ 
+ =================================================================*/
+ 
+ document.getElementById("VKListExport").addEventListener("click", () => {
+	  // Produktliste aus BESTAND_PRODUKTLISTE, ohne leere "0"-Platzhalter
+	  const produkte = BESTAND_PRODUKTLISTE.filter(p => p && p !== "0");
+
+	  // Header + eine Zeile pro Produkt: Produkt | VK-Preis | Kommentar
+	  const rows = [
+	    ["Produkt", "VK-Preis", "Kommentar"],
+	    ...produkte.map(name => {
+	      // Optional: schon gespeicherte VK-Preise vorausfüllen
+	      const gespeichert = window.vkPrices?.[name];
+	      return [name, gespeichert != null ? gespeichert : "", ""];
+	    })
+	  ];
+
+	  const csvContent = rows
+	    .map(r => r.map(v => `"${(v ?? "").toString().replace(/"/g, '""')}"`).join(";"))
+	    .join("\n");
+
+	  const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
+	  const url  = URL.createObjectURL(blob);
+	  const a    = document.createElement("a");
+	  a.href     = url;
+	  a.download = "VK-Preisliste.csv";
+	  a.click();
+	  URL.revokeObjectURL(url);
+	  showStatus("VK-Listenvorlage exportiert.", "success");
+	});
+	
+ document.getElementById("VKListImport").addEventListener("click", () => {
+	  const input = document.createElement("input");
+	  input.type   = "file";
+	  input.accept = ".csv";
+	  input.onchange = (e) => {
+	    const file = e.target.files[0];
+	    if (!file) return;
+
+	    const reader = new FileReader();
+	    reader.onload = (evt) => {
+	      try {
+	        const lines = evt.target.result
+	          .replace(/^\uFEFF/, "")   // BOM entfernen
+	          .split("\n")
+	          .map(l => l.trim())
+	          .filter(l => l);
+
+	        // Erste Zeile = Header überspringen
+	        const dataLines = lines.slice(1);
+
+	        const vkMap = {};
+	        let geladen = 0;
+
+	        dataLines.forEach(line => {
+	          // CSV-Spalten parsen (Anführungszeichen berücksichtigen)
+	          const cols = line.split(";").map(c => c.replace(/^"|"$/g, "").replace(/""/g, '"').trim());
+	          const name  = cols[0] || "";
+	          const preis = parseFloat(cols[1]?.replace(",", "."));
+
+	          if (name && !isNaN(preis) && preis >= 0) {
+	            vkMap[name] = preis;
+	            geladen++;
+	          }
+	        });
+
+	        window.vkPrices = vkMap;
+	        showStatus(`✅ VK-Preise geladen (${geladen} Produkte).`, "success");
+
+	      } catch (err) {
+	        showStatus("Fehler beim Laden der VK-Preise: " + err.message, "error");
+	      }
+	    };
+	    reader.readAsText(file, "UTF-8");
+	  };
+	  input.click();
+	});
+ 
+ 
 
 /* ============================================================
    BESTAND AUS EXCEL LADEN
@@ -4618,6 +4747,80 @@ function findOrgEntryByCode(code) {
   return found || null;
 }
 
+
+/* ============================================================
+PREIS-TABELLE LADEN (EK intern / EK extern)
+============================================================ */
+document.getElementById("importPriceExcelBtn").onclick = () => {
+document.getElementById("importPriceExcelInput").click();
+};
+
+document.getElementById("importPriceExcelInput").addEventListener("change", (e) => {
+const file = e.target.files[0];
+if (!file) return;
+e.target.value = "";
+
+const reader = new FileReader();
+reader.onload = (evt) => {
+ try {
+   const wb = XLSX.read(evt.target.result, { type: "binary" });
+
+   const sName = wb.SheetNames.includes("Finanzkram")
+     ? "Finanzkram"
+     : wb.SheetNames[0];
+
+   const sheet = wb.Sheets[sName];
+
+   // sheet_to_json mit header:1 → liefert ein Array von Arrays
+   const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+   // Ab Zeile 3 (Index 2)
+   const dataRows = rows.slice(2);
+
+   const prices = dataRows
+     .map(r => {
+       const name = (r[0] || "").toString().trim();   // Spalte A
+       if (!name) return null;
+
+       return {
+         name,
+         ek_int: parseFloat(r[5]) || 0,  // Spalte F
+         ek_ext: parseFloat(r[7]) || 0,  // Spalte H
+         vk_price: parseFloat(r[8]) || null // Spalte I (optional)
+       };
+     })
+     .filter(x => x !== null);
+
+   window.priceTable = prices;
+
+   showStatus(
+     `✅ Preistabelle geladen (${prices.length} Produkte, Blatt: ${sName}).`,
+     "success"
+   );
+
+ } catch (err) {
+   showStatus("Fehler Preistabelle: " + err.message, "error");
+ }
+};
+
+reader.readAsBinaryString(file);
+});
+
+
+function findPriceEntryByName(name) {
+	  if (!window.priceTable || !name) return null;
+
+	  const n = name.toString().trim().toLowerCase();
+
+	  return (
+	    window.priceTable.find(p =>
+	      p.name.toLowerCase() === n
+	    ) || null
+	  );
+	}
+
+
+
 /* ============================================================
 RECHNUNGSERSTELLUNG (HTML-Templates statt docxtemplater)
 ============================================================ */
@@ -4791,10 +4994,15 @@ function buildVerbrauchstabelle(entries, isIntern) {
 
 	  Object.entries(zusammen).forEach(([name, total]) => {
 	    if (total === 0) return;
-	    const p = getProductByName(name);
-	    if (!p) return;
 
-	    const preis = isIntern ? (p.ek_int || 0) : (p.ek_ext || 0);
+	    // Preise primär aus geladener Preistabelle (Excel), Fallback auf Produkt-JSON
+	    const priceEntry = findPriceEntryByName(name);
+	    const p = getProductByName(name);
+	    if (!priceEntry && !p) return;
+
+	    const preis = isIntern
+	      ? (priceEntry?.ek_int ?? p?.ek_int ?? 0)
+	      : (priceEntry?.ek_ext ?? p?.ek_ext ?? 0);
 	    const gesamt = preis * total;
 
 	    rows.push({
@@ -4826,6 +5034,17 @@ return html.replace(/{{(\w+)}}/g, (_, key) => data[key] ?? "");
 async function generateRechnungDoc(entries, importMeta) {
 const isIntern = (importMeta.rechnungstyp || "").toLowerCase().includes("intern");
 const org = importMeta.fachschaftCode ? findOrgEntryByCode(importMeta.fachschaftCode) : null;
+
+// Warnung wenn keine Preistabelle geladen
+if (!window.priceTable || window.priceTable.length === 0) {
+  const weiter = confirm(
+    `⚠️ Keine Preistabelle geladen!\n\n` +
+    `Ohne Preistabelle werden Preise aus der eingebetteten Produktliste verwendet.\n` +
+    `Für aktuelle Preise bitte zuerst die Preistabelle (Excel) im Admin-Bereich laden.\n\n` +
+    `Trotzdem fortfahren?`
+  );
+  if (!weiter) return;
+}
 
 // Warnung wenn kein Org-Eintrag gefunden – bei intern UND extern
 if (!org && importMeta.fachschaftCode) {
