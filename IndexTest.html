@@ -4850,8 +4850,8 @@ function generateSEPAQR(iban, bic, empfaenger, betrag, verwendungszweck, callbac
 
 	  const qr = new QRCode(tempDiv, {
 	    text: epc,
-	    width: 250,
-	    height: 250,
+	    width: 200,
+	    height: 200,
 	    correctLevel: QRCode.CorrectLevel.M
 	  });
 
@@ -4891,7 +4891,7 @@ function addLogoToQR(qrDataUrl, logoUrl, callback) {
 		
 		  // Weißer Hintergrund minimal
 		  ctx.fillStyle = "white";
-		  ctx.fillRect(x - 1, y - 1, logoWidth + 2, logoHeight + 2);
+		  ctx.fillRect(x - 0, y - 0, logoWidth + 0, logoHeight + 0);
 		
 		  ctx.drawImage(logoImg, x, y, logoWidth, logoHeight);
 		
