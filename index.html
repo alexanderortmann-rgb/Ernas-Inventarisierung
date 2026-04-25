@@ -594,6 +594,8 @@ body.darkmode #rechnungPreview {
   display: flex;
   flex-direction: column;
 }
+#posSumme { color: #111; }
+body.darkmode #posSumme { color: #fff; }
 
 /* Standard (Hellmodus) */
 #helpBox {
@@ -1492,9 +1494,9 @@ body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
     <div id="eventTiles"></div>
     <div id="eventActions">
   		<button id="bookBtn">Buchen</button>
-  		<div id="posSumme" style="font-size:1.3em; font-weight:bold; color:#fff; display:flex; align-items:center;">
-    	Gesamt: <span id="posSummeWert" style="margin-left:8px;">0,00 €</span>
-  		</div>
+  		<div id="posSumme" style="font-size:1.3em; font-weight:bold; display:flex; align-items:center;">
+	    Gesamt: <span id="posSummeWert" style="margin-left:8px;">0,00 €</span>
+	  	</div>
   		<button id="closeEventBtn">Schließen</button>
 	</div>
 <div id="eventFeedback"></div>
