@@ -5204,7 +5204,7 @@ await new Promise(resolve => {
   "OASPDE6AXXX",
   "Verfasste Studierendenschaft",
   gesamt,
-  "Rechnung " + (importMeta.rechnungsnummer || ""),
+  verwendungszweck,
   (qrData) => {
     addLogoToQR(qrData, "AStA_Logo_Endversion_2026.png", (qrWithLogo) => {
       data.QRCodeData = qrWithLogo;
