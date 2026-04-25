@@ -4876,7 +4876,7 @@ function addLogoToQR(qrDataUrl, logoUrl, callback) {
 	      const y = (size - logoSize) / 2;
 
 	      ctx.fillStyle = "white";
-	      ctx.fillRect(x - 4, y - 4, logoSize + 8, logoSize + 8);
+	      ctx.fillRect(x - 1, y - 1, logoSize + 2, logoSize + 2);
 
 	      ctx.drawImage(logoImg, x, y, logoSize, logoSize);
 
