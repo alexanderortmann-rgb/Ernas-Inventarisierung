@@ -300,18 +300,36 @@
     </table>
 
     <!-- Zahlungsinfo -->
-    <div class="zahlungs-box">
+    <div class="zahlungs-box" style="
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    gap:10px;
+  ">
+  
+    <div style="flex:1;">
       <b>Bankverbindung &amp; Verwendungszweck</b><br>
-      Kreditinstitut: Sparkasse &nbsp;|&nbsp;
-      IBAN: DE51 6145 0050 1001 4615 99 &nbsp;|&nbsp;
+      Kreditinstitut: Sparkasse<br>
+      IBAN: DE51 6145 0050 1001 4615 99<br>
       BIC: OASPDE6AXXX<br>
-      Kto.-Inhaber: Verfasste Studierendenschaft &nbsp;|&nbsp;
+      Kto.-Inhaber: Verfasste Studierendenschaft<br>
       <b>Verwendungszweck: Rechnung {{Rechnungsnummer}}</b>
-      <div style="margin-top:6px;">
-        <img src="{{QRCodeData}}" style="width:120px; height:120px;">
-      </div>
-
     </div>
+  
+    <div style="flex:0 0 auto;">
+      <img src="{{QRCodeData}}" style="
+        width:130px;
+        height:130px;
+        border-radius:6px;
+        border:1px solid #ddd;
+        padding:4px;
+        background:white;
+        box-shadow:0 0 4px rgba(0,0,0,0.15);
+      ">
+    </div>
+
+  </div>
+
 
     <p>Bitte überweisen Sie den Rechnungsbetrag innerhalb von 14 Tagen auf das oben genannte Konto. Nach Ablauf dieser Frist geraten Sie automatisch in Zahlungsverzug (§ 286 Abs. 3 BGB). Verzugszinsen werden gemäß den gesetzlichen Bestimmungen berechnet.</p>
 
