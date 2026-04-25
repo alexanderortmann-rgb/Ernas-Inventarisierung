@@ -4831,35 +4831,33 @@ QR-Code Erstellung für Rechnung
 
 	
 function generateSEPAQR(iban, bic, empfaenger, betrag, verwendungszweck, callback) {
-	  
-	
-		const epc = [
-		  "BCD",
-		  "001",
-		  "1",
-		  "SCT",
-		  bic,
-		  empfaenger,
-		  iban,
-		  "EUR" + Number(betrag).toFixed(2),
-		  verwendungszweck
-		].join("\n");
+  const epc = [
+    "BCD",           // 1: Service Tag
+    "002",           // 2: Version (002 = aktuell)
+    "1",             // 3: Encoding (UTF-8)
+    "SCT",           // 4: Funktion
+    bic,             // 5: BIC
+    empfaenger,      // 6: Name Empfänger
+    iban,            // 7: IBAN
+    "EUR" + Number(betrag).toFixed(2), // 8: Betrag
+    "",              // 9: Purpose Code (leer lassen)
+    "",              // 10: Remittance Info strukturiert (leer)
+    verwendungszweck // 11: Remittance Info unstrukturiert = Verwendungszweck
+  ].join("\n");
 
+  const tempDiv = document.createElement("div");
+  const qr = new QRCode(tempDiv, {
+    text: epc,
+    width: 200,
+    height: 200,
+    correctLevel: QRCode.CorrectLevel.M
+  });
 
-	  const tempDiv = document.createElement("div");
-
-	  const qr = new QRCode(tempDiv, {
-	    text: epc,
-	    width: 200,
-	    height: 200,
-	    correctLevel: QRCode.CorrectLevel.M
-	  });
-
-	  setTimeout(() => {
-	    const img = tempDiv.querySelector("img") || tempDiv.querySelector("canvas");
-	    callback(img.src);
-	  }, 200);
-	}
+  setTimeout(() => {
+    const img = tempDiv.querySelector("img") || tempDiv.querySelector("canvas");
+    callback(img.src);
+  }, 200);
+}
 
 function addLogoToQR(qrDataUrl, logoUrl, callback) {
 	  const qrImg = new Image();
@@ -5196,27 +5194,23 @@ const data = {
 const verwendungszweck = ("Rechnung " + (importMeta.rechnungsnummer || ""))
   .replace(/[^a-zA-Z0-9\/\-\s]/g, "")
   .trim()
-  .slice(0, 27);
+  .slice(0, 140); // EPC erlaubt bis zu 140 Zeichen im unstrukturierten Feld
 
 await new Promise(resolve => {
- generateSEPAQR(
-  "DE51614500501001461599",
-  "OASPDE6AXXX",
-  "Verfasste Studierendenschaft",
-  gesamt,
-  verwendungszweck,
-  (qrData) => {
-    addLogoToQR(qrData, "AStA_Logo_Endversion_2026.png", (qrWithLogo) => {
-      data.QRCodeData = qrWithLogo;
-      resolve();
-   });
-
-        // Zum Testen ohne Logo:
-        // data.QRCodeData = qrData;
-        // resolve();
-      }
-    );
-  });
+  generateSEPAQR(
+    "DE51614500501001461599",
+    "OASPDE6AXXX",
+    "Verfasste Studierendenschaft",
+    gesamt,
+    verwendungszweck,  // ← jetzt die bereinigte Variable, nicht nochmal der Raw-String
+    (qrData) => {
+      addLogoToQR(qrData, "AStA_Logo_Endversion_2026.png", (qrWithLogo) => {
+        data.QRCodeData = qrWithLogo;
+        resolve();
+      });
+    }
+  );
+});
 
 
 
