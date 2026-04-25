@@ -4822,10 +4822,12 @@ function findPriceEntryByName(name) {
 	  );
 	}
 
-const verwendungszweck = ("Rechnung " + (importMeta.rechnungsnummer || ""))
-  .replace(/[^a-zA-Z0-9\/\-\s]/g, "")
-  .trim()
-  .slice(0, 27);
+/*===================================
+QR-Code Erstellung für Rechnung
+====================================0*/
+
+	
+
 
 	
 function generateSEPAQR(iban, bic, empfaenger, betrag, verwendungszweck, callback) {
@@ -5189,6 +5191,11 @@ const data = {
 };
 
 /* Erzeugt den QR-Code -> braucht Platzhalter in der Rechnungs Html */
+
+const verwendungszweck = ("Rechnung " + (importMeta.rechnungsnummer || ""))
+  .replace(/[^a-zA-Z0-9\/\-\s]/g, "")
+  .trim()
+  .slice(0, 27);
 
 await new Promise(resolve => {
  generateSEPAQR(
