@@ -4824,16 +4824,17 @@ function findPriceEntryByName(name) {
 	
 function generateSEPAQR(iban, bic, empfaenger, betrag, verwendungszweck, callback) {
 	  const epc = [
-	    "BCD",
-	    "001",
-	    "1",
-	    "SCT",
-	    bic,
-	    empfaenger,
-	    iban,
-	    "EUR" + Number(betrag).toFixed(2),
-	    verwendungszweck
-	  ].join("\n");
+		  "BCD",
+		  "001",
+		  "1",
+		  "SCT",
+		  bic,
+		  empfaenger,
+		  iban,
+		  "EUR" + Number(betrag).toFixed(2),
+		  verwendungszweck
+		].join("\n");
+
 
 	  const tempDiv = document.createElement("div");
 
@@ -4870,7 +4871,7 @@ function addLogoToQR(qrDataUrl, logoUrl, callback) {
 
 	      ctx.drawImage(qrImg, 0, 0);
 
-	      const logoSize = size * 0.22;
+	      const logoSize = size * 0.32;
 	      const x = (size - logoSize) / 2;
 	      const y = (size - logoSize) / 2;
 
@@ -5177,19 +5178,20 @@ const data = {
 /* Erzeugt den QR-Code -> braucht Platzhalter in der Rechnungs Html */
 
 await new Promise(resolve => {
-  generateSEPAQR(
-    "DE51614500501001461599",
-    "OASPDE6AXXX",
-    "Verfasste Studierendenschaft",
-    gesamt,
-    "Rechnung " + (importMeta.rechnungsnummer || ""),
-    (qrData) => {
+ generateSEPAQR(
+  "DE51614500501001461599",
+  "OASPDE6AXXX",
+  "Verfasste Studierendenschaft",
+  gesamt,
+  "Rechnung " + (importMeta.rechnungsnummer || ""),
+  (qrData) => {
+    addLogoToQR(qrData, "AStA_Logo_Endversion_2026.png", (qrWithLogo) => {
+      data.QRCodeData = qrWithLogo;
+      resolve();
+    });
+  }
+);
 
-      // Logo einbetten
-	addLogoToQR(qrData, "AStA_Logo_Endversion_2026.png", (qrWithLogo) => {
-    data.QRCodeData = qrWithLogo;
-    resolve();
-	});
 
 
 
