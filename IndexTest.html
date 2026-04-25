@@ -4871,6 +4871,7 @@ function addLogoToQR(qrDataUrl, logoUrl, callback) {
 	  // DEBUG: Fehler beim Laden des QR-Codes anzeigen
 	  qrImg.onerror = () => console.error("QR konnte NICHT geladen werden:", qrDataUrl);
 
+	qrImg.onload = () => {
 	 logoImg.onload = () => {
 		  const size = qrImg.width;
 		  const canvas = document.createElement("canvas");
