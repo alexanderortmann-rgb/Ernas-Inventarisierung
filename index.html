@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bestandserfassung Ver 1.05</title>
-
+ 
   <style>
  /* =========================
    Grundlayout
@@ -18,7 +18,7 @@ body {
 @media (max-width: 768px) {
   body { padding: 8px; }
 }
-
+ 
 /* =========================
    Tabellen
 ========================= */
@@ -46,7 +46,7 @@ th, td {
 @media (max-width: 600px) {
   th, td { padding: 10px; font-size: 14px; }
 }
-
+ 
 /* Breite Anpassung am PC */
 @media (min-width: 1350px) {
   .body { width: 720px; margin: 0 auto; }
@@ -56,7 +56,7 @@ th, td {
     transform: translateX(-240px);
   }
 }
-
+ 
 /* =========================
    Formulare
 ========================= */
@@ -67,11 +67,36 @@ select, input[type="number"], input[type="text"] {
 .row { display: flex; gap: 8px; }
 .row > * { flex: 1; }
 @media (max-width: 600px) { .row { flex-direction: column; } }
-
+ 
 .error { border:2px solid #d33 !important; background:#ffecec; }
 .hint { color:#666; font-size:0.85em; margin-top:2px; display:block; }
+ 
+/* =========================
+   Section Cards
+========================= */
+.section-card {
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  padding: 0 14px 14px 14px;
+  margin-bottom: 14px;
+}
+.section-header {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 0 10px 0;
+  margin: 0 0 6px 0;
+  border-bottom: 1px solid #e0e0e0;
+  letter-spacing: 0.2px;
+}
+.section-card--orga   { border-left: 3px solid #5DCAA5; }
+.section-card--buchung{ border-left: 3px solid #85B7EB; }
+.section-card--produkt{ border-left: 3px solid #AFA9EC; }
+.section-card--pos    { border-left: 3px solid #1d9e75; padding-bottom: 12px; }
+ 
+body.darkmode .section-card { border-color: #444; background: #2a2a2a; }
+body.darkmode .section-header { border-bottom-color: #444; color: #eee; }
 .hidden { display: none; }
-
+ 
 /* =========================
    Buttons
 ========================= */
@@ -92,7 +117,7 @@ select, input[type="number"], input[type="text"] {
 @media (max-width: 600px) {
   .btn { width: 100%; font-size: 16px; }
 }
-
+ 
 /* =========================
    Status & Hilfen
 ========================= */
@@ -124,25 +149,25 @@ body.darkmode #autocomplete_list {
   color: #eee;
   border: 1px solid #444;
 }
-
+ 
 /* Darkmode Hover */
 body.darkmode #autocomplete_list li:hover {
   background: #333;
 }
-
+ 
 /* Darkmode Tastatur-Highlight */
 body.darkmode #autocomplete_list li.highlight {
   background: #444;   /* dunkles, angenehmes Highlight */
 }
-
+ 
 /* Darkmode: Hervorgehobener Text (Match) */
 body.darkmode #autocomplete_list li b {
   color: #6cf;        /* helles Cyan – sehr gut lesbar */
 }
-
-
-
-
+ 
+ 
+ 
+ 
 #favAddBtn {
   font-size: 20px;
   cursor: pointer;
@@ -153,12 +178,12 @@ body.darkmode #autocomplete_list li b {
 #favAddBtn.not-favorited {
   color: grey;
 }
-
+ 
 #favAddBtn.favorited {
   color: gold;
 }
-
-
+ 
+ 
 #helpBox {
   border-radius: 8px;
   box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
@@ -169,25 +194,25 @@ body.darkmode #autocomplete_list li b {
   font-size: 24px;
   margin-right: 8px;
 }
-
+ 
 /* =========================
    Aktionen mit Hover-Effekt
 ========================= */
 .action-verbrauch { background-color: #ffe0e0; transition: all 0.2s ease; }
 .action-verbrauch:hover { background-color: #ffcccc; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transform: scale(1.01); }
-
+ 
 .action-anfangsbestand { background-color: #e0ffe0; transition: all 0.2s ease; }
 .action-anfangsbestand:hover { background-color: #ccffcc; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transform: scale(1.01); }
-
+ 
 .action-endbestand { background-color: #e0f0ff; transition: all 0.2s ease; }
 .action-endbestand:hover { background-color: #cce5ff; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transform: scale(1.01); }
-
+ 
 .action-lagerwechsel { background-color: #f0f0f0; transition: all 0.2s ease; }
 .action-lagerwechsel:hover { background-color: #e0e0e0; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transform: scale(1.01); }
-
+ 
 .action-lieferung { background-color: #fffbe0; transition: all 0.2s ease; }
 .action-lieferung:hover { background-color: #fff2b3; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transform: scale(1.01); }
-
+ 
 /* =========================
    Rechnung Preview Modal
 ========================= */
@@ -199,7 +224,7 @@ body.darkmode #autocomplete_list li b {
   z-index: 10000;
   animation: rechnungFadeIn 0.2s ease;
 }
-
+ 
 #rechnungPreviewModal {
   position: fixed;
   top: 50%;
@@ -216,7 +241,7 @@ body.darkmode #autocomplete_list li b {
   overflow: hidden;
   animation: rechnungSlideIn 0.25s cubic-bezier(0.34,1.56,0.64,1);
 }
-
+ 
 @keyframes rechnungFadeIn {
   from { opacity: 0; } to { opacity: 1; }
 }
@@ -224,7 +249,7 @@ body.darkmode #autocomplete_list li b {
   from { transform: translate(-50%, -48%); opacity: 0; }
   to   { transform: translate(-50%, -50%); opacity: 1; }
 }
-
+ 
 #rechnungModalHeader {
   display: flex;
   align-items: center;
@@ -235,7 +260,7 @@ body.darkmode #autocomplete_list li b {
   flex-shrink: 0;
   gap: 12px;
 }
-
+ 
 #rechnungModalTitle {
   display: flex;
   align-items: center;
@@ -244,7 +269,7 @@ body.darkmode #autocomplete_list li b {
   font-weight: 700;
   letter-spacing: 0.3px;
 }
-
+ 
 #rechnungEditBadge {
   font-size: 0.75em;
   background: rgba(255,200,50,0.25);
@@ -254,13 +279,13 @@ body.darkmode #autocomplete_list li b {
   border-radius: 20px;
   font-weight: 600;
 }
-
+ 
 #rechnungModalActions {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
 }
-
+ 
 .rechnung-btn {
   padding: 7px 14px;
   border: none;
@@ -300,7 +325,7 @@ body.darkmode #autocomplete_list li b {
   background: rgba(239,68,68,0.35);
   color: #fff;
 }
-
+ 
   #rechnungModalBody {
     flex: 1;
     overflow-y: auto;
@@ -310,7 +335,7 @@ body.darkmode #autocomplete_list li b {
     justify-content: center;
     align-items: flex-start;  /* oben ausrichten, nicht zentriert */
   }
-
+ 
   #rechnungPreview {
     background: #fff;
     width: 794px;          /* A4-Breite in Pixel (96dpi) */
@@ -324,7 +349,7 @@ body.darkmode #autocomplete_list li b {
     flex-shrink: 0;        /* wichtig: kein Zusammenquetschen im Flex-Container */
     overflow: visible;
   }
-
+ 
 /* Darkmode fuer Modal */
 body.darkmode #rechnungPreviewModal {
   background: #1e1e2e;
@@ -337,7 +362,7 @@ body.darkmode #rechnungPreview {
   background: #fff;
   color: #1a1a1a;
 }
-
+ 
 /* Quill-Editor im Modal */
 #rechnungPreview .ql-toolbar {
   border-radius: 6px 6px 0 0;
@@ -354,7 +379,7 @@ body.darkmode #rechnungPreview {
   font-size: 1em;
   font-family: inherit;
 }
-
+ 
 @media (max-width: 600px) {
   #rechnungPreviewModal {
     width: 100vw;
@@ -367,7 +392,7 @@ body.darkmode #rechnungPreview {
   #rechnungPreview { padding: 20px 16px; }
   .rechnung-btn { padding: 6px 10px; font-size: 0.78em; }
 }
-
+ 
 /* =========================
    Print / PDF
 ========================= */
@@ -377,17 +402,17 @@ body.darkmode #rechnungPreview {
 #printArea {
   display: none;
 }
-
+ 
 @media print {
   /* Alle body-Kinder ausblenden – sowohl direkte als auch tiefer verschachtelte */
   body * { visibility: hidden !important; }
-
+ 
   /* Nur printArea und seine Kinder sichtbar machen */
   #printArea,
   #printArea * {
     visibility: visible !important;
   }
-
+ 
   /* Body-Margin/Padding zurücksetzen */
   body {
     margin: 0 !important;
@@ -395,7 +420,7 @@ body.darkmode #rechnungPreview {
     max-width: none !important;
     background: #fff !important;
   }
-
+ 
   /* printArea: volle Seite, absolut positioniert damit kein Leerraum durch andere Elemente entsteht */
   #printArea {
     display: block !important;
@@ -409,7 +434,7 @@ body.darkmode #rechnungPreview {
     padding: 0;
     margin: 0;
   }
-
+ 
   /* Keine Extra-Leerseiten durch fixed/absolute Elemente */
   #statusBox,
   .modal,
@@ -420,12 +445,12 @@ body.darkmode #rechnungPreview {
     display: none !important;
     visibility: hidden !important;
   }
-
+ 
   @page {
     size: A4 portrait;
     margin: 12mm 15mm;
   }
-
+ 
   /* Kopfbereich */
   #printArea .print-header {
     border-bottom: 2px solid #000;
@@ -446,7 +471,7 @@ body.darkmode #rechnungPreview {
     display: inline-block;
     min-width: 110px;
   }
-
+ 
   /* Tabelle */
   #printArea .print-table {
     width: 100%;
@@ -490,10 +515,10 @@ body.darkmode #rechnungPreview {
   #printArea .print-table td:nth-child(4) { width: 10%; } /* Ges. */
   #printArea .print-table th:nth-child(5),
   #printArea .print-table td:nth-child(5) { width: 30%; } /* Kommentar */
-
+ 
   #printArea .print-table thead { display: table-header-group; }
   #printArea .print-table tbody tr { page-break-inside: avoid; }
-
+ 
   /* Unterschriften */
   #printArea .print-signatures {
     margin-top: 20mm;
@@ -513,7 +538,7 @@ body.darkmode #rechnungPreview {
     margin-bottom: 4px;
   }
 }
-
+ 
 /* =========================
    Kamera
 ========================= */
@@ -533,7 +558,7 @@ body.darkmode #rechnungPreview {
   margin-top: 1em;
   display: none;
 }
-
+ 
 /* =========================
    Tabs
 ========================= */
@@ -550,7 +575,7 @@ body.darkmode #rechnungPreview {
   color: #fff;
   font-weight: bold;
 }
-
+ 
 /* Basis wie normale Tabs */
 .tabOpt {
   padding: 6px 12px;
@@ -561,19 +586,19 @@ body.darkmode #rechnungPreview {
   cursor: pointer;
   transition: background-color 0.2s ease, box-shadow 0.2s ease;
 }
-
+ 
 /* Hover-Effekt etwas dezenter */
 .tabOpt:hover {
   background: #e0e0e0;   /* nicht zu hell */
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
-
-
-
-
+ 
+ 
+ 
+ 
 /* kein .active-State wie bei den Tabs */
-
-
+ 
+ 
 /* =========================
    Modal & Eventmodus
 ========================= */
@@ -594,9 +619,7 @@ body.darkmode #rechnungPreview {
   display: flex;
   flex-direction: column;
 }
-#posSumme { color: #111; }
-body.darkmode #posSumme { color: #fff; }
-
+ 
 /* Standard (Hellmodus) */
 #helpBox {
   display: none;
@@ -611,7 +634,7 @@ body.darkmode #posSumme { color: #fff; }
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
   border-radius: 6px;
 }
-
+ 
 #eventTiles {
   flex: 1;                 /* nimmt den verfügbaren Platz */
   overflow-y: auto;        /* Scrollbar wenn zu viele Kacheln */
@@ -620,9 +643,9 @@ body.darkmode #posSumme { color: #fff; }
   gap: 20px;
   padding: 20px;
 }
-
-
-
+ 
+ 
+ 
 .tile {
   background: #f9f9f9;
   border-radius: 12px;
@@ -650,7 +673,7 @@ body.darkmode #posSumme { color: #fff; }
   font-size: 1.4em;
   font-weight: bold;
 }
-
+ 
 .tile-price {
   font-size: 1.1em;
   font-weight: bold;
@@ -660,7 +683,7 @@ body.darkmode #posSumme { color: #fff; }
 body.darkmode .tile-price {
   color: #5d5;
 }
-
+ 
 /* Zählersteuerung */
 .controls {
   display: flex;
@@ -679,7 +702,7 @@ body.darkmode .tile-price {
   cursor: pointer;
   display: none; /* erscheint erst wenn count > 0 */
 }
-
+ 
 /* Aktionsleiste unten */
 #eventActions {
   flex-shrink: 0;          /* bleibt unten sichtbar */
@@ -714,7 +737,7 @@ body.darkmode .tile-price {
   background: #5a6268;
   transform: scale(1.05);
 }
-
+ 
 /* Feedback im Modal */
 #eventFeedback {
   display: none;
@@ -732,9 +755,9 @@ body.darkmode .tile-price {
   background: #f8d7da;
   color: #721c24;
 }
-
+ 
 /*Options-Modal*/
-
+ 
 .options-overlay {
   display: none;
   position: fixed;
@@ -742,7 +765,7 @@ body.darkmode .tile-price {
   background: rgba(0,0,0,0.5);
   z-index: 999;
 }
-
+ 
 .options-modal {
   display: none;
   position: fixed;
@@ -760,42 +783,42 @@ body.darkmode .tile-price {
   display: none;
   flex-direction: column;
 }
-
+ 
 .options-content {
   padding: 20px;
   overflow-y: auto;
   flex: 1;
 }
-
+ 
 .options-modal .close {
   float: right;
   font-size: 24px;
   cursor: pointer;
 }
-
-
-
+ 
+ 
+ 
 /* =========================
    Darkmode Overrides
 ========================= */
-
+ 
 body.darkmode {
   background: #222;
   color: #eee;
 }
-
+ 
 /* Tabellen */
 body.darkmode .table-wrapper table {
   background: #222;
   color: #eee;
 }
-
-
+ 
+ 
 body.darkmode #list tbody tr:hover {
   background-color: #444;
   box-shadow: 0 2px 6px rgba(255,255,255,0.1);
 }
-
+ 
 /* Formulare */
 body.darkmode input,
 body.darkmode select,
@@ -804,7 +827,7 @@ body.darkmode textarea {
   color: #eee;
   border: 1px solid #555;
 }
-
+ 
 /* Buttons */
 body.darkmode .btn,
 body.darkmode button {
@@ -815,7 +838,7 @@ body.darkmode button {
 body.darkmode .btn:hover {
   background: #555;
 }
-
+ 
 /* Tabs */
 body.darkmode .tab {
   background: #333;
@@ -826,42 +849,42 @@ body.darkmode .tab.active {
   background: #2a7; /* grün bleibt */
   color: #fff;
 }
-
+ 
 /* Darkmode-Variante */
 body.darkmode .tabOpt {
   background: #333;       /* dunkler Grundton */
   border: 1px solid #555;
   color: #eee;
 }
-
+ 
 body.darkmode .tabOpt:hover {
   background: #444;       /* leicht heller, aber nicht brutal hell */
   box-shadow: 0 2px 4px rgba(255,255,255,0.1);
 }
-
+ 
 /* Modals */
 body.darkmode .modal-content,
 body.darkmode .options-overlay {
   background: rgba(0,0,0,0.7);
 }
-
+ 
 body.darkmode .options-modal {
   background: #333;
   color: #eee;
   border: 2px solid #666;
 }
-
+ 
 /* Aktionsleiste unten im Darkmode */
 body.darkmode #eventActions {
   background: #222;        /* dunkler Hintergrund */
   border-top: 2px solid #444;
 }
-
+ 
 body.darkmode #eventActions button {
   background: #444;        /* neutrale Buttons */
   color: #eee;
 }
-
+ 
 body.darkmode #bookBtn {
   background: #2a7;   /* sattes Grün */
   color: #fff;
@@ -869,7 +892,7 @@ body.darkmode #bookBtn {
 body.darkmode #bookBtn:hover {
   background: #267;   /* etwas dunkler, aber nicht grell */
 }
-
+ 
 body.darkmode #closeEventBtn {
   background: #555;        /* dunkles Grau */
   color: #fff;
@@ -877,15 +900,15 @@ body.darkmode #closeEventBtn {
 body.darkmode #closeEventBtn:hover {
   background: #666;
 }
-
-
+ 
+ 
 body.darkmode .options-content {
   background: #333;
   color: #eee;
 }
-
-
-
+ 
+ 
+ 
 /* Dunkelmodus */
 .darkmode #helpBox {
   border: 1px solid #555;
@@ -893,8 +916,8 @@ body.darkmode .options-content {
   color: #eee;
   box-shadow: 0 2px 6px rgba(0,0,0,0.6);
 }
-
-
+ 
+ 
 /* Tiles im Eventmodus */
 body.darkmode .tile {
   background: #333;
@@ -906,7 +929,7 @@ body.darkmode .tile.selected {
   border: 2px solid #2a7;
   color: #eee;
 }
-
+ 
 /* Feedbackboxen */
 body.darkmode #eventFeedback.success {
   background: #355e3b;
@@ -916,68 +939,68 @@ body.darkmode #eventFeedback.error {
   background: #5a2a2a;
   color: #f8d7da;
 }
-
+ 
 /* Statusbox */
 body.darkmode #statusBox {
   background: #333;
   color: #eee;
   border: 1px solid #555;
 }
-
+ 
 body.darkmode th {
   border: 1px solid #555;
   background: #333;   /* Überschriften dürfen dunkelgrau bleiben */
   color: #eee;
 }
-
+ 
 body.darkmode td {
   border: 1px solid #555;
   color: #eee;
   /* KEIN background hier */
 }
-
+ 
 body.darkmode .action-verbrauch { background-color: #662222; color: #f5c6c6; }
 body.darkmode .action-anfangsbestand { background-color: #224422; color: #c6f5c6; }
 body.darkmode .action-endbestand { background-color: #223366; color: #c6d9f5; }
 body.darkmode .action-lagerwechsel { background-color: #333; color: #eee; }
 body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
-
+ 
   
 </style>
-
-
+ 
+ 
 <!-- Excel -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
-
+ 
 <!-- (Optional) Barcode-Scanner -->
 <script src="https://unpkg.com/quagga/dist/quagga.min.js"></script>
-
+ 
 <!-- FileSaver für Downloads -->
 <script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
-
+ 
 <!-- PDF Export -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-
+ 
 <!-- Quill Editor -->
 <link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
 <script src="https://cdn.quilljs.com/1.3.7/quill.js"></script>
-
+ 
 <!-- ICON -->
 <link rel="icon" type="image/png" href="AStA_Logo_Endversion_2025.png">
 <link rel="alternate icon" href="favicon.ico">
 <link rel="icon" type="image/svg+xml" href="AStA_Logo_Endversion_2025.svg">
-
+ 
 <!-- QR Code -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-
-
+ 
+ 
   
 </head>
-
+ 
 <body>
-
+ 
 <!-- TO DO LISTE
-
+ 
 	- Die Barcodes der Getränke erfassen ------------------------------------------------------- CHECK
 		- Barcode geht nicht immer. 
 		- Barcodeerfassung zeigt nicht immer Anzahl der Flasche / Kiste an
@@ -993,16 +1016,16 @@ body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
 	- Server und Webeinbindung
 	- Vor allem für Strichlistenmodus eine Eventauswertung in der App
 		
-
+ 
  -->
-
+ 
 <div id="statusBox" style="display:none; padding:8px; margin:8px 0; border-radius:4px; background:#e0ffe0; color:#333; font-size:14px;"></div>
-
-
+ 
+ 
 <div id="header" style="display:flex; justify-content:space-between; align-items:center;">
   <!-- Linker Bereich -->
   <h1 id="Titel" style="margin:0;">Warenbewegung</h1>
-
+ 
   <!-- Rechter Bereich mit Buttons -->
   <div style="display:flex; gap:10px;">
     <button id="optionsBtn" style="font-size:20px; padding:8px 16px;">⚙️ Optionen</button>
@@ -1010,7 +1033,7 @@ body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
   </div>
 </div>
 <br>
-
+ 
 <div id="modeTabs" class="tabs"> 
   <button data-mode="ernas" class="tab active">🎓 Ernas</button> 
   <button data-mode="lieferant" class="tab">🚚 Lieferant</button> 
@@ -1018,8 +1041,8 @@ body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
   <button data-mode="admin" class="tab">⚙️ Admin</button> 
   
 </div>
-
-
+ 
+ 
 <!-- Options-Modal -->
 <div id="optionsOverlay" class="options-overlay"></div>
 <div id="optionsModal" class="options-modal">
@@ -1030,12 +1053,12 @@ body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
     <h3>Favoriten-Optionen</h3>
 	<button class="btn" id="loadStandardFavs">📥 Standardliste laden</button><br>
 	<button class="btn" id="resetFavs">🔄 Favoriten zurücksetzen</button><br>
-
+ 
 	<h3>Verkaufspreise festlegen</h3>
 	<button class="btn" id="VKListExport">VK-Listenvorlage runterladen</button><br>
 	<button class="btn" id="VKListImport">VK-Preise reinladen</button><br>
 	
-
+ 
 	<h3>Allgemeine-Optionen</h3>
     <button class="btn" id="clearStorageBtn">🔄 LocalStorage zurücksetzen</button><br>
     <h3>Export-Optionen</h3>
@@ -1047,7 +1070,7 @@ body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
 	<button class="btn" id="saveLocal" type="button">
       Speichern (lokal)
     </button>
-
+ 
     <button class="btn" id="loadLocal" type="button">
       Laden (lokal)
     </button>
@@ -1060,14 +1083,14 @@ body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
     <!-- hier kannst du beliebig weitere Optionen ergänzen -->
   </div>
 </div>
-
-
-
-
+ 
+ 
+ 
+ 
 <div id="helpBox" class="helpBox">
   <h3>Programmhilfe</h3>
   <p>Dieses Tool unterstützt dich beim Erfassen und Exportieren von Getränkedaten.</p>
-
+ 
   <h4>Tastenkombinationen</h4>
   <ul>
     <li><b>Enter</b> → Position hinzufügen (im Kisten/Flaschenfeld)</li>
@@ -1079,17 +1102,17 @@ body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
     <li><b>Ctrl+,</b> → CSV exportieren</li>
     <li><b>Ctrl+B</b> → Barcode scannen</li>
   </ul>
-
+ 
   <h4>Favoriten</h4>
   <p>Produkte mit dem Stern markieren → erscheinen im Favoriten-Dropdown.</p>
-
+ 
   <h4>Import/Export</h4>
   <ul>
     <li><b>CSV</b> → Daten als CSV exportieren oder importieren</li>
     <li><b>Excel</b> → Tabellenblatt herunterladen</li>
     <li><b>Drucken</b> → Exportiert die Liste als PDF</li>
   </ul>
-
+ 
   <h4>Tipps zur Nutzung</h4>
   <ul>
     <li><b>Kommentare</b> für Sonderfälle eintragen (z. B. beschädigt, Sonderlieferung, Personalverzehr)</li>
@@ -1098,38 +1121,37 @@ body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
     <li>Der <b>Strichlistenmodus</b> lässt dich einzelne Flaschen zählen. In der Auswertung wird alles Summiert.</li>
     <li>Ein Klick auf den <b>Tabellenkopf</b> sortiert die Liste Auf- oder Absteigend.</li>
   </ul>
-
+ 
 	<h4>Hinweis:</h4> 
 	<p>Bitte exportiere die Daten als CSV und hänge die Datei an die Mail an. Der Mail-Body ist bereits mit den Daten aus dem Formular vorausgefüllt.</p>
-
+ 
   <button id="helpClose">Schließen</button>
 </div>
-
-
-  <div id="context">
-
+ 
+ 
+  <!-- ═══ BLOCK 1: Organisations- & Eventinfo ═══ -->
+  <div id="context" class="section-card section-card--orga">
+    <div class="section-header">👤 Organisations- &amp; Eventinfo</div>
+ 
     <label class="hidden">Verantwortliche Person</label>
     <div class="row">
-
       <div>
         <label>Name</label>
         <input id="name" type="text" placeholder="Vor- und Nachname" />
         <span class="hidden">Bitte vollständigen Namen eintragen</span>
       </div>
-
       <div>
         <label>Matrikelnummer</label>
         <input id="MatNr" type="text" placeholder="123456" />
         <span class="hidden">Nur Ziffern, Länge flexibel</span>
       </div>
-
     </div>
     <span class="hint">Die eingegebenen Daten werden nicht auf dem Server gespeichert, sondern nur lokal verarbeitet.</span>
-
+ 
     <label class="hidden">Studmail</label>
     <input id="studmail" class="hidden" type="text" value="@studmail.htw-aalen.de" readonly />
     <span class="hidden">Wird automatisch aus der Matrikelnummer erzeugt</span>
-
+ 
     <label>Hochschulgruppierung / Fachschaft</label>
     <select id="fachschaft">
       <option>AStA</option>
@@ -1146,64 +1168,22 @@ body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
       <option>IWO Aalen e.V.</option>
       <option>Extern</option>
     </select>
-
+ 
     <div id="external_fields" class="hidden" style="margin-top:16px;">
       <h3>Externe Adresse</h3>
-		<span class="hint">Die eingegebenen Daten werden nicht auf dem Server gespeichert, sondern nur lokal verarbeitet.</span>
+      <span class="hint">Die eingegebenen Daten werden nicht auf dem Server gespeichert, sondern nur lokal verarbeitet.</span>
       <label>Straße</label>
       <input id="ext_street" type="text" />
-      
-
       <label>Hausnummer</label>
       <input id="ext_number" type="text" />
-
       <label>PLZ</label>
       <input id="ext_zip" type="text" />
-
       <label>Ort</label>
       <input id="ext_city" type="text" />
-
       <label>Kontakt (Telefon oder Mail)</label>
       <input id="ext_contact" type="text" />
     </div>
-
-    <label id="von_loc">Von Lagerort</label>
-    <select id="from_location" display="none">
-      <option>Kühlzelle</option>
-      <option>Fahrradwerkstatt</option>
-      <option>Probenraum</option>
-      <option>PopUp-Cafe</option>
-      <option>Anlieferung</option>
-      <option>Zwischenlager</option>
-      <option>Kühlschrank FW</option>
-      <option>Büro</option>
-      <option>Extern</option>
-    </select>
-
-    <label>Aktion</label>
-    <select id="action">
-      <option>Anfangsbestand</option>
-      <option>Endbestand</option>
-      <option>Verbrauch</option>
-      <option>Lagerwechsel</option>
-      <option>Lieferung</option>
-      
-    </select>
-
-    <label id= "zu_loc" display = "none">Zu Lagerort</label>
-    <select id="to_location">
-      <option>Kühlzelle</option>
-      <option>Event / Verbrauch</option>
-      <option>Fahrradwerkstatt</option>
-      <option>Probenraum</option>
-      <option>PopUp-Cafe</option>
-      <option>Lieferant</option>
-      <option>Zwischenlager</option>
-      <option>Kühlschrank FW</option>
-      <option>Büro</option>
-      <option>Extern</option>
-    </select>
-    
+ 
     <div id="purpose_date_row" class="hidden" style="display:none;">
       <div class="row">
         <div style="flex:2;">
@@ -1216,88 +1196,115 @@ body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
         </div>
       </div>
     </div>
-    
-
+ 
   </div>
-
-  <div id="entry">
-  
-  <label>Kategorie (filtert alle anderen Produkte weg)</label>
-  	<select id="category">
-	  <option value="">Alle</option>
-	</select>
-
-  	
-
+ 
+  <!-- ═══ BLOCK 2: Buchungsoptionen ═══ -->
+  <div class="section-card section-card--buchung">
+    <div class="section-header">📦 Buchungsoptionen</div>
+ 
+    <label id="von_loc">Von Lagerort</label>
+    <select id="from_location">
+      <option>Kühlzelle</option>
+      <option>Fahrradwerkstatt</option>
+      <option>Probenraum</option>
+      <option>PopUp-Cafe</option>
+      <option>Anlieferung</option>
+      <option>Zwischenlager</option>
+      <option>Kühlschrank FW</option>
+      <option>Büro</option>
+      <option>Extern</option>
+    </select>
+ 
+    <label>Aktion</label>
+    <select id="action">
+      <option>Anfangsbestand</option>
+      <option>Endbestand</option>
+      <option>Verbrauch</option>
+      <option>Lagerwechsel</option>
+      <option>Lieferung</option>
+    </select>
+ 
+    <label id="zu_loc">Zu Lagerort</label>
+    <select id="to_location">
+      <option>Kühlzelle</option>
+      <option>Event / Verbrauch</option>
+      <option>Fahrradwerkstatt</option>
+      <option>Probenraum</option>
+      <option>PopUp-Cafe</option>
+      <option>Lieferant</option>
+      <option>Zwischenlager</option>
+      <option>Kühlschrank FW</option>
+      <option>Büro</option>
+      <option>Extern</option>
+    </select>
+ 
+  </div>
+ 
+  <!-- ═══ BLOCK 3: Produktauswahl ═══ -->
+  <div id="entry" class="section-card section-card--produkt">
+    <div class="section-header">🍺 Produktauswahl</div>
+ 
+    <label>Kategorie (filtert alle anderen Produkte weg)</label>
+    <select id="category">
+      <option value="">Alle</option>
+    </select>
+ 
     <label>Produkt suchen</label>
-    
-	    <input id="product_search" type="text" placeholder="Produktname eingeben..." autocomplete="off" />
-	    
-  		
-
-	    <ul id="autocomplete_list"
-	        style="border:1px solid #ccc; max-height:200px; overflow-y:auto; padding:0; margin:0; list-style:none; display:none;">
-	    </ul>
-	    
-	<button class="btn" id="scanBarcode" type="button">Barcode scannen</button>
-	<button class="btn" id="eventModeBtn">Point-of-Sale-modus starten</button>
-	
-	<span class="hint">Für den Point-of-Sale-modus bitte Favoriten setzen.</span>
-	
-	<div id="cameraWrapper" style="display:none;">
-	  <p style="margin:0 0 8px; font-size:0.9em; color:#555;">
-	    Kamera aktiv – bitte Barcode ins Bild halten
-	  </p>
-	  <video id="camera" autoplay playsinline></video>
-	</div>
-
-
-	
-	
+    <input id="product_search" type="text" placeholder="Produktname eingeben..." autocomplete="off" />
+    <ul id="autocomplete_list"
+        style="border:1px solid #ccc; max-height:200px; overflow-y:auto; padding:0; margin:0; list-style:none; display:none;">
+    </ul>
+ 
+    <button class="btn" id="scanBarcode" type="button" style="width:100%; margin-top:6px;">🔍 Barcode scannen</button>
+ 
+    <div id="cameraWrapper" style="display:none;">
+      <p style="margin:8px 0; font-size:0.9em; color:#555;">Kamera aktiv – bitte Barcode ins Bild halten</p>
+      <video id="camera" autoplay playsinline></video>
+    </div>
+ 
     <label>Produktliste</label>
     <div style="display:flex; gap:8px; align-items:center;">
-		<select id="product"></select>
-		
-	<button id="favAddBtn" title="Zu Favoriten hinzufügen">★</button>
-
-  </div>
-  
-  <!-- Favoriten-Dropdown --> 
-  	<label>Favoriten</label>
-	<select id="favorites"></select>
-<!-- <button id="favRemoveBtn">Favorit entfernen</button> -->
-
-
-
-  <div class="row">
-    <div>
-      <label>Kisten <span id="perCaseHint" style="font-weight:normal; color:#666;"></span></label>
-      <input id="qty_boxes" type="number" min="0" step="1" value="0" />
+      <select id="product"></select>
+      <button id="favAddBtn" title="Zu Favoriten hinzufügen">★</button>
     </div>
-    <div>
-      <label>Flaschen</label>
-      <input id="qty_bottles" type="number" min="0" step="1" value="0" />
+ 
+    <label>Favoriten</label>
+    <select id="favorites"></select>
+ 
+    <div class="row">
+      <div>
+        <label>Kisten <span id="perCaseHint" style="font-weight:normal; color:#666;"></span></label>
+        <input id="qty_boxes" type="number" min="0" step="1" value="0" />
+      </div>
+      <div>
+        <label>Flaschen</label>
+        <input id="qty_bottles" type="number" min="0" step="1" value="0" />
+      </div>
     </div>
+ 
+    <div id="eventView" style="display:none;">…</div>
+ 
+    <label>Kommentar (optional)</label>
+    <input id="note" type="text" placeholder="z. B. beschädigt, Sonderlieferung" />
+ 
+    <div class="row" style="margin-top:12px; align-items:center;">
+      <button class="btn" id="add" type="button">Position hinzufügen</button>
+      <label style="margin-left:1em; font-weight:400; display:flex; align-items:center; gap:6px;">
+        <input type="checkbox" id="strichlistenMode" title="Wenn aktiviert: Mehrfachauswahl erlaubt und beim Export summiert. Wenn deaktiviert: Doppelte Produkte müssen bestätigt werden.">
+        Strichlistenmodus
+      </label>
+    </div>
+ 
   </div>
-
-<div id="eventView" style="display:none;">…</div>
-
-
-
-
-
-
-  <label>Kommentar (optional)</label>
-  <input id="note" type="text" placeholder="z. B. beschädigt, Sonderlieferung" />
-
-	<div class="row">
-	  <button class="btn" id="add" type="button">Position hinzufügen</button>
-	  <label style="margin-left:1em;">
-	    <input type="checkbox" id="strichlistenMode" title="Wenn aktiviert: Mehrfachauswahl erlaubt und beim Export summiert. Wenn deaktiviert: Doppelte Produkte müssen bestätigt werden.">
-
-	    Strichlistenmodus
-	  </label>
-	</div>
+ 
+  <!-- ═══ BLOCK 4: Point-of-Sale ═══ -->
+  <div class="section-card section-card--pos">
+    <div class="section-header">🛒 Point-of-Sale</div>
+    <span class="hint" style="display:block; margin-bottom:8px;">Für den Point-of-Sale-Modus bitte zuerst Favoriten setzen.</span>
+    <button class="btn" id="eventModeBtn" style="width:100%; background:#1d9e75; color:#fff; border-color:#1d9e75; font-size:15px; padding:10px;">🛒 Point-of-Sale-Modus starten</button>
+  </div>
+ 
 
   <h2 id="printTitle" >Zählliste </h2>
   
