@@ -4821,9 +4821,17 @@ function findPriceEntryByName(name) {
 	    ) || null
 	  );
 	}
+
+const verwendungszweck = ("Rechnung " + (importMeta.rechnungsnummer || ""))
+  .replace(/[^a-zA-Z0-9\/\-\s]/g, "")
+  .trim()
+  .slice(0, 27);
+
 	
 function generateSEPAQR(iban, bic, empfaenger, betrag, verwendungszweck, callback) {
-	  const epc = [
+	  
+	
+		const epc = [
 		  "BCD",
 		  "001",
 		  "1",
@@ -4861,27 +4869,32 @@ function addLogoToQR(qrDataUrl, logoUrl, callback) {
 	  // DEBUG: Fehler beim Laden des QR-Codes anzeigen
 	  qrImg.onerror = () => console.error("QR konnte NICHT geladen werden:", qrDataUrl);
 
-	  qrImg.onload = () => {
-	    logoImg.onload = () => {
-	      const size = qrImg.width;
-	      const canvas = document.createElement("canvas");
-	      canvas.width = size;
-	      canvas.height = size;
-	      const ctx = canvas.getContext("2d");
+	 logoImg.onload = () => {
+		  const size = qrImg.width;
+		  const canvas = document.createElement("canvas");
+		  canvas.width = size;
+		  canvas.height = size;
+		  const ctx = canvas.getContext("2d");
+		
+		  ctx.drawImage(qrImg, 0, 0);
+		
+		  // Originalproportionen beibehalten
+		  const ratio = logoImg.width / logoImg.height;
+		  const logoHeight = size * 0.32;
+		  const logoWidth = logoHeight * ratio;
+		
+		  const x = (size - logoWidth) / 2;
+		  const y = (size - logoHeight) / 2;
+		
+		  // Weißer Hintergrund minimal
+		  ctx.fillStyle = "white";
+		  ctx.fillRect(x - 1, y - 1, logoWidth + 2, logoHeight + 2);
+		
+		  ctx.drawImage(logoImg, x, y, logoWidth, logoHeight);
+		
+		  callback(canvas.toDataURL("image/png"));
+		};
 
-	      ctx.drawImage(qrImg, 0, 0);
-
-	      const logoSize = size * 0.30;
-	      const x = (size - logoSize) / 2;
-	      const y = (size - logoSize) / 2;
-
-	      ctx.fillStyle = "white";
-	      ctx.fillRect(x - 1, y - 1, logoSize + 2, logoSize + 2);
-
-	      ctx.drawImage(logoImg, x, y, logoSize, logoSize);
-
-	      callback(canvas.toDataURL("image/png"));
-	    };
 
 	    // Logo erst hier laden!
 	    logoImg.src = logoUrl;
