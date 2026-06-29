@@ -112,6 +112,11 @@ body.darkmode .section-header { border-bottom-color: #444; color: #eee; }
   cursor: pointer;
   text-align: center;
   transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  
+}
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
 }
 .btn:hover { background-color: #e0e0e0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
 @media (max-width: 600px) {
@@ -1343,8 +1348,12 @@ body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
 	Rückgängig (Undo)
 	</button>
 	
-	<span class="hint">Folgende Excel bitte dem Referat für Beschaffungswesen (ehemals Finanzreferent) zukommen lassen!</span>
-	<span class="hint">Sende die Buchhaltungs Excel bitte an folgende Adresse: finanzreferent-vs@hs-aalen.de</span>
+	<span class="hint">
+	Folgende Excel bitte dem Referat für Beschaffungswesen (ehemals Finanzreferent) zukommen lassen!
+	<br>
+	Sende die Buchhaltungs Excel bitte an folgende Adresse: finanzreferent-vs@hs-aalen.de
+	</span>
+	
 	
     
     <div class="row">
@@ -1356,7 +1365,31 @@ body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
     <span class="hint">Für dauerhafte Speicherung bitte CSV herunterladen.</span>
 	
     
-    <div class="row">
+   
+	
+    
+	
+	<button class="btn" id="printBtn" type="button">
+	  Drucken
+	</button>
+  
+	<div id="mailHint" class="hint" style="display:none; color:#b00; font-weight:bold;">
+	  Hinweis: Die CSV/Excel wird aus technischen Gründen NICHT automatisch angehängt.
+	  <br>
+	  Bitte die heruntergeladene Datei manuell der E-Mail hinzufügen!
+	</div>
+
+    <button class="btn" id="submit" type="button" disabled>
+      Per Mail senden
+    </button>
+
+    
+
+    
+    <details>
+    <summary>Weitere Funktionen</summary>
+    
+     <div class="row">
     
     <button class="btn" id="exportCsvBtn" type="button">
     CSV exportieren
@@ -1367,32 +1400,17 @@ body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
 
     </div>
 
-    
-	
-	
+	<div class="row">
 	<button class="btn" id="deleteLocalBtn">Daten löschen</button>
-	
+    </div>
     
-	
-	<button class="btn" id="printBtn" type="button">
-	  Drucken
-	</button>
-  
-
-    <button class="btn" id="submit" type="button">
-      Per Mail senden
-    </button>
-
-    
-    
-    
-
-    
-
-    
-    <button class="btn" id="ReadMe" type="button">
+    <div class="row">
+     <button class="btn" id="ReadMe" type="button">
       README öffnen
     </button>
+    </div>
+    
+    </details>
     
     
     <details id="adminArea" style="display:none;">
@@ -2282,7 +2300,8 @@ body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
   const categorySelect = document.getElementById('category');
   const productSelect = document.getElementById('product');
   const autoList = document.getElementById('autocomplete_list');
-  
+  const mailBtn = document.getElementById("submit");
+  mailBtn.disabled = true;
 
   let currentIndex = -1;
   
@@ -4311,6 +4330,8 @@ const BESTAND_PRODUKTLISTE = [
 
 /* CSV-Export für Buchhaltung */
 document.getElementById("exportCsvBuchhaltungBtn").onclick = () => {
+  const mailBtn = document.getElementById("submit");
+  const hint = document.getElementById("mailHint");
   const entries = tableToJSON();
   if (!entries.length) { showStatus("Keine Positionen erfasst.", "error"); return; }
   const fachschaft   = document.getElementById("fachschaft")?.value || "Fachschaft";
@@ -4330,6 +4351,9 @@ document.getElementById("exportCsvBuchhaltungBtn").onclick = () => {
   a.click();
   URL.revokeObjectURL(url);
   showStatus("Buchhaltungs-CSV exportiert.", "success");
+  
+  mailBtn.disabled = false;     // Button aktivieren
+  hint.style.display = "block"; // Hinweis anzeigen
 };
 
 
