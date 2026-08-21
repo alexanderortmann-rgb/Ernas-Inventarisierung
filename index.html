@@ -991,9 +991,9 @@ body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
 <script src="https://cdn.quilljs.com/1.3.7/quill.js"></script>
  
 <!-- ICON -->
-<link rel="icon" type="image/png" href="AStA_Logo_Endversion_2025.png">
-<link rel="alternate icon" href="favicon.ico">
-<link rel="icon" type="image/svg+xml" href="AStA_Logo_Endversion_2025.svg">
+<link rel="icon" type="image/png" href="Logos/AStA_Logo_Endversion_2025.png">
+<link rel="alternate icon" href="Logos/favicon.ico">
+<link rel="icon" type="image/svg+xml" href="Logos/AStA_Logo_Endversion_2025.svg">
  
 <!-- QR Code -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -5251,7 +5251,7 @@ await new Promise(resolve => {
     gesamt,
     verwendungszweck,  // ← jetzt die bereinigte Variable, nicht nochmal der Raw-String
     (qrData) => {
-      addLogoToQR(qrData, "AStA_Logo_Endversion_2026.png", (qrWithLogo) => {
+      addLogoToQR(qrData, "Logos/AStA_Logo_Endversion_2026.png", (qrWithLogo) => {
         data.QRCodeData = qrWithLogo;
         resolve();
       });
