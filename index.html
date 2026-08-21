@@ -3972,7 +3972,7 @@ document.getElementById("printBtn").onclick = () => {
     : `<tr><td colspan="5" style="text-align:center;padding:8px;">Keine Einträge vorhanden</td></tr>`;
  
   // Template laden (oder inline wenn kein fetch möglich)
-  const templatePath = "zaehlliste.html"; // Pfad anpassen falls nötig
+  const templatePath = "Dokumentenvorlagen/zaehlliste.html"; // Pfad anpassen falls nötig
   // Fallback: Template inline bauen wenn fetch nicht verfügbar
   const templateURL = typeof window._zaehlistenTemplatePath !== "undefined"
     ? window._zaehlistenTemplatePath
@@ -5208,8 +5208,8 @@ const zusatz = window.zusatzKosten || {
 
 
 const templatePath = isIntern
- ? "https://raw.githubusercontent.com/alexanderortmann-rgb/Ernas-Inventarisierung/main/rechnung_intern.html"
- : "https://raw.githubusercontent.com/alexanderortmann-rgb/Ernas-Inventarisierung/main/rechnung_extern.html";
+ ? "https://raw.githubusercontent.com/alexanderortmann-rgb/Ernas-Inventarisierung/main/Dokumentenvorlagen/rechnung_intern.html"
+ : "https://raw.githubusercontent.com/alexanderortmann-rgb/Ernas-Inventarisierung/main/Dokumentenvorlagen/rechnung_extern.html";
 
 let html = await loadHTMLTemplate(templatePath);
 
