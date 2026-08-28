@@ -645,31 +645,32 @@ document.getElementById("rechnungHtmlInput").addEventListener("change", (e) => {
 });
 
 function buildGetraenkeHTMLTable(rows) {
-	if (!rows || !rows.length) {
- 	return "<p>Keine Getränkedaten vorhanden.</p>";
-	}
+  if (!rows || !rows.length) {
+    return "<p>Keine Getränkedaten vorhanden.</p>";
+  }
 
-const body = rows.map(item => `
- <tr>
-   <td>${item["Getränk"]}</td>
-   <td>${item.Menge}</td>
-   <td>${item.Einzelpreis}</td>
-   <td>${item.Gesamtpreis}</td>
- </tr>
-`).join("");
+  const body = rows.map(item => `
+    <tr>
+      <td>${item["Getränk"]}</td>
+      <td style="text-align:right;">${item.Menge}</td>
+      <td style="text-align:right;">${item.Einzelpreis} €</td>
+      <td style="text-align:right;">${item.Gesamtpreis} €</td>
+    </tr>
+  `).join("");
 
-return `
- <table border="1" style="border-collapse: collapse; width: 100%;">
-   <tr>
-     <th style="background:#eee;">Getränk</th>
-     <th style="background:#eee;">Menge</th>
-     <th style="background:#eee;">Einzelpreis</th>
-     <th style="background:#eee;">Gesamtpreis</th>
-   </tr>
-   ${body}
- </table>
-`;
+  return `
+    <table border="1" style="border-collapse: collapse; width: 100%;">
+      <tr>
+        <th style="background:#eee;">Getränk</th>
+        <th style="background:#eee; text-align:right;">Menge</th>
+        <th style="background:#eee; text-align:right;">Einzelpreis</th>
+        <th style="background:#eee; text-align:right;">Gesamtpreis</th>
+      </tr>
+      ${body}
+    </table>
+  `;
 }
+
 
 function buildAdresseBlock(meta, org) {
   // Hilfsfunktion: erst in org-Zeile schauen, dann in importMeta
