@@ -1,0 +1,636 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bestandserfassung Ver 1.05</title>
+  <link rel="stylesheet" href="Style.css">
+ 
+  <style></style>
+ 
+ 
+
+</head>
+ 
+<body>
+ 
+<!-- TO DO LISTE
+ 
+	- Die Barcodes der Getränke erfassen ------------------------------------------------------- CHECK
+		- Barcode geht nicht immer. 
+		- Barcodeerfassung zeigt nicht immer Anzahl der Flasche / Kiste an
+		- Nach Barcodeerfassung geht es nicht immer in das vorhergesehene Feld ( Kiste/ Flasche)
+		- Barcode Erfassung sollte dann direkt, wo gewollt, in die Flaschen rein bei Erfassung wie im Dropdown
+	- VK Preise anpassen
+	
+		
+	- weitere Erweiterungen und Listen für Fahrradwerkstatt oder Allgemein Inventur
+	- Jedes Produkt bekommt QR Code mit Daten, man gibt nur noch Menge ein
+	- Server und Webeinbindung
+	- Vor allem für Strichlistenmodus eine Eventauswertung in der App
+		
+ 
+ -->
+ 
+<div id="statusBox" style="display:none; padding:8px; margin:8px 0; border-radius:4px; background:#e0ffe0; color:#333; font-size:14px;"></div>
+ 
+ 
+<div id="header" style="display:flex; justify-content:space-between; align-items:center;">
+  <!-- Linker Bereich -->
+  <h1 id="Titel" style="margin:0;">Warenbewegung</h1>
+ 
+  <!-- Rechter Bereich mit Buttons -->
+  <div style="display:flex; gap:10px;">
+    <button id="optionsBtn" style="font-size:20px; padding:8px 16px;">⚙️ Optionen</button>
+    <button id="helpBtn" style="font-size:20px; padding:8px 16px;">❓ Hilfe</button>
+  </div>
+</div>
+<br>
+ 
+<div id="modeTabs" class="tabs"> 
+  <button data-mode="ernas" class="tab active">🎓 Ernas</button> 
+  <button data-mode="lieferant" class="tab">🚚 Lieferant</button> 
+  <button data-mode="lagerwechsel" class="tab">🔄 Lagerwechsel</button> 
+  <button data-mode="admin" class="tab">⚙️ Admin</button> 
+  
+</div>
+ 
+ 
+<!-- Options-Modal -->
+<div id="optionsOverlay" class="options-overlay"></div>
+<div id="optionsModal" class="options-modal">
+  <div class="options-content">
+    <span id="closeOptions" class="close">&times;</span>
+    <h2>Optionen</h2>
+    <label><input type="checkbox" id="darkModeToggle"> Dark Mode aktivieren</label><br>
+    <h3>Favoriten-Optionen</h3>
+	<button class="btn" id="loadStandardFavs">📥 Standardliste laden</button><br>
+	<button class="btn" id="resetFavs">🔄 Favoriten zurücksetzen</button><br>
+ 
+	<h3>Verkaufspreise festlegen</h3>
+	<button class="btn" id="VKListExport">VK-Listenvorlage runterladen</button><br>
+	<button class="btn" id="VKListImport">VK-Preise reinladen</button><br>
+	
+ 
+	<h3>Allgemeine-Optionen</h3>
+    <button class="btn" id="clearStorageBtn">🔄 LocalStorage zurücksetzen</button><br>
+    <h3>Export-Optionen</h3>
+    <button class="btn" id="exportExcel" type="button">Als Excel herunterladen</button>
+	<h3>Speicher-Optionen</h3>
+	<span class="hint">Daten werden nur temporär im Browser gespeichert. Beim Schließen des Tabs wird alles gelöscht.</span>
+	
+	<div class="row">
+	<button class="btn" id="saveLocal" type="button">
+      Speichern (lokal)
+    </button>
+ 
+    <button class="btn" id="loadLocal" type="button">
+      Laden (lokal)
+    </button>
+    </div>  
+	  
+    <h3>Kamera-Zugriff</h3>
+    <p style="font-size:0.85em; color:#666; margin:4px 0 8px;">Falls der Barcode-Scanner nicht funktioniert, hier explizit den Kamera-Zugriff anfragen:</p>
+    <button class="btn" id="requestCameraBtn" type="button">📷 Kamera-Zugriff anfragen</button>
+    <span id="cameraPermStatus" style="display:block; font-size:0.85em; margin-top:4px;"></span>
+    <!-- hier kannst du beliebig weitere Optionen ergänzen -->
+  </div>
+</div>
+ 
+ 
+<div id="helpBox" class="helpBox">
+  <h3>Programmhilfe</h3>
+  <p>Dieses Tool unterstützt dich beim Erfassen und Exportieren von Getränkedaten.</p>
+ 
+  <h4>Tastenkombinationen</h4>
+  <ul>
+    <li><b>Enter</b> → Position hinzufügen (im Kisten/Flaschenfeld)</li>
+    <li><b>Ctrl+S</b> → lokal speichern</li>
+    <li><b>Ctrl+E</b> → Excel exportieren</li>
+    <li><b>Ctrl+P</b> → Druckansicht öffnen</li>
+    <li><b>Ctrl+Z</b> → letzte Entfernung rückgängig</li>
+    <li><b>Ctrl+M</b> → Mail schicken</li>
+    <li><b>Ctrl+,</b> → CSV exportieren</li>
+    <li><b>Ctrl+B</b> → Barcode scannen</li>
+  </ul>
+ 
+  <h4>Favoriten</h4>
+  <p>Produkte mit dem Stern markieren → erscheinen im Favoriten-Dropdown.</p>
+ 
+  <h4>Import/Export</h4>
+  <ul>
+    <li><b>CSV</b> → Daten als CSV exportieren oder importieren</li>
+    <li><b>Excel</b> → Tabellenblatt herunterladen</li>
+    <li><b>Drucken</b> → Exportiert die Liste als PDF</li>
+  </ul>
+ 
+  <h4>Tipps zur Nutzung</h4>
+  <ul>
+    <li><b>Kommentare</b> für Sonderfälle eintragen (z. B. beschädigt, Sonderlieferung, Personalverzehr)</li>
+    <li>Externe Adressen erscheinen nur, wenn <b>„Extern“</b> gewählt ist</li>
+    <li>Gibt es das Getränk nicht? Dann wähle die letzte Position in der Getränkeauswahl aus und Folge den Anweisungen! Dann kann ich die Liste entsprechend anpassen.</li>
+    <li>Der <b>Strichlistenmodus</b> lässt dich einzelne Flaschen zählen. In der Auswertung wird alles Summiert.</li>
+    <li>Ein Klick auf den <b>Tabellenkopf</b> sortiert die Liste Auf- oder Absteigend.</li>
+  </ul>
+ 
+	<h4>Hinweis:</h4> 
+	<p>Bitte exportiere die Daten als CSV und hänge die Datei an die Mail an. Der Mail-Body ist bereits mit den Daten aus dem Formular vorausgefüllt.</p>
+ 
+  <button id="helpClose">Schließen</button>
+</div>
+ 
+ 
+  <!-- ═══ BLOCK 1: Organisations- & Eventinfo ═══ -->
+  <div id="context" class="section-card section-card--orga">
+    <div class="section-header">👤 Organisations- &amp; Eventinfo</div>
+ 
+    <label class="hidden">Verantwortliche Person</label>
+    <div class="row">
+      <div>
+        <label>Name</label>
+        <input id="name" type="text" placeholder="Vor- und Nachname" />
+        <span class="hidden">Bitte vollständigen Namen eintragen</span>
+      </div>
+      <div>
+        <label>Matrikelnummer</label>
+        <input id="MatNr" type="text" placeholder="123456" />
+        <span class="hidden">Nur Ziffern, Länge flexibel</span>
+      </div>
+    </div>
+    <span class="hint">Die eingegebenen Daten werden nicht auf dem Server gespeichert, sondern nur lokal verarbeitet.</span>
+ 
+    <label class="hidden">Studmail</label>
+    <input id="studmail" class="hidden" type="text" value="@studmail.htw-aalen.de" readonly />
+    <span class="hidden">Wird automatisch aus der Matrikelnummer erzeugt</span>
+ 
+    <label>Hochschulgruppierung / Fachschaft</label>
+    <select id="fachschaft">
+      <option>AStA</option>
+      <option>Fachschaft MW</option>
+      <option>Fachschaft W</option>
+      <option>Fachschaft C</option>
+      <option>Fachschaft FEIN</option>
+      <option>Fachschaft OM</option>
+      <option>UStA Aalen e.V.</option>
+      <option>E-Motion Rennteam Aalen e.V.</option>
+      <option>Canvas-Kernteam</option>
+      <option>FINO</option>
+      <option>ZEO</option>
+      <option>IWO Aalen e.V.</option>
+      <option>Extern</option>
+    </select>
+ 
+    <div id="external_fields" class="hidden" style="margin-top:16px;">
+      <h3>Externe Adresse</h3>
+      <span class="hint">Die eingegebenen Daten werden nicht auf dem Server gespeichert, sondern nur lokal verarbeitet.</span>
+      <label>Straße</label>
+      <input id="ext_street" type="text" />
+      <label>Hausnummer</label>
+      <input id="ext_number" type="text" />
+      <label>PLZ</label>
+      <input id="ext_zip" type="text" />
+      <label>Ort</label>
+      <input id="ext_city" type="text" />
+      <label>Kontakt (Telefon oder Mail)</label>
+      <input id="ext_contact" type="text" />
+    </div>
+ 
+    <div id="purpose_date_row" class="hidden" style="display:none;">
+      <div class="row">
+        <div style="flex:2;">
+          <label id="purpose_label" style="margin-top:12px; font-weight:600;">Zweck / Eventname</label>
+          <input id="purpose" type="text" placeholder="z. B. Weihnachtsfeier, Inventur..." style="width:90%;" />
+        </div>
+        <div style="flex:1;">
+          <label style="margin-top:12px; font-weight:600;">Datum des Events</label>
+          <input id="event_date" type="date" style="width:100%;" />
+        </div>
+      </div>
+    </div>
+ 
+  </div>
+ 
+  <!-- ═══ BLOCK 2: Buchungsoptionen ═══ -->
+  <div class="section-card section-card--buchung">
+    <div class="section-header">📦 Buchungsoptionen</div>
+ 
+    <label id="von_loc">Von Lagerort</label>
+    <select id="from_location">
+      <option>Kühlzelle</option>
+      <option>Fahrradwerkstatt</option>
+      <option>Probenraum</option>
+      <option>PopUp-Cafe</option>
+      <option>Anlieferung</option>
+      <option>Zwischenlager</option>
+      <option>Kühlschrank FW</option>
+      <option>Büro</option>
+      <option>Extern</option>
+    </select>
+ 
+    <label>Aktion</label>
+    <select id="action">
+      <option>Anfangsbestand</option>
+      <option>Endbestand</option>
+      <option>Verbrauch</option>
+      <option>Lagerwechsel</option>
+      <option>Lieferung</option>
+    </select>
+ 
+    <label id="zu_loc">Zu Lagerort</label>
+    <select id="to_location">
+      <option>Kühlzelle</option>
+      <option>Event / Verbrauch</option>
+      <option>Fahrradwerkstatt</option>
+      <option>Probenraum</option>
+      <option>PopUp-Cafe</option>
+      <option>Lieferant</option>
+      <option>Zwischenlager</option>
+      <option>Kühlschrank FW</option>
+      <option>Büro</option>
+      <option>Extern</option>
+    </select>
+ 
+  </div>
+ 
+  <!-- ═══ BLOCK 3: Produktauswahl ═══ -->
+  <div id="entry" class="section-card section-card--produkt">
+    <div class="section-header">🍺 Produktauswahl</div>
+ 
+    <label>Kategorie (filtert alle anderen Produkte weg)</label>
+    <select id="category">
+      <option value="">Alle</option>
+    </select>
+ 
+    <label>Produkt suchen</label>
+    <input id="product_search" type="text" placeholder="Produktname eingeben..." autocomplete="off" />
+    <ul id="autocomplete_list"
+        style="border:1px solid #ccc; max-height:200px; overflow-y:auto; padding:0; margin:0; list-style:none; display:none;">
+    </ul>
+ 
+    <button class="btn" id="scanBarcode" type="button" style="width:100%; margin-top:6px;">🔍 Barcode scannen</button>
+ 
+    <div id="cameraWrapper" style="display:none;">
+      <p style="margin:8px 0; font-size:0.9em; color:#555;">Kamera aktiv – bitte Barcode ins Bild halten</p>
+      <video id="camera" autoplay playsinline></video>
+    </div>
+ 
+    <label>Produktliste</label>
+    <div style="display:flex; gap:8px; align-items:center;">
+      <select id="product"></select>
+      <button id="favAddBtn" title="Zu Favoriten hinzufügen">★</button>
+    </div>
+ 
+    <label>Favoriten</label>
+    <select id="favorites"></select>
+ 
+    <div class="row">
+      <div>
+        <label>Kisten <span id="perCaseHint" style="font-weight:normal; color:#666;"></span></label>
+        <input id="qty_boxes" type="number" min="0" step="1" value="0" />
+      </div>
+      <div>
+        <label>Flaschen</label>
+        <input id="qty_bottles" type="number" min="0" step="1" value="0" />
+      </div>
+    </div>
+ 
+    <div id="eventView" style="display:none;">…</div>
+ 
+    <label>Kommentar (optional)</label>
+    <input id="note" type="text" placeholder="z. B. beschädigt, Sonderlieferung" />
+ 
+    <div class="row" style="margin-top:12px; align-items:center;">
+      <button class="btn" id="add" type="button">Position hinzufügen</button>
+      <label style="margin-left:1em; font-weight:400; display:flex; align-items:center; gap:6px;">
+        <input type="checkbox" id="strichlistenMode" title="Wenn aktiviert: Mehrfachauswahl erlaubt und beim Export summiert. Wenn deaktiviert: Doppelte Produkte müssen bestätigt werden.">
+        Strichlistenmodus
+      </label>
+    </div>
+ 
+  </div>
+ 
+  <!-- ═══ BLOCK 4: Point-of-Sale ═══ -->
+  <div class="section-card section-card--pos">
+    <div class="section-header">🛒 Point-of-Sale</div>
+    <span class="hint" style="display:block; margin-bottom:8px;">Für den Point-of-Sale-Modus bitte zuerst Favoriten setzen.</span>
+    <button class="btn" id="eventModeBtn" style="width:100%; background:#1d9e75; color:#fff; border-color:#1d9e75; font-size:15px; padding:10px;">🛒 Point-of-Sale-Modus starten</button>
+  </div>
+ 
+
+  <h2 id="printTitle" >Zählliste </h2>
+  
+	
+	  <label for="tableSearch">Suche in erfasster Zähltabelle:</label>
+	  <input type="text" id="tableSearch" placeholder="Produkt, Aktion, Zweck …">
+	
+  <div class="table-wrapper">
+  
+  
+  <table id="list">
+    <thead>
+      <tr>
+        <th>Zeit</th>
+        <th>Produkt</th>
+        <th>Kisten</th>
+        <th>Flaschen</th>
+        <th>Gesamt</th>
+        <th>Aktion</th>
+        <th>Zweck / Event</th>
+        <th>Von</th>
+        <th>Zu</th>
+        <th>Fachschaft</th>
+        <th>Kommentar</th>
+        <th>Kontakt</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+  </div>
+
+  <div style="margin-top:16px; display:flex; flex-direction:column; gap:8px;">
+  
+	<button class="btn" id="undoBtn" type="button" style="display:none;">
+	Rückgängig (Undo)
+	</button>
+	
+	<span class="hint">
+	Folgende Excel bitte dem Referat für Beschaffungswesen (ehemals Finanzreferent) zukommen lassen!
+	<br>
+	Sende die Buchhaltungs Excel bitte an folgende Adresse: finanzreferent-vs@hs-aalen.de
+	</span>
+	
+	
+    
+    <div class="row">
+    <button class="btn" id="exportCsvBuchhaltungBtn" type="button">
+      📊 CSV-Export für Buchhaltung
+    </button>
+    </div>
+    
+    <span class="hint">Für dauerhafte Speicherung bitte CSV herunterladen.</span>
+	
+    
+   
+	
+    
+	
+	<button class="btn" id="printBtn" type="button">
+	  Drucken
+	</button>
+  
+	<div id="mailHint" class="hint" style="display:none; color:#b00; font-weight:bold;">
+	  Hinweis: Die CSV/Excel wird aus technischen Gründen NICHT automatisch angehängt.
+	  <br>
+	  Bitte die heruntergeladene Datei manuell der E-Mail hinzufügen!
+	</div>
+
+    <button class="btn" id="submit" type="button" disabled>
+      Per Mail senden
+    </button>
+
+    
+
+    
+    <details>
+    <summary>Weitere Funktionen</summary>
+    
+     <div class="row">
+    
+    <button class="btn" id="exportCsvBtn" type="button">
+    CSV exportieren
+    </button>
+    
+    <label for="csvImport" class="btn">CSV importieren</label>
+	<input type="file" id="csvImport" accept=".csv" style="display:none">
+
+    </div>
+
+	<div class="row">
+	<button class="btn" id="deleteLocalBtn">Daten löschen</button>
+    </div>
+    
+    <div class="row">
+     <button class="btn" id="ReadMe" type="button">
+      README öffnen
+    </button>
+    </div>
+    
+    </details>
+    
+    
+    <details id="adminArea" style="display:none;">
+	  <summary><b>Adminbereich</b></summary>
+	  
+	  <input type="file" id="adminExcelUpload" accept=".xlsx" style="display:none;">
+		<button class="btn" id="adminExcelTrigger">📥 In Auswertung schreiben</button>
+		
+	<span class="hint">Buchhaltungs-Excel auswählen und die jeweilige Spalte hochladen.</span>
+		
+	<div class="row">
+    <button class="btn" id="importBestandExcelBtn" type="button">
+      📥 Bestand aus Excel laden
+    </button>
+    <input type="file" id="importBestandExcelInput" accept=".xlsx,.xls" style="display:none;">
+    </div>
+
+	<span class="hint"> Tabelle mit Kontaktdaten zur Rechnungserstellung laden. </span>
+	<div class="row">
+	<input type="file" id="importOrgExcelInput" accept=".xlsx,.xls" style="display:none">
+	<button class="btn" id="importOrgExcelBtn">Organisationstabelle laden</button>
+	</div>
+	
+	<span class="hint"> Tabelle mit Preisen zur Rechnungserstellung laden. </span>
+	<div class="row">
+	<input type="file" id="importPriceExcelInput" accept=".xlsx,.xls" style="display:none">
+	<button class="btn" id="importPriceExcelBtn">Preistabelle laden</button>
+	</div>
+	
+	<div class="row">
+ 	<button class="btn" type="button" id="generateRechnungBtn">🧾 Rechnung erzeugen</button>
+  	<button class="btn" type="button" id="openRechnungPreviewBtn">📂 HTML laden & bearbeiten</button>
+	</div>
+	<input type="file" id="rechnungHtmlInput" accept=".html" style="display:none;">
+		
+	<div class="row">
+    <button class="btn" id="exportJson" type="button">
+      JSON exportieren
+    </button>
+
+    
+      <label for="importJson" class="btn">JSON importieren</label>
+      <input type="file" id="importJson" accept="application/json"
+             style="display:none;" />
+    </div>
+    
+    <button class="btn" id="VerbrauchCalc" type="button">
+      Verbrauch bestimmen
+    </button>
+    <span class="hint">Für diese Funktion bitte die Anfangs- und Endbestand - CSV bereithalten/ vorab erstellen und runterladen.</span>
+		
+		<hr>
+			<h3>Admin: Getränkeliste verwalten</h3>
+			
+			<h4>Neues Produkt hinzufügen</h4>
+			<label>Produktname</label>
+			<input id="newProdName" type="text">
+			
+			<label>Gebindeeinheit (perCase)</label>
+			<input id="newProdCase" type="number" min="1">
+			
+			<label>Kategorie</label>
+			<select id="newProdCategory"></select>
+			
+			<label>Barcode</label>
+			<input id="newProdBarcode" type="text" placeholder="EAN/UPC">
+			
+			
+			<button id="addProductBtn">Produkt hinzufügen</button>
+			
+			<hr>
+			
+			<h4>Kategorien verwalten</h4>
+			<input id="newCategoryName" type="text" placeholder="Neue Kategorie">
+			<button id="addCategoryBtn">Kategorie hinzufügen</button>
+			
+			<ul id="categoryList"></ul>
+			
+			<hr>
+			
+			<h4>Getränkeliste bearbeiten</h4>
+			<textarea id="productEditor" style="width:100%; height:200px;"></textarea><br>
+			<button id="loadProductsBtn">Liste laden</button>
+			<button id="saveProductsBtn">Liste speichern & sortieren</button>
+			
+			<hr>
+			
+			<h4>Import / Export</h4>
+			<button id="exportProductsBtn">Liste exportieren</button>
+			<input id="importProductsInput" type="file" accept=".json">
+
+			
+	    
+	    
+	    <div id="debugOutput" style="border:1px solid #ccc; padding:10px; margin-top:10px; background:#f9f9f9;">
+	  <h4>Debug-Ausgabe</h4>
+	  <pre id="debugText"></pre>
+	</div>
+	
+	</details>
+	    
+    
+    
+    
+    <div id="eventModal" class="modal">
+  <div class="modal-content">
+    <div id="eventTiles"></div>
+    <div id="eventActions">
+  		<button id="bookBtn">Buchen</button>
+  		<div id="posSumme" style="font-size:1.3em; font-weight:bold; display:flex; align-items:center;">
+	    Gesamt: <span id="posSummeWert" style="margin-left:8px;">0,00 €</span>
+	  	</div>
+  		<button id="closeEventBtn">Schließen</button>
+	</div>
+<div id="eventFeedback"></div>
+
+  </div>
+</div>
+    
+ <!-- Rechnung Preview Modal -->
+<div id="rechnungPreviewContainer" style="display:none;">
+  <div id="rechnungPreviewOverlay"></div>
+  <div id="rechnungPreviewModal">
+    <div id="rechnungModalHeader">
+      <div id="rechnungModalTitle">
+        <span style="font-size:1.2em;">🧾</span>
+        <span>Rechnungsvorschau</span>
+        <span id="rechnungEditBadge" style="display:none;">✏️ Bearbeitungsmodus</span>
+      </div>
+      <div id="rechnungModalActions">
+        <button class="rechnung-btn rechnung-btn-secondary" onclick="downloadHTML()" title="Als HTML-Datei speichern">
+          ⬇️ HTML
+        </button>
+        <button class="rechnung-btn rechnung-btn-primary" onclick="downloadPDF()" title="Als PDF herunterladen">
+          📄 PDF
+        </button>
+        <button class="rechnung-btn rechnung-btn-edit" onclick="enableEditor()" id="editRechnungBtn" title="Rechnung bearbeiten">
+          ✏️ Bearbeiten
+        </button>
+        <button class="rechnung-btn rechnung-btn-danger" onclick="closePreview()" title="Vorschau schließen">
+          ✕ Schließen
+        </button>
+      </div>
+    </div>
+
+    <div id="rechnungModalBody">
+      <div id="rechnungPreview"></div>
+    </div>
+  </div>
+</div>
+
+  </div>
+  <!-- 
+  In diesem Part können Getränke hinzugefügt werden.
+  Einfach Getränkenamen eintragen, Gebindeeinheit und zu welcher Kategorie es gehört.
+  Die Kategorien sind im html Teil weiter oben beim Label Kategorien definiert.
+  Beim hinzufügen neuer Positionen " , " nicht vergessen!
+  Ist aber im Admin Bereich in der App viel entspannter.
+   -->
+   
+  
+<!-- Kategorien: Bier, Softdrinks, Wein, Sekt, Spirituosen, Sonstiges -->  
+
+<!-- Druckbereich – wird nur beim Drucken sichtbar -->
+<div id="printArea"></div>
+
+<div id="produktListe"></div>
+
+<script>
+	
+
+async function init() {
+        const response_data = await fetch("./produktliste.json");
+        const data = await response_data.json();
+        console.log(data);}
+
+
+</script>
+
+  
+</body>
+
+
+
+<!-- Excel -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+ 
+<!-- (Optional) Barcode-Scanner -->
+<script src="https://unpkg.com/quagga/dist/quagga.min.js"></script>
+ 
+<!-- FileSaver für Downloads -->
+<script src="https://cdn.jsdelivr.net/npm/file-saver@2.0.5/dist/FileSaver.min.js"></script>
+ 
+<!-- PDF Export -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+ 
+<!-- Quill Editor -->
+<link href="https://cdn.quilljs.com/1.3.7/quill.snow.css" rel="stylesheet">
+<script src="https://cdn.quilljs.com/1.3.7/quill.js"></script>
+ 
+<!-- ICON -->
+<link rel="icon" type="image/png" href="Logos/AStA_Logo_Endversion_2025.png">
+<link rel="alternate icon" href="Logos/favicon.ico">
+<link rel="icon" type="image/svg+xml" href="Logos/AStA_Logo_Endversion_2025.svg">
+ 
+<!-- QR Code -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+ 
+<!--Skripte für die komplette Logik importieren-->
+<script src="main.js"></script>
+<script src="produktrelevantes.js"></script>
+<script src="export_import.js"></script>
+<script src="rechnungserstellung.js"></script>
+<script src="admin_section.js"></script>
+  
+
+</html>

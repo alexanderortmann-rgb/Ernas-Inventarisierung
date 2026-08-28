@@ -1,0 +1,729 @@
+{
+"categories": [
+	"Ernas Standardsortiment",
+	"Aktuell auf Lager",
+	"AF_Bier",
+	"Bier", 
+	"Softdrinks", 
+	"Sonstiges", 
+	"Spirituosen",
+	"Saft", 
+	"Wein & Sekt"],
+
+"products":[
+  {
+    "name": "Absolut Vodka (0,7L)",
+    "perCase": 6,
+    "category": "Spirituosen",
+    "vk_price": 28.00,
+    "ek_int": 17.12,
+    "ek_ext": 17.12
+  },
+  {
+    "name": "Absolut Vodka (1L)",
+    "perCase": 6,
+    "category": ["Spirituosen", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "7312040017034",
+    "vk_price": 40.00,
+    "ek_int": 17.59,
+    "ek_ext": 17.59
+  },
+  {
+    "name": "Afri Cola (0,33L)",
+    "perCase": 24,
+    "category": ["Softdrinks", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "41030202",
+    "vk_price": 1.50,
+    "ek_int": 0.61,
+    "ek_ext": 0.61
+  },
+  {
+    "name": "Afri Cola (0,5L) PET",
+    "perCase": 12,
+    "category": "Softdrinks",
+    "vk_price": 1.50,
+    "ek_int": 0.96,
+    "ek_ext": 0.96
+  },
+  {
+    "name": "Afri Cola (1L)",
+    "perCase": 12,
+    "category": ["Softdrinks", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "4103020148014",
+    "vk_price": 6.00,
+    "ek_int": 1.22,
+    "ek_ext": 1.22
+  },
+  {
+    "name": "Afri Cola Zero (0,33L)",
+    "perCase": 24,
+    "category": ["Softdrinks", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "41030226",
+    "vk_price": 1.50,
+    "ek_int": 0.61,
+    "ek_ext": 0.61
+  },
+  {
+    "name": "Ananassaft (1L)",
+    "perCase": 6,
+    "category": ["Saft", "Softdrinks", "Aktuell auf Lager"],
+	"barcode": "4004154085209"
+  },
+  {
+    "name": "Aperol Aperitivo Bitter (1L)",
+    "perCase": 6,
+    "category": ["Spirituosen", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "8002230000333",
+    "vk_price": 40.00,
+    "ek_int": 17.09,
+    "ek_ext": 17.09
+  },
+  {
+    "name": "Apfelsaftschorle (0,5L)",
+    "perCase": 20,
+    "category": "Softdrinks"
+  },
+  {
+    "name": "Augusta Winzerschorle sauer (0,5L)",
+    "perCase": 10,
+    "category": "Wein & Sekt",
+    "vk_price": 2.00,
+    "ek_int": 1.01,
+    "ek_ext": 1.01
+  },
+  {
+    "name": "Augusta Winzerschorle süß (0,5L)",
+    "perCase": 10,
+    "category": "Wein & Sekt",
+    "vk_price": 2.00,
+    "ek_int": 1.01,
+    "ek_ext": 1.01
+  },
+  {
+    "name": "Bayreuther Hell Maisel (0,5L)",
+    "perCase": 20,
+    "category": ["Bier", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "40173894",
+    "vk_price": 1.67,
+    "ek_int": 0.83,
+    "ek_ext": 1.06
+  },
+  {
+    "name": "Bayreuther Hell Maisel (0,33L)",
+    "perCase": 24,
+    "category": ["Bier", "Aktuell auf Lager"],
+    "barcode": "",
+    "vk_price": 0.90,
+    "ek_int": 0.65,
+    "ek_ext": 0.84
+  },
+  {
+    "name": "Berliner Luft (0,7L)",
+    "perCase": 6,
+    "category": "Spirituosen",
+    "ek_int": 8.42,
+    "ek_ext": 8.42
+  },
+  {
+    "name": "Berliner Luft (1L)",
+    "perCase": 6,
+    "category": ["Spirituosen", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "4013228325103",
+    "vk_price": 40.00,
+    "ek_int": 11.17,
+    "ek_ext": 11.17
+  },
+  {
+    "name": "Blue Curacao Liqeur - Bols Amsterdam (0,7L)",
+    "perCase": 1,
+    "category": ["Spirituosen", "Aktuell auf Lager"],
+    "barcode": "8716000965226"
+  },
+  {
+    "name": "Bluna (0,5L) PET",
+    "perCase": 12,
+    "category": "Softdrinks",
+    "vk_price": 1.50,
+    "ek_int": 0.96,
+    "ek_ext": 0.96
+  },
+  {
+    "name": "Bluna Orange (0,33L)",
+    "perCase": 24,
+    "category": ["Softdrinks", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "41030233",
+    "vk_price": 1.50,
+    "ek_int": 0.61,
+    "ek_ext": 0.61
+  },
+  {
+    "name": "Burghardt Glühwein Rot (1L)",
+    "perCase": 6,
+    "category": ["Wein & Sekt", "Aktuell auf Lager"],
+    "barcode": "4004154055202"
+  },
+  {
+    "name": "Coca Cola (1L)",
+    "perCase": 12,
+    "category": ["Softdrinks", "Aktuell auf Lager"],
+	"barcode": "5449000017888"
+  },
+  {
+    "name": "Cranberry Saft (1L)",
+    "perCase": 6,
+    "category": ["Softdrinks", "Saft"],
+    "ek_int": 2.60,
+    "ek_ext": 2.60
+  },
+  {
+    "name": "Dietz Weinschorle Winzerspritz Weiss/sauer (0,5L)",
+    "perCase": 10,
+    "category": ["Wein & Sekt", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": ["4000197285071", "4101660300014"],
+    "vk_price": 2.00,
+    "ek_int": 1.11,
+    "ek_ext": 1.11
+  },
+  {
+    "name": "Dietz Weinschorle Winzerspritz Weiss/süß (0,5L)",
+    "perCase": 10,
+    "category": ["Wein & Sekt", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "4000197286078",
+    "vk_price": 2.00,
+    "ek_int": 1.11,
+    "ek_ext": 1.11
+  },
+  {
+    "name": "Energy (1,5L)",
+    "perCase": 6,
+    "category": "Softdrinks",
+    "vk_price": 10.00,
+    "ek_int": 3.35,
+    "ek_ext": 3.35
+  },
+  {
+    "name": "ESSE - Sonnenradler (0,5L)",
+    "perCase": 20,
+    "category": ["Bier", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "4104250012052",
+    "vk_price": 1.67,
+    "ek_int": 0.86,
+    "ek_ext": 0.86
+  },
+  {
+    "name": "Ficken (0,7L)",
+    "perCase": 6,
+    "category": "Spirituosen",
+    "vk_price": 40.00,
+    "ek_int": 12.01,
+    "ek_ext": 12.01
+  },
+  {
+    "name": "Frangelico (0,7L)",
+    "perCase": 6,
+    "category": "Spirituosen",
+    "vk_price": 30.00,
+    "ek_int": 13.91,
+    "ek_ext": 13.91
+  },
+  {
+    "name": "Früchtepunsch (1 L)",
+    "perCase": 6,
+    "category": ["Wein & Sekt", "Sonstiges", "Aktuell auf Lager"],
+    "barcode": "4004154053208",
+    "vk_price": 24.00,
+    "ek_int": 2.24,
+    "ek_ext": 2.24
+  },
+  {
+    "name": "Fürstengold Sekt halbtr. (0,75L)",
+    "perCase": 6,
+    "category": ["Spirituosen", "Wein & Sekt", "Aktuell auf Lager", "Ernas Standardsortiment"],
+	"barcode": "4100740201913",
+    "vk_price": 7.00,
+    "ek_int": 5.38,
+    "ek_ext": 5.38
+  },
+  {
+    "name": "Gletscherwasser (0,7L)",
+    "perCase": 6,
+    "category": "Wein & Sekt",
+    "vk_price": 40.00,
+    "ek_int": 13.97,
+    "ek_ext": 13.97
+  },
+  {
+    "name": "Glühwein Omegasorg (10L)",
+    "perCase": 1,
+    "category": "Wein & Sekt",
+    "vk_price": 45.00,
+    "ek_int": 16.66,
+    "ek_ext": 16.66
+  },
+  {
+    "name": "Glühwein Winzer v.WB rot",
+    "perCase": 6,
+    "category": ["Wein & Sekt", "Aktuell auf Lager"],
+    "barcode": "4045768447016",
+    "vk_price": 45.00,
+    "ek_int": 4.08,
+    "ek_ext": 4.08
+  },
+  {
+    "name": "Glühwein Winzer v.WB weiß",
+    "perCase": 6,
+    "category": ["Wein & Sekt", "Aktuell auf Lager"],
+    "barcode": "4011561021577",
+    "vk_price": 45.00,
+    "ek_int": 4.08,
+    "ek_ext": 4.08
+  },
+  {
+    "name": "Gold Ochsen Keller Radler (0,5L)",
+    "perCase": 20,
+    "category": "Bier",
+    "barcode": "4103030121809",
+    "vk_price": 1.67,
+    "ek_int": 0.91,
+    "ek_ext": 0.91
+  },
+  {
+    "name": "Gordons Dry Gin (0,7L)",
+    "perCase": 6,
+    "category": "Spirituosen",
+    "vk_price": 1.67,
+    "ek_int": 14.37,
+    "ek_ext": 14.37
+  },
+  {
+    "name": "Gordons Dry Gin (1L)",
+    "perCase": 6,
+    "category": ["Spirituosen", "Aktuell auf Lager"],
+	"barcode": "5000289925433",
+    "vk_price": 40.00,
+    "ek_int": 16.72,
+    "ek_ext": 16.72
+  },
+	{
+    "name": "Hacker-Pschorr Naturtrübes Radler Alkoholfrei (0,5L)",
+    "perCase": 20,
+    "category": ["AF_Bier", "Aktuell auf Lager"],
+	"barcode": "4004866721037"
+  },  
+  {
+    "name": "Havanna 3y (0,7L)",
+    "perCase": 6,
+    "category": "Spirituosen",
+    "ek_int": 12.09,
+    "ek_ext": 12.09
+  },
+  {
+    "name": "Havanna 3y (1L)",
+    "perCase": 6,
+    "category": ["Spirituosen", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": ["8501110089982", "8501110080255"],
+    "vk_price": 40.00,
+    "ek_int": 22.08,
+    "ek_ext": 22.08
+  },
+	{
+    "name": "Heubacher ISO SCHBORDSFRAIND (0,5L)",
+    "perCase": 20,
+    "category": ["Softdrinks", "Aktuell auf Lager"],
+	"barcode": "4104950349007"
+   
+  },  
+  {
+    "name": "Jägermeister (0,7L)",
+    "perCase": 6,
+    "category": "Spirituosen",
+    "barcode": "4067700011015",
+    "ek_int": 12.48,
+    "ek_ext": 12.48
+  },
+  {
+    "name": "Jägermeister (1L)",
+    "perCase": 6,
+    "category": ["Spirituosen", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": ["4067700011015", "4067700011008"],
+    "vk_price": 40.00,
+    "ek_int": 16.89,
+    "ek_ext": 16.89
+  },
+  {
+    "name": "Kinderpunsch (10L)",
+    "perCase": 1,
+    "category": "Wein & Sekt",
+    "vk_price": 40.00,
+    "ek_int": 27.48,
+    "ek_ext": 27.48
+  },
+  {
+    "name": "Lillet Blanc (0,75L)",
+    "perCase": 6,
+    "category": ["Spirituosen", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": ["3163934314173", "4000140700583"],
+    "vk_price": 30.00,
+    "ek_int": 14.08,
+    "ek_ext": 14.08
+  },
+  {
+    "name": "Limettensaft (1L)",
+    "perCase": 1,
+    "category": ["Softdrinks", "Saft" , "Aktuell auf Lager"],
+    "barcode": "9008700214742",
+    "vk_price": 40.00,
+    "ek_int": 9.60,
+    "ek_ext": 9.60
+  },
+  {
+    "name": "Maisels Weisse *AF (0,5L)",
+    "perCase": 20,
+    "category": "AF_Bier",
+    "barcode": "40173832",
+    "vk_price": 1.67,
+    "ek_int": 0.88,
+    "ek_ext": 1.11
+  },
+  {
+    "name": "Maisels Weisse Original (0,5L)",
+    "perCase": 20,
+    "category": ["Bier", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "40173351",
+    "vk_price": 1.67,
+    "ek_int": 0.88,
+    "ek_ext": 1.11
+  },
+  {
+    "name": "Mangosaft (1L)",
+    "perCase": 1,
+    "category": ["Saft", "Aktuell auf Lager", "Softdrinks"],
+	"barcode": "4056489318323"
+  },
+  {
+    "name": "Maracujasaft (1L)",
+    "perCase": 1,
+    "category": ["Saft", "Aktuell auf Lager", "Softdrinks"]
+  },
+  {
+    "name": "Mineralwasser medium (0,5L)",
+    "perCase": 20,
+    "category": ["Wasser", "Softdrinks", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": ["4005608001158", "42259916"],
+    "vk_price": 2.00,
+    "ek_int": 0.47,
+    "ek_ext": 0.47
+  },
+  {
+    "name": "Mineralwasser naturell (0,5L)",
+    "perCase": 20,
+    "category": ["Wasser", "Softdrinks", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "4005608001059",
+    "vk_price": 2.00,
+    "ek_int": 0.47,
+    "ek_ext": 0.47
+  },
+  {
+    "name": "Monin Holunderblütensirup (1L)",
+    "perCase": 1,
+    "category": ["Sonstiges", "Aktuell auf Lager"],
+    "barcode": "3052911612589",
+    "ek_int": 10.58,
+    "ek_ext": 10.58
+  },
+  {
+    "name": "Monin Granatapfelsirup (1L)",
+    "perCase": 1,
+    "category": "Sonstiges",
+    "barcode": "3052911612800"
+  },
+  {
+    "name": "Monin Mandelsirup (1L)",
+    "perCase": 1,
+    "category": ["Sonstiges", "Aktuell auf Lager"],
+    "barcode": "3052911612671"
+  },
+  {
+    "name": "Monin Genadinesirup (1L)",
+    "perCase": 1,
+    "category": ["Sonstiges"],
+    "barcode": ""
+  },
+  {
+    "name": "Holunderblüten Sambucco",
+    "perCase": 1,
+    "category": ["Sonstiges"],
+    "barcode": ""
+  },
+  {
+    "name": "Mönchshof Natur-Radler (0,0%) (0,5L)",
+    "perCase": 20,
+    "category": "AF_Bier",
+    "barcode": "4082100006508",
+    "vk_price": 1.67,
+    "ek_int": 0.98,
+    "ek_ext": 0.98
+  },
+  {
+    "name": "Orangenliqeur - Le Favori (0,7L)",
+    "perCase": 1,
+    "category": ["Spirituosen", "Aktuell auf Lager"],
+    "barcode": "3263285151103"
+  },
+  {
+    "name": "Orangensaft (1L)",
+    "perCase": 6,
+    "category": ["Softdrinks", "Saft", "Aktuell auf Lager"],
+    "barcode": "4008486007991",
+    "vk_price": 8.00,
+    "ek_int": 3.07,
+    "ek_ext": 3.07
+  },
+  {
+    "name": "Paulaner Spezi (0,5L)",
+    "perCase": 20,
+    "category": ["Softdrinks", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "4066600603405",
+    "vk_price": 2.00,
+    "ek_int": 0.86,
+    "ek_ext": 0.86
+  },
+  {
+    "name": "Perlwein, Soligo Al Lungo Bianco Vino Frizzante (0,75L)",
+    "perCase": 6,
+    "category": ["Wein & Sekt", "Aktuell auf Lager"],
+    "vk_price": null,
+    "ek_int": 5.08,
+    "ek_ext": 5.08
+  },
+  {
+    "name": "Pfirsich Apéritif - Pêche De Bonheur (0,5L)",
+    "perCase": 1,
+    "category": ["Sonstiges", "Aktuell auf Lager"]
+  },
+  {
+    "name": "Pitú (1L)",
+    "perCase": 6,
+    "category":  ["Spirituosen", "Aktuell auf Lager"],
+    "barcode": "4000269003442",
+    "vk_price": 30.00,
+    "ek_int": 12.60,
+    "ek_ext": 12.60
+  },
+  {
+    "name": "Prosecco Doc Treviso, Soligo Vino Frizzante (0,75L)",
+    "perCase": 6,
+    "category": ["Wein & Sekt", "Aktuell auf Lager"],
+    "vk_price": null,
+    "ek_int": 6.60,
+    "ek_ext": 6.60
+  },
+  {
+    "name": "Rosé, Duo des Plages Cinsault (F) (0,75L)",
+    "perCase": 6,
+    "category": ["Wein & Sekt", "Aktuell auf Lager"],
+    "barcode": "3700619311296",
+    "vk_price": 9.00,
+    "ek_int": 6.60,
+    "ek_ext": 6.60
+  },
+  {
+    "name": "Rot, Pleno Tempranillo Navarra tr. (Es) (0,75L)",
+    "perCase": 6,
+    "category": ["Wein & Sekt", "Aktuell auf Lager"],
+    "vk_price": 9.00,
+    "ek_int": 5.35,
+    "ek_ext": 5.35
+  },
+  {
+    "name": "Rothaus Tannenzäpfle Pils *AF (0,33L)",
+    "perCase": 24,
+    "category": "AF_Bier",
+    "barcode": "41051801",
+    "vk_price": 1.67,
+    "ek_int": 0.88,
+    "ek_ext": 0.88
+  },
+  {
+    "name": "Saurer Joster (0,7L)",
+    "perCase": 6,
+    "category": ["Spirituosen", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "4009887911856",
+    "vk_price": 30.00,
+    "ek_int": 7.61,
+    "ek_ext": 7.61
+  },
+  {
+    "name": "Schorle Joh-Holunder (0,5L)",
+    "perCase": 20,
+    "category": ["Softdrinks", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "4104950356005",
+    "vk_price": 2.00,
+    "ek_int": 0.86,
+    "ek_ext": 0.86
+  },
+  {
+    "name": "Schweppes Bitter Lemon (1L)",
+    "perCase": 6,
+    "category": "Softdrinks",
+    "barcode": "4000140011498",
+    "vk_price": 8.00,
+    "ek_int": 1.85,
+    "ek_ext": 1.85
+  },
+  {
+    "name": "Schweppes Ginger Ale (1L)",
+    "perCase": 6,
+    "category": "Softdrinks",
+    "vk_price": 8.00,
+    "ek_int": 1.85,
+    "ek_ext": 1.85
+  },
+  {
+    "name": "Schweppes Tonic Water (1L)",
+    "perCase": 6,
+    "category": ["Softdrinks", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "4000140011528",
+    "vk_price": 8.00,
+    "ek_int": 1.85,
+    "ek_ext": 1.85
+  },
+  {
+    "name": "Schweppes Wild Berry (1L)",
+    "perCase": 6,
+    "category": ["Softdrinks", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "4000140700583",
+    "vk_price": 8.00,
+    "ek_int": 1.85,
+    "ek_ext": 1.85
+  },
+  {
+    "name": "Sirup Grenadine Bols (0,75L)",
+    "perCase": 1,
+    "category": ["Sonstiges"],
+    "barcode": ""
+  },
+  {
+    "name": "Sirup Holunderblüte Menz & Gasser (0,75L)",
+    "perCase": 1,
+    "category": ["Sonstiges"],
+    "barcode": ""
+  },
+  {
+    "name": "Sirup Grenadine Granatapfel Rigr (0,7L)",
+    "perCase": 1,
+    "category": ["Sonstiges"],
+    "barcode": ""
+  }, 
+  {
+    "name": "Sprite (1L)",
+    "perCase": 12,
+    "category": ["Softdrinks", "Aktuell auf Lager"],
+    "barcode": "5449000017932",
+    "vk_price": 8.00,
+    "ek_int": 1.18,
+    "ek_ext": 1.18
+  },
+  {
+    "name": "Stuttgarter Hofbräu Käpsele Helles (0,33L)",
+    "perCase": 20,
+    "category": ["Bier", "Aktuell auf Lager"],
+    "barcode": "4053400207667"
+  },
+  {
+    "name": "Stuttgarter Hofbräu Pilsener (0,5L)",
+    "perCase": 20,
+    "category": ["Bier", "Aktuell auf Lager"],
+    "barcode": "4100460011106"
+  },
+  {
+    "name": "Tequila Gold (0,7L)",
+    "perCase": 6,
+    "category": ["Spirituosen", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "4062400422505",
+    "vk_price": 30.00,
+    "ek_int": 13.60,
+    "ek_ext": 13.60
+  },
+  {
+    "name": "Tequila Silber (0,7L)",
+    "perCase": 6,
+    "category": ["Spirituosen", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": ["4062400716408", "4062400542104", "4062400130608"],
+    "vk_price": 30.00,
+    "ek_int": 13.60,
+    "ek_ext": 13.60
+  },
+  {
+    "name": "Weiß, Duo des Mers Sauvignon tr. (F) (0,75L)",
+    "perCase": 6,
+    "category": ["Wein & Sekt", "Aktuell auf Lager"],
+    "barcode": "3700619309804",
+    "vk_price": 9.00,
+    "ek_int": 6.60,
+    "ek_ext": 6.60
+  },
+  {
+    "name": "White Rum Captain Sparrow (0,7L)",
+    "perCase": 1,
+    "category": ["Spirituosen", "Aktuell auf Lager"]
+  },
+  {
+    "name": "Wodka Achmatov (0,7L)",
+    "perCase": 1,
+    "category": ["Spirituosen", "Aktuell auf Lager"]
+  },
+  {
+    "name": "Wodka Gorbatchow 37,5% (1L)",
+    "perCase": 1,
+    "category": ["Spirituosen"]
+  },
+  {
+    "name": "Brandy Le Brun 36% (0,7L)",
+    "perCase": 1,
+    "category": ["Spirituosen"]
+  },
+  {
+    "name": "Monin Weißer Rohrzucker (1L)",
+    "perCase": 1,
+    "category": ["Spirituosen", "Sonstiges" ,"Aktuell auf Lager"]
+  },
+  {
+    "name": "Monin Lavendelsirup (1L)",
+    "perCase": 1,
+    "category": ["Spirituosen", "Sonstiges" ,"Aktuell auf Lager"]
+  },
+  {
+    "name": "Bacardi Carta Blanca (0,7L)",
+    "perCase": 1,
+    "category": ["Spirituosen" ,"Aktuell auf Lager"],
+	"barcode": "5010677012638"
+  },
+  {
+    "name": "Bacardi Carta Blanca (1,0L)",
+    "perCase": 1,
+    "category": ["Spirituosen" ],
+	"barcode": ""
+  },
+  {
+    "name": "Monin Cocos (1L)",
+    "perCase": 1,
+    "category": ["Spirituosen", "Sonstiges" ,"Aktuell auf Lager"]
+  },
+  {
+    "name": "Crushed Ice (2kg)",
+    "perCase": 6,
+    "category": ["Sonstiges"]
+  },
+  {
+    "name": "TK Eiswürfel Servisa (2kg)",
+    "perCase": 6,
+    "category": ["Sonstiges"]
+  },
+  {
+    "name": "Zusatz / nicht gelistet (Bitte dann in Kommentar Getränkbezeichnung, Gebindemenge und Kategorie eintragen!)",
+    "perCase": 1,
+    "category": ["Sonstiges", "Aktuell auf Lager", "Ernas Standardsortiment"]
+  }
+]
+}

@@ -1,0 +1,968 @@
+
+@charset "UTF-8";
+
+ /* =========================
+   Grundlayout
+========================= */
+body {
+  font-family: system-ui, sans-serif;
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 16px;
+}
+@media (max-width: 768px) {
+  body { padding: 8px; }
+}
+ 
+/* =========================
+   Tabellen
+========================= */
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  margin: 24px auto;
+}
+.table-wrapper table {
+  width: 100%;
+  min-width: 600px;
+  max-width: 1200px;
+  border-collapse: collapse;
+}
+th, td {
+  border: 1px solid #ddd;
+  padding: 6px;
+  text-align: left;
+}
+#list tbody tr:hover {
+  background-color: #f5f5f5;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  transition: all 0.2s ease;
+}
+@media (max-width: 600px) {
+  th, td { padding: 10px; font-size: 14px; }
+}
+ 
+/* Breite Anpassung am PC */
+@media (min-width: 1350px) {
+  .body { width: 720px; margin: 0 auto; }
+  .table-wrapper {
+    width: 180%;
+    margin: 24px auto;
+    transform: translateX(-240px);
+  }
+}
+ 
+/* =========================
+   Formulare
+========================= */
+label { display:block; margin-top:12px; font-weight:600; }
+select, input[type="number"], input[type="text"] {
+  width:100%; padding:8px;
+}
+.row { display: flex; gap: 8px; }
+.row > * { flex: 1; }
+@media (max-width: 600px) { .row { flex-direction: column; } }
+ 
+.error { border:2px solid #d33 !important; background:#ffecec; }
+.hint { color:#666; font-size:0.85em; margin-top:2px; display:block; }
+ 
+/* =========================
+   Section Cards
+========================= */
+.section-card {
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  padding: 0 14px 14px 14px;
+  margin-bottom: 14px;
+}
+.section-header {
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 0 10px 0;
+  margin: 0 0 6px 0;
+  border-bottom: 1px solid #e0e0e0;
+  letter-spacing: 0.2px;
+}
+.section-card--orga   { border-left: 3px solid #5DCAA5; }
+.section-card--buchung{ border-left: 3px solid #85B7EB; }
+.section-card--produkt{ border-left: 3px solid #AFA9EC; }
+.section-card--pos    { border-left: 3px solid #1d9e75; padding-bottom: 12px; }
+ 
+body.darkmode .section-card { border-color: #444; background: #2a2a2a; }
+body.darkmode .section-header { border-bottom-color: #444; color: #eee; }
+.hidden { display: none; }
+ 
+/* =========================
+   Buttons
+========================= */
+.btn {
+  display: inline-block;
+  margin-top:12px;
+  padding: 8px 16px;
+  background-color: #f0f0f0;
+  color: #333;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+  text-align: center;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+  
+}
+.btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+.btn:hover { background-color: #e0e0e0; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+@media (max-width: 600px) {
+  .btn { width: 100%; font-size: 16px; }
+}
+ 
+/* =========================
+   Status & Hilfen
+========================= */
+#statusBox {
+  display: none;
+  position: fixed;
+  top: 20px; right: 20px;
+  padding: 10px 16px;
+  border-radius: 4px;
+  background: #e0ffe0;
+  color: #333;
+  font-size: 14px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  z-index: 1000;
+}
+@media (max-width: 600px) {
+  #statusBox {
+    left: 50%; right: auto;
+    transform: translateX(-50%);
+    width: 90%;
+    font-size: 16px;
+  }
+}
+#autocomplete_list li { padding:6px; cursor:pointer; }
+#autocomplete_list li.highlight { background:#def; }
+/* Darkmode Hintergrund + Text */
+body.darkmode #autocomplete_list {
+  background: #222;
+  color: #eee;
+  border: 1px solid #444;
+}
+ 
+/* Darkmode Hover */
+body.darkmode #autocomplete_list li:hover {
+  background: #333;
+}
+ 
+/* Darkmode Tastatur-Highlight */
+body.darkmode #autocomplete_list li.highlight {
+  background: #444;   /* dunkles, angenehmes Highlight */
+}
+ 
+/* Darkmode: Hervorgehobener Text (Match) */
+body.darkmode #autocomplete_list li b {
+  color: #6cf;        /* helles Cyan – sehr gut lesbar */
+}
+ 
+ 
+ 
+ 
+#favAddBtn {
+  font-size: 20px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  color: gray;
+}
+#favAddBtn.not-favorited {
+  color: grey;
+}
+ 
+#favAddBtn.favorited {
+  color: gold;
+}
+ 
+ 
+#helpBox {
+  border-radius: 8px;
+  box-shadow: 2px 2px 8px rgba(0,0,0,0.2);
+  font-family: sans-serif;
+}
+#helpBox::before {
+  content: "📎";
+  font-size: 24px;
+  margin-right: 8px;
+}
+ 
+/* =========================
+   Aktionen mit Hover-Effekt
+========================= */
+.action-verbrauch { background-color: #ffe0e0; transition: all 0.2s ease; }
+.action-verbrauch:hover { background-color: #ffcccc; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transform: scale(1.01); }
+ 
+.action-anfangsbestand { background-color: #e0ffe0; transition: all 0.2s ease; }
+.action-anfangsbestand:hover { background-color: #ccffcc; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transform: scale(1.01); }
+ 
+.action-endbestand { background-color: #e0f0ff; transition: all 0.2s ease; }
+.action-endbestand:hover { background-color: #cce5ff; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transform: scale(1.01); }
+ 
+.action-lagerwechsel { background-color: #f0f0f0; transition: all 0.2s ease; }
+.action-lagerwechsel:hover { background-color: #e0e0e0; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transform: scale(1.01); }
+ 
+.action-lieferung { background-color: #fffbe0; transition: all 0.2s ease; }
+.action-lieferung:hover { background-color: #fff2b3; box-shadow: 0 2px 6px rgba(0,0,0,0.15); transform: scale(1.01); }
+ 
+/* =========================
+   Rechnung Preview Modal
+========================= */
+#rechnungPreviewOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(4px);
+  z-index: 10000;
+  animation: rechnungFadeIn 0.2s ease;
+}
+ 
+#rechnungPreviewModal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(95vw, 900px);
+  height: min(92vh, 1000px);
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.45);
+  z-index: 10001;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: rechnungSlideIn 0.25s cubic-bezier(0.34,1.56,0.64,1);
+}
+ 
+@keyframes rechnungFadeIn {
+  from { opacity: 0; } to { opacity: 1; }
+}
+@keyframes rechnungSlideIn {
+  from { transform: translate(-50%, -48%); opacity: 0; }
+  to   { transform: translate(-50%, -50%); opacity: 1; }
+}
+ 
+#rechnungModalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+  color: #fff;
+  flex-shrink: 0;
+  gap: 12px;
+}
+ 
+#rechnungModalTitle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 1.05em;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+}
+ 
+#rechnungEditBadge {
+  font-size: 0.75em;
+  background: rgba(255,200,50,0.25);
+  color: #ffd700;
+  border: 1px solid rgba(255,200,50,0.4);
+  padding: 2px 8px;
+  border-radius: 20px;
+  font-weight: 600;
+}
+ 
+#rechnungModalActions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+ 
+.rechnung-btn {
+  padding: 7px 14px;
+  border: none;
+  border-radius: 7px;
+  font-size: 0.85em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+}
+.rechnung-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.25);
+}
+.rechnung-btn-primary {
+  background: #2563eb;
+  color: #fff;
+}
+.rechnung-btn-primary:hover { background: #1d4ed8; }
+.rechnung-btn-secondary {
+  background: rgba(255,255,255,0.15);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.3);
+}
+.rechnung-btn-secondary:hover { background: rgba(255,255,255,0.25); }
+.rechnung-btn-edit {
+  background: #f59e0b;
+  color: #fff;
+}
+.rechnung-btn-edit:hover { background: #d97706; }
+.rechnung-btn-danger {
+  background: rgba(239,68,68,0.2);
+  color: #fca5a5;
+  border: 1px solid rgba(239,68,68,0.35);
+}
+.rechnung-btn-danger:hover {
+  background: rgba(239,68,68,0.35);
+  color: #fff;
+}
+ 
+  #rechnungModalBody {
+    flex: 1;
+    overflow-y: auto;
+    background: #e8e8e8;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;  /* oben ausrichten, nicht zentriert */
+  }
+ 
+  #rechnungPreview {
+    background: #fff;
+    width: 794px;          /* A4-Breite in Pixel (96dpi) */
+    min-height: 1122px;    /* A4-Höhe in Pixel */
+    padding: 0;            /* Padding kommt vom Template selbst */
+    border-radius: 4px;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.15);
+    font-family: Arial, sans-serif;
+    line-height: 1.45;
+    color: #1a1a1a;
+    flex-shrink: 0;        /* wichtig: kein Zusammenquetschen im Flex-Container */
+    overflow: visible;
+  }
+ 
+/* Darkmode fuer Modal */
+body.darkmode #rechnungPreviewModal {
+  background: #1e1e2e;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.7);
+}
+body.darkmode #rechnungModalBody {
+  background: #13131f;
+}
+body.darkmode #rechnungPreview {
+  background: #fff;
+  color: #1a1a1a;
+}
+ 
+/* Quill-Editor im Modal */
+#rechnungPreview .ql-toolbar {
+  border-radius: 6px 6px 0 0;
+  border: 1px solid #d1d5db;
+  background: #f9fafb;
+  position: sticky;
+  top: -28px;
+  z-index: 5;
+}
+#rechnungPreview .ql-container {
+  border-radius: 0 0 6px 6px;
+  border: 1px solid #d1d5db;
+  border-top: none;
+  font-size: 1em;
+  font-family: inherit;
+}
+ 
+@media (max-width: 600px) {
+  #rechnungPreviewModal {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
+    top: 0; left: 0;
+    transform: none;
+  }
+  #rechnungModalBody { padding: 12px; }
+  #rechnungPreview { padding: 20px 16px; }
+  .rechnung-btn { padding: 6px 10px; font-size: 0.78em; }
+}
+ 
+/* =========================
+   Print / PDF
+========================= */
+#printTitle {
+  display: none;
+}
+#printArea {
+  display: none;
+}
+ 
+@media print {
+  /* Alle body-Kinder ausblenden – sowohl direkte als auch tiefer verschachtelte */
+  body * { visibility: hidden !important; }
+ 
+  /* Nur printArea und seine Kinder sichtbar machen */
+  #printArea,
+  #printArea * {
+    visibility: visible !important;
+  }
+ 
+  /* Body-Margin/Padding zurücksetzen */
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: none !important;
+    background: #fff !important;
+  }
+ 
+  /* printArea: volle Seite, absolut positioniert damit kein Leerraum durch andere Elemente entsteht */
+  #printArea {
+    display: block !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    width: 100% !important;
+    font-family: system-ui, sans-serif;
+    color: #000 !important;
+    background: #fff !important;
+    padding: 0;
+    margin: 0;
+  }
+ 
+  /* Keine Extra-Leerseiten durch fixed/absolute Elemente */
+  #statusBox,
+  .modal,
+  .options-overlay,
+  .options-modal,
+  #helpBox,
+  #cameraWrapper {
+    display: none !important;
+    visibility: hidden !important;
+  }
+ 
+  @page {
+    size: A4 portrait;
+    margin: 12mm 15mm;
+  }
+ 
+  /* Kopfbereich */
+  #printArea .print-header {
+    border-bottom: 2px solid #000;
+    padding-bottom: 8px;
+    margin-bottom: 10px;
+  }
+  #printArea .print-header h1 {
+    font-size: 16pt;
+    margin: 0 0 4px 0;
+  }
+  #printArea .print-meta-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px 20px;
+    font-size: 8.5pt;
+  }
+  #printArea .print-meta-grid span b {
+    display: inline-block;
+    min-width: 110px;
+  }
+ 
+  /* Tabelle */
+  #printArea .print-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 7pt;
+    margin-top: 10px;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+    page-break-inside: auto;
+    border-top: 1px solid #000;
+    border-left: 1px solid #000;
+  }
+  #printArea .print-table th {
+    background: #e8e8e8 !important;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    border-right: 1px solid #000 !important;
+    border-bottom: 1px solid #000 !important;
+    padding: 3px 4px;
+    text-align: left;
+    font-size: 6.5pt;
+    white-space: nowrap;
+  }
+  #printArea .print-table td {
+    border-right: 1px solid #000 !important;
+    border-bottom: 1px solid #000 !important;
+    padding: 3px 4px;
+    font-size: 6.5pt;
+    vertical-align: top;
+    word-break: break-word;
+  }
+  /* Spalten-Breiten für 5 Spalten: Produkt | Kisten | Fl. | Ges. | Kommentar */
+  #printArea .print-table th:nth-child(1),
+  #printArea .print-table td:nth-child(1) { width: 40%; } /* Produkt */
+  #printArea .print-table th:nth-child(2),
+  #printArea .print-table td:nth-child(2) { width: 10%; } /* Kisten */
+  #printArea .print-table th:nth-child(3),
+  #printArea .print-table td:nth-child(3) { width: 10%; } /* Fl. */
+  #printArea .print-table th:nth-child(4),
+  #printArea .print-table td:nth-child(4) { width: 10%; } /* Ges. */
+  #printArea .print-table th:nth-child(5),
+  #printArea .print-table td:nth-child(5) { width: 30%; } /* Kommentar */
+ 
+  #printArea .print-table thead { display: table-header-group; }
+  #printArea .print-table tbody tr { page-break-inside: avoid; }
+ 
+  /* Unterschriften */
+  #printArea .print-signatures {
+    margin-top: 20mm;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 30mm;
+    page-break-inside: avoid;
+  }
+  #printArea .sig-block {
+    border-top: 1px solid #000;
+    padding-top: 4px;
+    font-size: 8pt;
+  }
+  #printArea .sig-line {
+    border-bottom: 1px solid #888;
+    height: 18mm;
+    margin-bottom: 4px;
+  }
+}
+ 
+/* =========================
+   Kamera
+========================= */
+#camera {
+  width: 100%;
+  max-width: 600px;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+}
+#cameraWrapper {
+  background: #f9f9f9;
+  padding: 10px;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  text-align: center;
+  margin-top: 1em;
+  display: none;
+}
+ 
+/* =========================
+   Tabs
+========================= */
+.tabs { display: flex; gap: 8px; margin-bottom: 1em; }
+.tab {
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  background: #f9f9f9;
+  cursor: pointer;
+  border-radius: 4px 4px 0 0;
+}
+.tab.active {
+  background: #2a7;
+  color: #fff;
+  font-weight: bold;
+}
+ 
+/* Basis wie normale Tabs */
+.tabOpt {
+  padding: 6px 12px;
+  border: 1px solid #ccc;
+  background: #f9f9f9;   /* gleiche Grundfarbe wie Tabs */
+  color: #333;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background-color 0.2s ease, box-shadow 0.2s ease;
+}
+ 
+/* Hover-Effekt etwas dezenter */
+.tabOpt:hover {
+  background: #e0e0e0;   /* nicht zu hell */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+ 
+ 
+ 
+ 
+/* kein .active-State wie bei den Tabs */
+ 
+ 
+/* =========================
+   Modal & Eventmodus
+========================= */
+.modal {
+  display: none;
+  position: fixed;
+  top:0; left:0; width:100%; height:100%;
+  background: rgba(0,0,0,0.6);
+  z-index: 9999;
+}
+.modal-content {
+  background: #fff;
+  margin: auto;
+  padding: 20px;
+  width: 95%; height: 95%;
+  border-radius: 12px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+  display: flex;
+  flex-direction: column;
+}
+ 
+/* Standard (Hellmodus) */
+#helpBox {
+  display: none;
+  border: 1px solid #ccc;
+  padding: 12px;
+  background: #f9f9f9;
+  color: #222;
+  position: absolute;
+  right: 20px;
+  top: 60px;
+  width: 300px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  border-radius: 6px;
+}
+ 
+#eventTiles {
+  flex: 1;                 /* nimmt den verfügbaren Platz */
+  overflow-y: auto;        /* Scrollbar wenn zu viele Kacheln */
+  display: grid;
+  grid-template-columns: repeat(auto-fill,minmax(160px,1fr));
+  gap: 20px;
+  padding: 20px;
+}
+ 
+ 
+ 
+.tile {
+  background: #f9f9f9;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
+.tile:hover { transform: scale(1.05); }
+.tile.selected {
+  background: #e0f0ff;   /* sanftes Hellblau */
+  border: 2px solid #007bff;
+  color: #333;
+}
+.tile h3 {
+  margin: 10px 0;
+  font-size: 1.2em;
+}
+.tile .icon {
+  font-size: 2.5em;
+  margin-bottom: 10px;
+}
+.count {
+  font-size: 1.4em;
+  font-weight: bold;
+}
+ 
+.tile-price {
+  font-size: 1.1em;
+  font-weight: bold;
+  color: #2a7;
+  margin: 4px 0 2px 0;
+}
+body.darkmode .tile-price {
+  color: #5d5;
+}
+ 
+/* Zählersteuerung */
+.controls {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px;
+}
+.controls .minus {
+  background: #f8d7da;   /* dezentes Rot */
+  color: #721c24;
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
+  cursor: pointer;
+  display: none; /* erscheint erst wenn count > 0 */
+}
+ 
+/* Aktionsleiste unten */
+#eventActions {
+  flex-shrink: 0;          /* bleibt unten sichtbar */
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  padding: 20px;
+  background: #f1f1f1;
+  border-top: 2px solid #ddd;
+}
+#eventActions button {
+  font-size: 1.2em;
+  padding: 15px 40px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.2s, transform 0.1s;
+}
+#bookBtn {
+  background: #28a745;   /* Grün für Hauptaktion */
+  color: white;
+}
+#bookBtn:hover {
+  background: #218838;
+  transform: scale(1.05);
+}
+#closeEventBtn {
+  background: #6c757d;   /* Grau für neutral */
+  color: white;
+}
+#closeEventBtn:hover {
+  background: #5a6268;
+  transform: scale(1.05);
+}
+ 
+/* Feedback im Modal */
+#eventFeedback {
+  display: none;
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 6px;
+  text-align: center;
+  font-weight: bold;
+}
+#eventFeedback.success {
+  background: #d4edda;
+  color: #155724;
+}
+#eventFeedback.error {
+  background: #f8d7da;
+  color: #721c24;
+}
+ 
+/*Options-Modal*/
+ 
+.options-overlay {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  z-index: 999;
+}
+ 
+.options-modal {
+  display: none;
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 90%;
+  max-width: 420px;
+  max-height: 85vh;
+  background: #fff;
+  border: 2px solid #444;
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  z-index: 1000;
+  border-radius: 8px;
+  display: none;
+  flex-direction: column;
+}
+ 
+.options-content {
+  padding: 20px;
+  overflow-y: auto;
+  flex: 1;
+}
+ 
+.options-modal .close {
+  float: right;
+  font-size: 24px;
+  cursor: pointer;
+}
+ 
+ 
+ 
+/* =========================
+   Darkmode Overrides
+========================= */
+ 
+body.darkmode {
+  background: #222;
+  color: #eee;
+}
+ 
+/* Tabellen */
+body.darkmode .table-wrapper table {
+  background: #222;
+  color: #eee;
+}
+ 
+ 
+body.darkmode #list tbody tr:hover {
+  background-color: #444;
+  box-shadow: 0 2px 6px rgba(255,255,255,0.1);
+}
+ 
+/* Formulare */
+body.darkmode input,
+body.darkmode select,
+body.darkmode textarea {
+  background: #333;
+  color: #eee;
+  border: 1px solid #555;
+}
+ 
+/* Buttons */
+body.darkmode .btn,
+body.darkmode button {
+  background: #444;
+  color: #eee;
+  border: 1px solid #666;
+}
+body.darkmode .btn:hover {
+  background: #555;
+}
+ 
+/* Tabs */
+body.darkmode .tab {
+  background: #333;
+  border: 1px solid #555;
+  color: #eee;
+}
+body.darkmode .tab.active {
+  background: #2a7; /* grün bleibt */
+  color: #fff;
+}
+ 
+/* Darkmode-Variante */
+body.darkmode .tabOpt {
+  background: #333;       /* dunkler Grundton */
+  border: 1px solid #555;
+  color: #eee;
+}
+ 
+body.darkmode .tabOpt:hover {
+  background: #444;       /* leicht heller, aber nicht brutal hell */
+  box-shadow: 0 2px 4px rgba(255,255,255,0.1);
+}
+ 
+/* Modals */
+body.darkmode .modal-content,
+body.darkmode .options-overlay {
+  background: rgba(0,0,0,0.7);
+}
+ 
+body.darkmode .options-modal {
+  background: #333;
+  color: #eee;
+  border: 2px solid #666;
+}
+ 
+/* Aktionsleiste unten im Darkmode */
+body.darkmode #eventActions {
+  background: #222;        /* dunkler Hintergrund */
+  border-top: 2px solid #444;
+}
+ 
+body.darkmode #eventActions button {
+  background: #444;        /* neutrale Buttons */
+  color: #eee;
+}
+ 
+body.darkmode #bookBtn {
+  background: #2a7;   /* sattes Grün */
+  color: #fff;
+}
+body.darkmode #bookBtn:hover {
+  background: #267;   /* etwas dunkler, aber nicht grell */
+}
+ 
+body.darkmode #closeEventBtn {
+  background: #555;        /* dunkles Grau */
+  color: #fff;
+}
+body.darkmode #closeEventBtn:hover {
+  background: #666;
+}
+ 
+ 
+body.darkmode .options-content {
+  background: #333;
+  color: #eee;
+}
+ 
+ 
+ 
+/* Dunkelmodus */
+.darkmode #helpBox {
+  border: 1px solid #555;
+  background: #2b2b2b;
+  color: #eee;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.6);
+}
+ 
+ 
+/* Tiles im Eventmodus */
+body.darkmode .tile {
+  background: #333;
+  color: #eee;
+  box-shadow: 0 4px 10px rgba(255,255,255,0.1);
+}
+body.darkmode .tile.selected {
+  background: #444;
+  border: 2px solid #2a7;
+  color: #eee;
+}
+ 
+/* Feedbackboxen */
+body.darkmode #eventFeedback.success {
+  background: #355e3b;
+  color: #d4edda;
+}
+body.darkmode #eventFeedback.error {
+  background: #5a2a2a;
+  color: #f8d7da;
+}
+ 
+/* Statusbox */
+body.darkmode #statusBox {
+  background: #333;
+  color: #eee;
+  border: 1px solid #555;
+}
+ 
+body.darkmode th {
+  border: 1px solid #555;
+  background: #333;   /* Überschriften dürfen dunkelgrau bleiben */
+  color: #eee;
+}
+ 
+body.darkmode td {
+  border: 1px solid #555;
+  color: #eee;
+  /* KEIN background hier */
+}
+ 
+body.darkmode .action-verbrauch { background-color: #662222; color: #f5c6c6; }
+body.darkmode .action-anfangsbestand { background-color: #224422; color: #c6f5c6; }
+body.darkmode .action-endbestand { background-color: #223366; color: #c6d9f5; }
+body.darkmode .action-lagerwechsel { background-color: #333; color: #eee; }
+body.darkmode .action-lieferung { background-color: #665c22; color: #f5f1c6; }
+ 
+  
