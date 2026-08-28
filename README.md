@@ -3,6 +3,7 @@ Ernas Warenbewegungs-Tool – README
 ====================================
 1. Zweck des Tools
 ====================================
+
 Dieses Tool dient zur Erfassung von Warenbewegungen (Ausgabe, Verbrauch, Bestände)
 für Events der Fachschaften an der HTW Aalen (z. B. Ernas-Separee, Fachschaftsstände).
 Es funktioniert vollständig offline und kann einfach per WhatsApp, E-Mail,
