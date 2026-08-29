@@ -582,6 +582,44 @@ function formatDateDE(val) {
   return `${day}.${mon}.${d.getFullYear()}`;
 }
 
+// Datumserkennung macht Probleme
+
+function parseExcelDate(val) {
+  if (!val) return null;
+
+  // Excel-Seriennummer (typisch > 30000)
+  if (typeof val === "number") {
+    // echte Excel-Datumswerte sind > 25569 (1970)
+    if (val > 25569) {
+      return new Date(Math.round((val - 25569) * 86400 * 1000));
+    }
+    // kleine Zahlen → KEIN Datum → ignorieren
+    return null;
+  }
+
+  // ISO-Format JJJJ-MM-TT
+  if (typeof val === "string") {
+    const s = val.trim();
+
+    if (/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+      return new Date(s);
+    }
+
+    // TT.MM.JJJJ
+    if (/^\d{1,2}\.\d{1,2}\.\d{4}$/.test(s)) {
+      const [d, m, y] = s.split(".");
+      return new Date(`${y}-${m}-${d}`);
+    }
+
+    // Versuch: generisches Date-Parsing
+    const d = new Date(s);
+    if (!isNaN(d.getTime())) return d;
+  }
+
+  return null;
+}
+
+
  
 /**
  * Personen mit Posten aus Orgatabelle ermitteln.
@@ -590,40 +628,23 @@ function formatDateDE(val) {
  * eventDateISO: ISO-String JJJJ-MM-TT oder leer (→ heutiges Datum).
  */
 function getPersonByRole(role, eventDateISO) {
-  console.log("DEBUG: Suche Rolle:", role, "Datum:", eventDateISO);
-
   const org = window.orgTable;
-  if (!org || !org.length) {
-    console.log("DEBUG: orgTable leer oder nicht geladen");
-    return "";
-  }
+  if (!org || !org.length) return "";
 
-  const eventDate = eventDateISO ? new Date(eventDateISO) : new Date();
-  console.log("DEBUG: EventDate:", eventDate);
-
+  const eventDate = parseExcelDate(eventDateISO) || new Date();
   const r = role.toString().trim().toLowerCase();
 
   const candidates = org.filter(row => {
     const fachschaft = (row["Fachschaft"] || "").toString().trim().toLowerCase();
-    const start = new Date(row["Amtsantritt"]);
-    const end   = new Date(row["Amtsabgabe"]);
-
-    console.log("DEBUG: Prüfe Zeile:", row);
-    console.log("DEBUG: fachschaft:", fachschaft, "start:", start, "end:", end);
-
     if (fachschaft !== r) return false;
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
-      console.log("DEBUG: Datum ungültig");
-      return false;
-    }
 
-    const inRange = eventDate >= start && eventDate <= end;
-    console.log("DEBUG: inRange:", inRange);
+    const start = parseExcelDate(row["Amtsantritt"]);
+    const end   = parseExcelDate(row["Amtsabgabe"]);
 
-    return inRange;
+    if (!start || !end) return false;
+
+    return eventDate >= start && eventDate <= end;
   });
-
-  console.log("DEBUG: Kandidaten:", candidates);
 
   if (!candidates.length) return "";
 
