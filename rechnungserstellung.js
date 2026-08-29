@@ -584,32 +584,45 @@ function formatDateDE(val) {
 
  
 /**
- * Finanzvorstand aus Orgatabelle ermitteln.
- * Liest die Zeile mit Schlüssel "vorNeun" oder "nachNeun" (Groß/Klein egal).
- * Stichtag: 01.09.2026 – davor vorNeun, ab dann nachNeun.
+ * Personen mit Posten aus Orgatabelle ermitteln.
+ * Liest die Zeile mit Schlüssel in der Fachschafts-Spalte (Groß/Klein egal).
+ * Stichtag ist über Amtszeit definiert
  * eventDateISO: ISO-String JJJJ-MM-TT oder leer (→ heutiges Datum).
  */
-function getFinanzvorstand(eventDateISO) {
+function getPersonByRole(role, eventDateISO) {
   const org = window.orgTable;
   if (!org || !org.length) return "";
- 
-  const stichtag = new Date("2026-09-01");
-  const datum    = eventDateISO ? new Date(eventDateISO) : new Date();
-  // Groß-/Kleinschreibung egal: "vorNeun", "vorneun", "VorNeun" etc.
-  const schluessel = datum < stichtag ? "vorneun" : "nachneun";
- 
-  // Suche in der "Fakultät"-Spalte (dort stehen vorNeun/nachNeun)
-  const zeile = org.find(row =>
-    (row["Fakultät"] || "").toString().trim().toLowerCase() === schluessel
-  );
 
-  if (!zeile) return "";
- 
-  // Vorname (kann zweiteilig sein) + Nachname aus den Spalten
-  const vorname  = String(zeile["Vorname"]  || "").trim();
-  const nachname = String(zeile["Nachname"] || "").trim();
+  const eventDate = eventDateISO ? new Date(eventDateISO) : new Date();
+  if (isNaN(eventDate.getTime())) return "";
+
+  // Rolle normalisieren
+  const r = role.toString().trim().toLowerCase();
+
+  // passende Zeilen filtern
+  const candidates = org.filter(row => {
+    const fachschaft = (row["Fachschaft"] || "").toString().trim().toLowerCase();
+    if (fachschaft !== r) return false;
+
+    const start = new Date(row["Amtsantritt"]);
+    const end   = new Date(row["Amtsabgabe"]);
+
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return false;
+
+    return eventDate >= start && eventDate <= end;
+  });
+
+  if (!candidates.length) return "";
+
+  // Falls mehrere passen → nimm die erste
+  const person = candidates[0];
+
+  const vorname  = String(person["Vorname"]  || "").trim();
+  const nachname = String(person["Nachname"] || "").trim();
+
   return `${vorname} ${nachname}`.trim();
 }
+
 	
 document.getElementById("generateRechnungBtn").onclick = () => {
 	  const entries = tableToJSON();
@@ -686,7 +699,6 @@ function buildAdresseBlock(meta, org) {
   const ort      = v("Ort");
 
   const lines = [
-    "Verfasste Studierendenschaft",
     fachschaft,
     `${vorname} ${nachname}`.trim(),
     zweite,
@@ -817,7 +829,8 @@ const data = {
  DatumRech: formatDateDE(new Date()),
  Datum: formatDateDE(importMeta.event_date),
  Event: importMeta.purpose || "",
- Finanzvorstand: getFinanzvorstand(importMeta.event_date) || "",
+ Finanzvorstand: getPersonByRole("Finanzen", importMeta.event_date) || "",
+ Vorstand: getPersonByRole("Vorstand", importMeta.event_date) || "",
  Getr: sumGetr.toFixed(2),
  Reig: zusatz.reinigung?.toFixed(2) || "0.00",
  GBr: zusatz.glasbruch?.toFixed(2) || "0.00",
@@ -840,7 +853,7 @@ await new Promise(resolve => {
   generateSEPAQR(
     "DE51614500501001461599",
     "OASPDE6AXXX",
-    "Verfasste Studierendenschaft",
+    "Studierendenschaft der Hochschule Aalen",
     gesamt,
     verwendungszweck,  // ← jetzt die bereinigte Variable, nicht nochmal der Raw-String
     (qrData) => {
