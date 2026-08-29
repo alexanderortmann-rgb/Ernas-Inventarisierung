@@ -590,38 +590,47 @@ function formatDateDE(val) {
  * eventDateISO: ISO-String JJJJ-MM-TT oder leer (→ heutiges Datum).
  */
 function getPersonByRole(role, eventDateISO) {
+  console.log("DEBUG: Suche Rolle:", role, "Datum:", eventDateISO);
+
   const org = window.orgTable;
-  if (!org || !org.length) return "";
+  if (!org || !org.length) {
+    console.log("DEBUG: orgTable leer oder nicht geladen");
+    return "";
+  }
 
   const eventDate = eventDateISO ? new Date(eventDateISO) : new Date();
-  if (isNaN(eventDate.getTime())) return "";
+  console.log("DEBUG: EventDate:", eventDate);
 
-  // Rolle normalisieren
   const r = role.toString().trim().toLowerCase();
 
-  // passende Zeilen filtern
   const candidates = org.filter(row => {
     const fachschaft = (row["Fachschaft"] || "").toString().trim().toLowerCase();
-    if (fachschaft !== r) return false;
-
     const start = new Date(row["Amtsantritt"]);
     const end   = new Date(row["Amtsabgabe"]);
 
-    if (isNaN(start.getTime()) || isNaN(end.getTime())) return false;
+    console.log("DEBUG: Prüfe Zeile:", row);
+    console.log("DEBUG: fachschaft:", fachschaft, "start:", start, "end:", end);
 
-    return eventDate >= start && eventDate <= end;
+    if (fachschaft !== r) return false;
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+      console.log("DEBUG: Datum ungültig");
+      return false;
+    }
+
+    const inRange = eventDate >= start && eventDate <= end;
+    console.log("DEBUG: inRange:", inRange);
+
+    return inRange;
   });
+
+  console.log("DEBUG: Kandidaten:", candidates);
 
   if (!candidates.length) return "";
 
-  // Falls mehrere passen → nimm die erste
   const person = candidates[0];
-
-  const vorname  = String(person["Vorname"]  || "").trim();
-  const nachname = String(person["Nachname"] || "").trim();
-
-  return `${vorname} ${nachname}`.trim();
+  return `${person["Vorname"]} ${person["Nachname"]}`.trim();
 }
+
 
 	
 document.getElementById("generateRechnungBtn").onclick = () => {
