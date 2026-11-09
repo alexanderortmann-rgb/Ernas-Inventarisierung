@@ -112,7 +112,7 @@ const BESTAND_PRODUKTLISTE = [
   "Crushed Ice (2kg)",
   "Monin Genadinesirup (1L)",
   "TK Eiswürfel Servisa (2kg)",
-  "Glühwein Fürstenfass (1L),
+  "Glühwein Fürstenfass (1L)",
   "Glühwein Glüh & Fruchtig (1L)",
   "Mineralwasser classic Ja (1,5L)",
   "Limettensaft Hitchcock (0,5L)",
