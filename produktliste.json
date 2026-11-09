@@ -186,7 +186,7 @@
       { "name": "Limo Apfelschorle (0,5L)",
         "perCase": 20,
         "category": ["Limo"],
-        "buchhaltung": false },
+        "buchhaltung": true },
 
       { "name": "Limo Bluna (0,5L) PET",
         "perCase": 12,
