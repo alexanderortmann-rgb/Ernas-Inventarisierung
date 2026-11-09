@@ -292,16 +292,36 @@ document.getElementById("exportCsvBuchhaltungBtn").onclick = () => {
   const mailBtn = document.getElementById("submit");
   const hint = document.getElementById("mailHint");
   const entries = tableToJSON();
-  if (!entries.length) { showStatus("Keine Positionen erfasst.", "error"); return; }
+
+  if (!entries.length) {
+    showStatus("Keine Positionen erfasst.", "error");
+    return;
+  }
+
+  if (!BESTAND_PRODUKTLISTE.length) {
+    showStatus("Produktliste wird noch geladen – bitte kurz warten.", "error");
+    return;
+  }
+
   const fachschaft   = document.getElementById("fachschaft")?.value || "Fachschaft";
   const eventName    = document.getElementById("purpose")?.value || "Event";
   const eventDate    = document.getElementById("event_date")?.value || "";
   const eventDateFmt = eventDate
     ? eventDate.replace(/-/g, "")
     : new Date().toLocaleDateString("de-DE").replace(/\./g, "-");
+
+  // Warnung bei nicht gelisteten Produkten
+  const buchhaltungSet = new Set(BESTAND_PRODUKTLISTE);
+  const nichtGelistet = [...new Set(
+    entries
+      .map(e => (e.product || "").trim())
+      .filter(p => p && !buchhaltungSet.has(p))
+  )];
+
   const csvContent = buildBuchhaltungsData(entries)
     .map(r => (r || []).map(v => `"${(v ?? "").toString().replace(/"/g, '""')}"`).join(";"))
     .join("\n");
+
   const blob = new Blob(["\uFEFF" + csvContent], { type: "text/csv;charset=utf-8;" });
   const url  = URL.createObjectURL(blob);
   const a    = document.createElement("a");
@@ -309,10 +329,21 @@ document.getElementById("exportCsvBuchhaltungBtn").onclick = () => {
   a.download = `${eventDateFmt}_${eventName}_${fachschaft}_Buchhaltung.csv`.replace(/\s+/g, "_");
   a.click();
   URL.revokeObjectURL(url);
-  showStatus("Buchhaltungs-CSV exportiert.", "success");
-  
-  mailBtn.disabled = false;     // Button aktivieren
-  hint.style.display = "block"; // Hinweis anzeigen
+
+  // Statusmeldung
+  if (nichtGelistet.length) {
+    showStatus(
+      `⚠️ ${nichtGelistet.length} Produkt(e) nicht in Buchhaltungsliste – ` +
+      `am Ende der CSV angehängt: ${nichtGelistet.slice(0, 3).join(", ")}` +
+      (nichtGelistet.length > 3 ? " …" : ""),
+      "error"
+    );
+  } else {
+    showStatus("Buchhaltungs-CSV exportiert.", "success");
+  }
+
+  mailBtn.disabled = false;
+  hint.style.display = "block";
 };
 
 

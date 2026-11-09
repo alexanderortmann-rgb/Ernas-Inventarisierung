@@ -97,6 +97,23 @@ function loadProductsIntoApp(products) {
 	}
 
 
+function migrateFavorites(products) {
+  const stored = JSON.parse(localStorage.getItem("favorites") || "[]");
+  if (!stored.length) return;
+
+  const validNames = new Set(products.map(p => p.name));
+  const stillValid = stored.filter(n => validNames.has(n));
+
+  if (stillValid.length !== stored.length) {
+    localStorage.setItem("favorites", JSON.stringify(stillValid));
+    console.warn(
+      `Favoriten-Migration: ${stored.length - stillValid.length} veraltete Einträge entfernt.`,
+      stored.filter(n => !validNames.has(n))
+    );
+    loadFavorites();
+  }
+}
+
 function updateCategoryFilter(products) {
 	  // Alle Kategorien aus allen Produkten sammeln
 	  const categories = [...new Set(
@@ -111,7 +128,7 @@ function updateCategoryFilter(products) {
 	    opt.value = cat;
 	    opt.textContent = cat;
 	    categorySelect.appendChild(opt);
-	    categorySelect.value = "Aktuell auf Lager";
+	    //categorySelect.value = "Alle";
 
 	  });
 	}
@@ -243,7 +260,7 @@ function handleSpiritousenFocus() {
   const prod = productSelect.value;
   const cat = productCategories[prod];
   const catStr = Array.isArray(cat) ? cat[0] : (cat || "");
-  if (catStr === "Spirituosen") {
+  if (catStr === "Spirituosen" || catStr === "Spirituose" || catStr === "Likör") {
     document.getElementById("qty_bottles").focus();
   } else {
     document.getElementById("qty_boxes").focus();
@@ -533,6 +550,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function updateAutocomplete() {
     const query = productSearch.value.toLowerCase();
     const options = Array.from(productSelect.options);
+	const FALLBACK_NAME = "Sonstiges Zusatz / nicht gelistet";
 
     autoList.innerHTML = "";
     currentIndex = -1;
@@ -555,12 +573,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (matches.length === 0) {
     	  const li = document.createElement("li");
-    	  li.textContent = "Zusatz / nicht gelistet (Bitte dann in Kommentar Getränkbezeichnung, Gebindemenge und Kategorie eintragen!)";
+    	  li.textContent = FALLBACK_NAME;
     	  //li.style.fontStyle = "italic";
 
     	  li.onclick = () => {
-    		  productSearch.value = "Zusatz / nicht gelistet (Bitte dann in Kommentar Getränkbezeichnung, Gebindemenge und Kategorie eintragen!)";
-    	    productSelect.value = "Zusatz / nicht gelistet (Bitte dann in Kommentar Getränkbezeichnung, Gebindemenge und Kategorie eintragen!)";
+    		  productSearch.value = FALLBACK_NAME;
+    	    productSelect.value = FALLBACK_NAME;
     	    
     	    //autoList.style.display = "none";
     	  };
@@ -665,16 +683,27 @@ document.addEventListener("DOMContentLoaded", () => {
 
 
 	function getCategoryIcon(category) {
-		  const cat = Array.isArray(category) ? category[0] : category;
-		  switch(cat) {
-		    case "Bier": return "🍺";
-		    case "Wein & Sekt": return "🍷";
-		    case "Wasser": return "💧";
-		    case "Softdrinks": return "🥤";
-		    default: return "🍹";
-		  }
-		}
-
+	  const cat = Array.isArray(category) ? category[0] : category;
+	  switch (cat) {
+	    case "Bier":        return "🍺";
+	    case "AF-Bier":     return "🍺";   
+	    case "Radler":      return "🍺";   
+	    case "Wein":
+	    case "Sekt":
+	    case "Glühwein":
+	    case "Wein & Sekt": return "🍷";
+	    case "Wasser":      return "💧";
+	    case "Cola":
+	    case "Limo":
+	    case "Softdrinks":  return "🥤";
+	    case "Saft":        return "🧃";   
+	    case "Spirituose":
+	    case "Spirituosen": return "🍸";
+	    case "Likör":       return "🍹";   
+	    case "Sirup":       return "🍯";   
+	    default:            return "🍹";
+	  }
+	}
 
 	function buildEventTiles() {
 		  eventTiles.innerHTML = "";
@@ -1634,63 +1663,76 @@ helpClose.onclick = () => {
    Zeilen 1-11: Metablock, Zeile 12-13: leer, Zeile 14+: Produkte
    ============================================================ */
    function buildBuchhaltungsData(entries) {
-	   const meta = collectMeta();
-	   const heute = new Date().toLocaleDateString("de-DE");
+     const meta = collectMeta();
+     const heute = new Date().toLocaleDateString("de-DE");
 
-	   // Event-Datum aus dem Formular nutzen, Fallback auf heutiges Datum
-	   const eventDateRaw = document.getElementById("event_date")?.value || "";
-	   const datumFuerCSV = eventDateRaw
-	     ? new Date(eventDateRaw).toLocaleDateString("de-DE")
-	     : heute;
+     const eventDateRaw = document.getElementById("event_date")?.value || "";
+     const datumFuerCSV = eventDateRaw
+       ? new Date(eventDateRaw).toLocaleDateString("de-DE")
+       : heute;
 
-	   const contactParts = [
-	     meta.name,
-	     meta.matrikelnummer ? "Matrikel Nr.: " + meta.matrikelnummer : "",
-	     meta.studmail && meta.studmail !== "@studmail.htw-aalen.de" ? meta.studmail : "",
-	     meta.ext_contact
-	   ].filter(v => v && v.trim() !== "");
-	   const contactInfo = contactParts.join(", ");
+     const contactParts = [
+       meta.name,
+       meta.matrikelnummer ? "Matrikel Nr.: " + meta.matrikelnummer : "",
+       meta.studmail && meta.studmail !== "@studmail.htw-aalen.de" ? meta.studmail : "",
+       meta.ext_contact
+     ].filter(v => v && v.trim() !== "");
+     const contactInfo = contactParts.join(", ");
 
-	   const mengen = {}, notizen = {};
-	   entries.forEach(e => {
-	     if (!e.product) return;
-	     mengen[e.product] = (mengen[e.product] || 0) + (Number(e.total) || 0);
-	     if (e.note && e.note.trim()) {
-	       if (!notizen[e.product]) notizen[e.product] = new Set();
-	       notizen[e.product].add(e.note.trim());
-	     }
-	   });
+     // Mengen und Notizen aggregieren
+     const mengen = {}, notizen = {};
+     entries.forEach(e => {
+       if (!e.product) return;
+       mengen[e.product] = (mengen[e.product] || 0) + (Number(e.total) || 0);
+       if (e.note && e.note.trim()) {
+         (notizen[e.product] ??= new Set()).add(e.note.trim());
+       }
+     });
 
-	   const rows = [
-	     ["Rechnungsnummer", "",                       ""],  // Zeile 1
-	     ["Rechnungstyp",    "",                       ""],  // Zeile 2
-	     ["Datum",           datumFuerCSV,             ""],  // Zeile 3  
-	     ["Veranstalter",    meta.fachschaft || "",    ""],  // Zeile 4
-	     ["Kürzel/Code",     "",                       ""],  // Zeile 5
-	     ["Event",           meta.purpose || "",       ""],  // Zeile 6
-	     ["Kommentar",       meta.note || "",          ""],  // Zeile 7
-	     ["Kontakt",         contactInfo,              ""],  // Zeile 8
-	     ["Von Bestand",     meta.from_location || "", ""],  // Zeile 9
-	     ["Aktion",          meta.action || "",        ""],  // Zeile 10
-	     ["Zu Bestand",      meta.to_location || "",   ""],  // Zeile 11
-	     [],                                                  // Zeile 12 – leer
-	     ["Produkt",         "",        "Kommentar"] // Zeile 13 = Header
-	   ];
+     // Meta-Block
+     const rows = [
+       ["Rechnungsnummer", "",                       ""],
+       ["Rechnungstyp",    "",                       ""],
+       ["Datum",           datumFuerCSV,             ""],
+       ["Veranstalter",    meta.fachschaft || "",    ""],
+       ["Kürzel/Code",     "",                       ""],
+       ["Event",           meta.purpose || "",       ""],
+       ["Kommentar",       meta.note || "",          ""],
+       ["Kontakt",         contactInfo,              ""],
+       ["Von Bestand",     meta.from_location || "", ""],
+       ["Aktion",          meta.action || "",        ""],
+       ["Zu Bestand",      meta.to_location || "",   ""],
+       [],
+       ["Produkt",         "",        "Kommentar"]
+     ];
 
-	   const listeSet = new Set(BESTAND_PRODUKTLISTE);
-	   BESTAND_PRODUKTLISTE.forEach(produkt => {
-	     const menge = mengen[produkt] || 0;
-	     const notiz = notizen[produkt] ? [...notizen[produkt]].join(", ") : "";
-	     rows.push([produkt, menge !== 0 ? menge : "", notiz]);
-	   });
-	   [...new Set(entries.map(e => e.product).filter(p => p && !listeSet.has(p)))].sort()
-	     .forEach(produkt => {
-	       const menge = mengen[produkt] || 0;
-	       rows.push([produkt, menge !== 0 ? menge : "",
-	         notizen[produkt] ? [...notizen[produkt]].join(", ") : ""]);
-	     });
-	   return rows;
-	 }
+     // 1) Feste Buchhaltungsreihenfolge – STABIL
+     const buchhaltungSet = new Set(BESTAND_PRODUKTLISTE);
+     BESTAND_PRODUKTLISTE.forEach(produkt => {
+       const menge = mengen[produkt] || 0;
+       const notiz = notizen[produkt] ? [...notizen[produkt]].join(", ") : "";
+       rows.push([produkt, menge !== 0 ? menge : "", notiz]);
+     });
+
+     // 2) Nicht gelistete Produkte – ans Ende, alphabetisch (deutsch)
+     const nichtGelistet = [...new Set(
+       entries
+         .map(e => (e.product || "").trim())
+         .filter(p => p && !buchhaltungSet.has(p))
+     )].sort((a, b) => a.localeCompare(b, "de"));
+
+     if (nichtGelistet.length) {
+       rows.push([]); // Leerzeile als Trenner
+       rows.push(["⚠️ NICHT IN BUCHHALTUNGSLISTE", "", ""]);
+       nichtGelistet.forEach(produkt => {
+         const menge = mengen[produkt] || 0;
+         const notiz = notizen[produkt] ? [...notizen[produkt]].join(", ") : "";
+         rows.push([produkt, menge !== 0 ? menge : "", notiz]);
+       });
+     }
+
+     return rows;
+   }
 
 
 
@@ -1782,6 +1824,10 @@ helpClose.onclick = () => {
 		
 		// Standardfavoriten laden
 		document.getElementById("loadStandardFavs").onclick = () => {
+		  if (!standardFavorites.length) {
+			    showStatus("Produktliste noch nicht geladen – bitte kurz warten.", "error");
+			    return;
+		  }
 		  localStorage.setItem("favorites", JSON.stringify(standardFavorites));
 		  loadFavorites();
 		  filterProducts();
@@ -2018,3 +2064,6 @@ if (readmeBtn) {
     newWindow.document.close();
   };
 }
+
+
+

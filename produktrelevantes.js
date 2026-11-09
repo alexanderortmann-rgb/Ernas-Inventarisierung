@@ -1,150 +1,89 @@
-//Standardliste definieren
-const standardFavorites = [
-  "Bayreuther Hell Maisel (0,5L)",
-  "Paulaner Spezi (0,5L)",
-  "Mineralwasser medium (0,5L)",
-  "Mineralwasser naturell (0,5L)",
-  "Afri Cola (0,33L)",
-  "Afri Cola Zero (0,33L)",
-  "Dietz Weinschorle Winzerspritz Weiss/sauer (0,5L)",
-  "Dietz Weinschorle Winzerspritz Weiss/süß (0,5L)",
-  "ESSE - Sonnenradler (0,5L)",
-  "Schorle Joh-Holunder (0,5L)",
-  "Maisels Weisse Original (0,5L)",
-  "Maisels Weisse *AF (0,5L)",
-  "Bluna Orange (0,33L)"
-];
+/* ============================================================
+   Produktdaten laden – Single Source of Truth ist produktliste.json
+   ============================================================ */
+
+   async function loadProductData() {
+     const r = await fetch("./produktliste.json");
+     if (!r.ok) throw new Error("produktliste.json nicht gefunden");
+     return await r.json();
+   }
+
+let PRODUCT_DATA = null;
 
 /* ============================================================
-   FESTE PRODUKTLISTE für Bestandsübersicht / Buchhaltung
-   → Neue Produkte hier ergänzen (Reihenfolge wird 1:1 übernommen)
-   Wichtig für den Buchhaltungs-CSV Export und vereinfacht den übertrag in die Excel
+   Standardfavoriten – abgeleitet aus favorite:true
+   (früher: handgepflegte standardFavorites-Liste)
    ============================================================ */
-   
-const BESTAND_PRODUKTLISTE = [
-  "Absolut Vodka (0,7L)",
-  "Absolut Vodka (1L)",
-  "Afri Cola (0,33L)",
-  "Afri Cola (0,5L) PET",
-  "Afri Cola (1L)",
-  "Afri Cola Zero (0,33L)",
-  "Ananassaft (1L)",
-  "Aperol Aperitivo Bitter (1L)",
-  "Apfelsaftschorle (0,5L)",
-  "Berliner Luft (0,7L)",
-  "Berliner Luft (1L)",
-  "Bluna (0,5L) PET",
-  "Bluna Orange (0,33L)",
-  "Burghardt Glühwein Rot (1L)",
-  "Coca Cola (1L)",
-  "Cranberry Saft",
-  "Dietz Weinschorle Winzerspritz Weiss/sauer (0,5L)",
-  "Dietz Weinschorle Winzerspritz Weiss/süß (0,5L)",
-  "Energy (1,5L)",
-  "ESSE - Sonnenradler (0,5L)",
-  "Ficken (0,7L)",
-  "Frangelico (0,7L)",
-  "Früchtepunsch (1 L)",
-  "Fürstengold Sekt halbtr. (0,75L)",
-  "Gletscherwasser (0,7L)",
-  "Glühwein Omegasorg (10L)",
-  "Glühwein Winzer v.WB rot",
-  "Glühwein Winzer v.WB weiß",
-  "Gold Ochsen Keller Radler (0,5L)",
-  "Gordons Dry Gin (0,7L)",
-  "Gordons Dry Gin (1L)",
-  "Havanna 3y (0,7L)",
-  "Havanna 3y (1L)",
-  "Jägermeister (0,7L)",
-  "Jägermeister (1L)",
-  "Kinderpunsch (10L)",
-  "Limettensaft (1L)",
-  "Lillet Blanc (0,75L)",
-  "Bayreuther Hell Maisel (0,5L)",
-  "Maisels Weisse *AF (0,5L)",
-  "Maisels Weisse Original (0,5L)",
-  "Mangosaft (1L)",
-  "Maracujasaft (1L)",
-  "Mineralwasser medium (0,5L)",
-  "Mineralwasser naturell (0,5L)",
-  "Monin Holunderblütensirup (1L)",
-  "Monin Mandelsirup (1L)",
-  "Mönchshof Natur-Radler (0,0%) (0,5L)",
-  "Orangensaft (1L)",
-  "Paulaner Spezi (0,5L)",
-  "Pitú (1L)",
-  "Rosé, Duo des Plages Cinsault (F) (0,75L)",
-  "Rot, Pleno Tempranillo Navarra tr. (Es) (0,75L)",
-  "Perlwein, Soligo Al Lungo Bianco Vino Frizzante (0,75L)",
-  "Prosecco Doc Treviso, Soligo Vino Frizzante (0,75L)",
-  "Rothaus Tannenzäpfle Pils *AF (0,33L)",
-  "Saurer Joster (0,7L)",
-  "Schorle Joh-Holunder (0,5L)",
-  "Schweppes Bitter Lemon (1L)",
-  "Schweppes Ginger Ale (1L)",
-  "Schweppes Tonic Water (1L)",
-  "Schweppes Wild Berry (1L)",
-  "Sprite (1L)",
-  "Tequila Gold (0,7L)",
-  "Tequila Silber (0,7L)",
-  "Weiß, Duo des Mers Sauvignon tr. (F) (0,75L)",
-  "White Rum Captain Sparrow (0,7L)",
-  "Wodka Achmatov (0,7L)",
-  "Pfirsich Apéritif - Pêche De Bonheur (0,5L)",
-  "Orangenliqeur - Le Favori (0,7L)",
-  "Blue Curacao Liqeur - Bols Amsterdam (0,7L)",
-  "Stuttgarter Hofbräu Käpsele Helles (0,33L)",
-  "Stuttgarter Hofbräu Pilsener (0,5L)",
-  "Monin Weißer Rohrzucker (1L)",
-  "Monin Lavendelsirup (1L)",
-  "Bacardi Carta Blanca (0,7L)",
-  "Monin Cocos (1L)",
-  "Hacker-Pschorr Naturtrübes Radler Alkoholfrei (0,5L)",
-  "Heubacher ISO SCHBORDSFRAIND (0,5L)",
-  "Bayreuther Hell Maisel (0,33L)",
-  "Bacardi Carta Blanca (1,0L)",
-  "Holunderblüten Sambucco",
-  "Sirup Grenadine Bols (0,75L)",
-  "Sirup Holunderblüte Menz & Gasser (0,75L)",
-  "Sirup Grenadine Granatapfel Rigr (0,7L)",
-  "Wodka Gorbatchow 37,5% (1L)",
-  "Brandy Le Brun 36% (0,7L)",
-  "Crushed Ice (2kg)",
-  "Monin Genadinesirup (1L)",
-  "TK Eiswürfel Servisa (2kg)",
-  "Glühwein Fürstenfass (1L)",
-  "Glühwein Glüh & Fruchtig (1L)",
-  "Mineralwasser classic Ja (1,5L)",
-  "Limettensaft Hitchcock (0,5L)",
-  "Action Energydrink (0,33L)",
-  "Triple Sec (1,0L)",
-  "Weißer Rum Skipper George (0,7L)",
-  "0",
-  "0",
-  "0",
-  "0",
-  "0",
-  "0",
-  "0",
-  "Zusatz / nicht gelistet (Bitte dann in Kommentar Getränkbezeichnung, Gebindemenge und Kategorie eintragen!)"
-];
 
-async function loadProductData() {
-  const response = await fetch("./produktliste.json");
-  return await response.json();
+let standardFavorites = [];
+
+/* ============================================================
+   BESTAND_PRODUKTLISTE – feste Reihenfolge für Buchhaltungs-CSV
+   Wird beim Laden aus produktliste.json generiert.
+   Reihenfolge: nach Hauptkategorie (in der Reihenfolge von
+   `categories`), innerhalb der Kategorie alphabetisch.
+   ============================================================ */
+
+let BESTAND_PRODUKTLISTE = [];
+
+/* ============================================================
+   Zentrale Init: lädt JSON, füllt alle abgeleiteten Listen
+   ============================================================ */
+
+   (async function initProducts() {
+     try {
+       PRODUCT_DATA = await loadProductData();
+       console.log("Produktliste geladen:", PRODUCT_DATA);
+
+       // Favoriten: favorite:true
+       standardFavorites = PRODUCT_DATA.products
+         .filter(p => p.favorite === true)
+         .map(p => p.name);
+
+       // Buchhaltung: buchhaltung:true, in JSON-Reihenfolge
+       // → das ist die feste, stabile Zeilenreihenfolge für die Excel
+       BESTAND_PRODUKTLISTE = PRODUCT_DATA.products
+         .filter(p => p.buchhaltung === true)
+         .map(p => p.name);
+
+       console.log(`Buchhaltungsliste: ${BESTAND_PRODUKTLISTE.length} Produkte`);
+
+       // In die App laden
+       loadProductsIntoApp(PRODUCT_DATA.products);
+
+     } catch (err) {
+       console.error("Fehler beim Laden der Produktliste:", err);
+       loadProductsIntoApp([]);
+     }
+   })();
+
+/* ============================================================
+   Hilfsfunktion: erzeugt die flache, kategorisierte Produktliste
+   für den Buchhaltungs-CSV-Export.
+   ============================================================ */
+/*
+function buildBestandsliste(data) {
+  const catOrder = data.categories || [];
+  const products  = data.products   || [];
+
+  // Hauptkategorie = erster Eintrag in category
+  const mainCat = p => Array.isArray(p.category) ? p.category[0] : p.category;
+
+  // Gruppieren
+  const groups = {};
+  products.forEach(p => {
+    const cat = mainCat(p) || "Sonstiges";
+    (groups[cat] ??= []).push(p.name);
+  });
+
+  // Reihenfolge: erst Kategorien in catOrder, dann Rest alphabetisch
+  const orderedCats = [
+    ...catOrder.filter(c => groups[c]),
+    ...Object.keys(groups).filter(c => !catOrder.includes(c)).sort()
+  ];
+
+  // Flach machen, innerhalb der Kategorie alphabetisch
+  return orderedCats.flatMap(cat => groups[cat].sort((a, b) => a.localeCompare(b, "de")));
 }
 
-
-(async function initProducts() {
-  try {
-    const data = await loadProductData();
-    console.log("Produktliste geladen:", data);
-    loadProductsIntoApp(data.products);
-  } catch (err) {
-    console.error("Fehler beim Laden der Produktliste:", err);
-  }
-})();
-
-
-
-
+*/
