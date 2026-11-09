@@ -66,6 +66,12 @@
         "category": ["AF-Bier"],
         "buchhaltung": true,
         "barcode": "4004866721037" },
+		
+	  { "name": "AF-Bier Heubacher Hell (0,5L)",
+        "perCase": 20,
+        "category": ["AF-Bier"],
+        "buchhaltung": true,
+        "barcode": "4004866721037" },
 
       { "name": "AF-Bier Maisel Weisse (0,5L)",
         "perCase": 20,
