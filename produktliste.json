@@ -166,7 +166,19 @@
     "ek_ext": 0.61
   },
   {
-    "name": "Burghardt Glühwein Rot (1L)",
+    "name": "Glühwein Rot Burghardt (1L)",
+    "perCase": 6,
+    "category": ["Wein & Sekt", "Aktuell auf Lager"],
+    "barcode": "4004154055202"
+  },
+  {
+    "name": "Glühwein Fürstenfass (1L)",
+    "perCase": 6,
+    "category": ["Wein & Sekt", "Aktuell auf Lager"],
+    "barcode": "4004154055202"
+  },
+  {
+    "name": "Glühwein Glüh & Fruchtig (1L)",
     "perCase": 6,
     "category": ["Wein & Sekt", "Aktuell auf Lager"],
     "barcode": "4004154055202"
@@ -415,6 +427,15 @@
     "category": ["Saft", "Aktuell auf Lager", "Softdrinks"]
   },
   {
+    "name": "Mineralwasser classic Ja (1,5L)",
+    "perCase": 6,
+    "category": ["Wasser", "Softdrinks", "Aktuell auf Lager"],
+    "barcode": ["4005608001158", "42259916"],
+    "vk_price": 2.00,
+    "ek_int": 0.47,
+    "ek_ext": 0.47
+  },
+  {
     "name": "Mineralwasser medium (0,5L)",
     "perCase": 20,
     "category": ["Wasser", "Softdrinks", "Aktuell auf Lager", "Ernas Standardsortiment"],
@@ -481,6 +502,15 @@
   },
   {
     "name": "Orangensaft (1L)",
+    "perCase": 6,
+    "category": ["Softdrinks", "Saft", "Aktuell auf Lager"],
+    "barcode": "4008486007991",
+    "vk_price": 8.00,
+    "ek_int": 3.07,
+    "ek_ext": 3.07
+  },
+  {
+    "name": "Limettensaft Hitchcock (0,5L)",
     "perCase": 6,
     "category": ["Softdrinks", "Saft", "Aktuell auf Lager"],
     "barcode": "4008486007991",
