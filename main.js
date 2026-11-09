@@ -39,6 +39,7 @@ const productSelect = document.getElementById('product');
 const autoList = document.getElementById('autocomplete_list');
 const mailBtn = document.getElementById("submit");
 mailBtn.disabled = true;
+const ZUSATZ_PRODUKT = "Sonstiges Zusatz / nicht gelistet";
 
 let currentIndex = -1;
   
@@ -53,6 +54,10 @@ function normalizeKey(str) {
 let productList = [];
 let bottlesPerCase = {};
 let productCategories = {};
+
+function istZusatzProdukt(name) {
+  return String(name || "").trim() === ZUSATZ_PRODUKT;
+}
 
 
 function loadProductsIntoApp(products) {
@@ -870,6 +875,8 @@ document.addEventListener("DOMContentLoaded", () => {
 	  const strichlistenMode = document.getElementById("strichlistenMode").checked;
 
 	  const hasNote = e.note && e.note.trim() !== "";
+	  
+	  const istZusatz = istZusatzProdukt(e.product);
 
 	  let existingRow = null;
 
@@ -1076,7 +1083,10 @@ document.addEventListener("DOMContentLoaded", () => {
 	 showStatus("Hinweis: Produkt mehrfach hinzugefügt – wird beim Export summiert.", "info");
 	}
 
-	
+	if (istZusatzProdukt(product)) {
+	  const note = document.getElementById('note').value.trim();
+	  markError(document.getElementById('note'), !note, "Kommentar (Pflicht bei Zusatz)");
+	}
 
 	
   
@@ -1679,17 +1689,29 @@ helpClose.onclick = () => {
      ].filter(v => v && v.trim() !== "");
      const contactInfo = contactParts.join(", ");
 
-     // Mengen und Notizen aggregieren
-     const mengen = {}, notizen = {};
+     // Trennen: normale Einträge vs. Zusatz-Einträge
+     const normaleEntries = [];
+     const zusatzEntries  = [];
+
      entries.forEach(e => {
        if (!e.product) return;
+       if (istZusatzProdukt(e.product)) {
+         zusatzEntries.push(e);
+       } else {
+         normaleEntries.push(e);
+       }
+     });
+
+     // Normale Einträge aggregieren
+     const mengen = {}, notizen = {};
+     normaleEntries.forEach(e => {
        mengen[e.product] = (mengen[e.product] || 0) + (Number(e.total) || 0);
        if (e.note && e.note.trim()) {
          (notizen[e.product] ??= new Set()).add(e.note.trim());
        }
      });
 
-     // Meta-Block
+     // Meta-Block (unverändert)
      const rows = [
        ["Rechnungsnummer", "",                       ""],
        ["Rechnungstyp",    "",                       ""],
@@ -1706,7 +1728,7 @@ helpClose.onclick = () => {
        ["Produkt",         "",        "Kommentar"]
      ];
 
-     // 1) Feste Buchhaltungsreihenfolge – STABIL
+     // 1) Feste Buchhaltungsreihenfolge
      const buchhaltungSet = new Set(BESTAND_PRODUKTLISTE);
      BESTAND_PRODUKTLISTE.forEach(produkt => {
        const menge = mengen[produkt] || 0;
@@ -1714,20 +1736,31 @@ helpClose.onclick = () => {
        rows.push([produkt, menge !== 0 ? menge : "", notiz]);
      });
 
-     // 2) Nicht gelistete Produkte – ans Ende, alphabetisch (deutsch)
+     // 2) Nicht gelistete Produkte (ohne Zusatz) – alphabetisch am Ende
      const nichtGelistet = [...new Set(
-       entries
+       normaleEntries
          .map(e => (e.product || "").trim())
          .filter(p => p && !buchhaltungSet.has(p))
      )].sort((a, b) => a.localeCompare(b, "de"));
 
      if (nichtGelistet.length) {
-       rows.push([]); // Leerzeile als Trenner
+       rows.push([]);
        rows.push(["⚠️ NICHT IN BUCHHALTUNGSLISTE", "", ""]);
        nichtGelistet.forEach(produkt => {
          const menge = mengen[produkt] || 0;
          const notiz = notizen[produkt] ? [...notizen[produkt]].join(", ") : "";
          rows.push([produkt, menge !== 0 ? menge : "", notiz]);
+       });
+     }
+
+     // 3) Zusatz-Einträge – jeder als eigene Zeile, mit Kommentar
+     if (zusatzEntries.length) {
+       rows.push([]);
+       rows.push(["⚠️ ZUSATZ (NICHT GELISTET)", "", ""]);
+       zusatzEntries.forEach(e => {
+         const menge = Number(e.total) || 0;
+         const kommentar = (e.note || "").trim() || "(kein Kommentar)";
+         rows.push([ZUSATZ_PRODUKT, menge !== 0 ? menge : "", kommentar]);
        });
      }
 
