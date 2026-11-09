@@ -63,6 +63,15 @@
     "ek_int": 0.61,
     "ek_ext": 0.61
   },
+	{
+    "name": "Action Energydrink (0,33L)",
+    "perCase": 24,
+    "category": ["Softdrinks", "Aktuell auf Lager", "Ernas Standardsortiment"],
+    "barcode": "41030202",
+    "vk_price": 1.00,
+    "ek_int": 0.61,
+    "ek_ext": 0.61
+  },
   {
     "name": "Ananassaft (1L)",
     "perCase": 6,
@@ -379,7 +388,7 @@
   {
     "name": "Maisels Weisse *AF (0,5L)",
     "perCase": 20,
-    "category": "AF_Bier",
+    "category": ["AF_Bier", "Aktuell auf Lager"],
     "barcode": "40173832",
     "vk_price": 1.67,
     "ek_int": 0.88,
@@ -452,7 +461,7 @@
   {
     "name": "Holunderblüten Sambucco",
     "perCase": 1,
-    "category": ["Sonstiges"],
+    "category": ["Sonstiges", "Aktuell auf Lager"],
     "barcode": ""
   },
   {
@@ -517,6 +526,11 @@
     "vk_price": null,
     "ek_int": 6.60,
     "ek_ext": 6.60
+  },
+	{
+    "name": "Triple Sec (1,0L)",
+    "perCase": 1,
+    "category": ["Spirituosen", "Aktuell auf Lager"]
   },
   {
     "name": "Rosé, Duo des Plages Cinsault (F) (0,75L)",
@@ -665,6 +679,11 @@
   },
   {
     "name": "White Rum Captain Sparrow (0,7L)",
+    "perCase": 1,
+    "category": ["Spirituosen", "Aktuell auf Lager"]
+  },
+	{
+    "name": "Weißer Rum Skipper George (0,7L)",
     "perCase": 1,
     "category": ["Spirituosen", "Aktuell auf Lager"]
   },
